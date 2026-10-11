@@ -61,6 +61,21 @@
     </form>
   </section>
 
+  <!-- Approval card: an action that changes something waits here for the user's click -->
+  <section id="panel-approval" class="panel" hidden>
+    <header><h2 id="ap-title"></h2></header>
+    <div class="scroll">
+      <p class="hint" id="ap-sub"></p>
+      <div id="ap-body"></div>
+      <p class="hint warn" id="ap-warn" hidden></p>
+    </div>
+    <p class="hint small">Elissa solo lo hará si lo apruebas. La voz no puede aprobar.</p>
+    <div class="row ap-actions">
+      <button type="button" id="ap-deny">Rechazar</button>
+      <button type="button" id="ap-ok" class="primary">Aprobar</button>
+    </div>
+  </section>
+
   <!-- First-run / change provider wizard -->
   <section id="panel-setup" class="panel" hidden>
     <header><h2>Configura tu IA</h2><button class="close" data-close id="setup-close">×</button></header>
@@ -133,16 +148,21 @@
         <button type="button" id="sounds-reload">Recargar</button>
       </div>
 
-      <h3>Correo (solo lectura)</h3>
+      <h3>Correo</h3>
       <label class="check"><input type="checkbox" id="mail-enabled"> Permitir que lea mi correo</label>
+      <label class="check"><input type="checkbox" name="mail_send"> Permitir que envíe correos (siempre te los mostraré antes y esperaré tu aprobación)</label>
       <label>Dirección <input id="mail-user" type="email" placeholder="tu@gmail.com"></label>
       <label>Contraseña de aplicación <input id="mail-pass" type="password" placeholder="16 caracteres, no tu contraseña normal"></label>
       <label>Servidor IMAP <input id="mail-server" placeholder="se detecta solo (imap.gmail.com…)"></label>
-      <p class="hint small">Gmail: activa la verificación en dos pasos y crea la contraseña en <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener">myaccount.google.com/apppasswords</a>. Elissa nunca envía, borra ni marca correos como leídos.</p>
+      <p class="hint small">Gmail: activa la verificación en dos pasos y crea la contraseña en <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener">myaccount.google.com/apppasswords</a>. Elissa nunca borra ni marca correos como leídos, y solo envía lo que apruebes.</p>
       <button type="button" id="mail-save">Probar y guardar correo</button>
       <p class="hint" id="mail-msg"></p>
 
-      <h3>Carpetas que puede leer</h3>
+      <h3>Uso del computador</h3>
+      <label class="check"><input type="checkbox" name="computer_use"> Permitir que vea y use otras ventanas</label>
+      <p class="hint small">Leer una ventana, hacer clic, escribir o presionar teclas siempre te pide aprobación. Nunca lee campos de contraseña.</p>
+
+      <h3>Carpetas que puede usar</h3>
       <ul id="folders"></ul>
       <button type="button" id="folder-add">Agregar carpeta</button>
 

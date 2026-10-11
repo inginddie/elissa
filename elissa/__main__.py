@@ -70,10 +70,15 @@ def selftest() -> int:
         d.save(path)
         return extract_text(path).strip()
 
+    def windows():
+        import uiautomation as auto
+        return f"{len(auto.GetRootControl().GetChildren())} ventanas"
+
     check("busqueda_web", lambda: f"{web_search('Bogotá', 2).count(chr(10))} líneas")
     check("voz", lambda: asyncio.run(synth()))
     check("keyring", roundtrip)
     check("documentos", office)
+    check("ventanas", windows)
     for name, result in checks.items():
         logging.info("selftest %s: %s", name, result)
     (LOG_DIR / "selftest.txt").write_text("\n".join(f"{k}: {v}" for k, v in checks.items()), "utf-8")

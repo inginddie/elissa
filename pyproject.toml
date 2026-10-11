@@ -1,6 +1,6 @@
 [project]
 name = "elissa"
-version = "0.2.0"
+version = "0.3.0"
 description = "Asistente de voz de escritorio para Windows, agnóstico de proveedor de IA (OpenAI, Claude, Gemini, OpenRouter, Ollama...)"
 requires-python = ">=3.13"
 dependencies = [
@@ -16,6 +16,7 @@ dependencies = [
     "pypdf>=6.20.0",
     "python-docx>=1.2.0",
     "python-multipart>=0.0.32",
+    "uiautomation>=2.0.29",
     "uvicorn[standard]>=0.54.0",
     "websockets>=17.2",
 ]

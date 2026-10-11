@@ -2,6 +2,25 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [0.3.0] - 2026-10-11
+
+### Añadido
+- Elissa ya puede hacer cosas, siempre con una tarjeta de aprobación para lo que cambia algo:
+  - Sin aprobación: abrir páginas, apps, archivos y carpetas; controlar la música y el volumen; temporizadores y
+    recordatorios (con voz y notificación de Windows); lista de tareas.
+  - Con aprobación: crear, editar y mover archivos (ves las diferencias antes), enviar correos (opción aparte en
+    Ajustes) y usar otras ventanas: leerlas, hacer clic, escribir y presionar teclas.
+- Arrastra un archivo sobre Elissa para preguntarle por él.
+
+### Corregido
+- Error 400 al hablarle justo después de una respuesta o al soltar un archivo: podían quedar dos grabaciones a la vez
+  y el audio llegaba corrupto. Ahora hay una sola grabación por vez y el motor descarta audios vacíos o dañados con
+  un mensaje claro.
+
+### Seguridad
+- Solo un clic en la tarjeta aprueba una acción; la voz, el atajo y el modelo no pueden. Sin ventana abierta, todo
+  queda rechazado. Nunca se leen campos de contraseña ni se abren ejecutables.
+
 ## [0.2.0] - 2026-10-11
 
 ### Añadido

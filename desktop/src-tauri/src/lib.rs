@@ -69,6 +69,7 @@ fn mode_size(mode: &str) -> (f64, f64) {
     match mode {
         "talk" => (360.0, 330.0),
         "panel" => (400.0, 640.0),
+        "approval" => (400.0, 520.0),
         _ => (168.0, 188.0), // compact: just the character
     }
 }
@@ -343,6 +344,11 @@ fn hide_window(window: WebviewWindow) {
 }
 
 #[tauri::command]
+fn show_window_cmd(app: AppHandle) {
+    show_window(&app);
+}
+
+#[tauri::command]
 fn quit_app(app: AppHandle) {
     app.exit(0);
 }
@@ -369,6 +375,13 @@ fn shell_info(app: AppHandle) -> serde_json::Value {
 #[tauri::command]
 async fn install_update(app: AppHandle) -> Result<(), String> {
     install_pending_update(app).await
+}
+
+/// A Windows notification (reminders and timers, so they are seen even when Elissa is hidden).
+#[tauri::command]
+fn notify(app: AppHandle, title: String, body: String) -> Result<(), String> {
+    use tauri_plugin_notification::NotificationExt;
+    app.notification().builder().title(title).body(body).show().map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -476,6 +489,7 @@ pub fn run() {
         }))
         .plugin(tauri_plugin_autostart::Builder::new().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_notification::init())
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_shortcuts(["ctrl+alt+space"])
@@ -503,12 +517,14 @@ pub fn run() {
             set_mode,
             set_pinned,
             hide_window,
+            show_window_cmd,
             quit_app,
             get_autostart,
             set_autostart,
             shell_info,
             install_update,
-            open_url
+            open_url,
+            notify
         ])
         .setup(move |app| {
             let handle = app.handle().clone();

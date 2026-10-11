@@ -20,7 +20,8 @@
 ---
 
 Press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Space</kbd> from any app and talk. Elissa listens, thinks and answers out loud.
-She can read your documents, search the web, check your email and remember what you talked about.
+She can read your documents, search the web, handle your email, set reminders, use your apps and remember what you
+talked about. Anything that changes something waits for your click.
 You choose the brain: OpenAI, Claude, Gemini, OpenRouter, Groq, or a free local model with Ollama.
 When you are not talking to her, she rests as a small character in the corner of your screen.
 
@@ -53,9 +54,13 @@ Elissa is drawn in code, not stitched from images, so she blends smoothly from o
 | | |
 |---|---|
 | 🗣️ **Talk** | Voice in, voice out, with natural Microsoft Edge voices. Interrupt her at any time, or keep the conversation going hands-free. |
-| 📄 **Read your files** | Find and read PDF, Word, Excel, CSV, text and code in the folders you allow: "summarize the PDF I just downloaded". |
+| ✋ **Act, with your OK** | Every action that changes something shows an approval card with exactly what will happen: the diff of a file, the full email, the button she'll click. Only your click approves it. |
+| 📄 **Files** | Find and read PDF, Word, Excel, CSV, text and code in the folders you allow; create, edit (with a diff), move and rename. Nothing is ever deleted. Drop a file on her to ask about it. |
+| 🖥️ **Use your computer** | Open apps, websites, files and folders. Read the window you're working in ("what is this?"), then click, type and press keys there. Password fields are never read. |
+| ⏰ **Timers, reminders, tasks** | "Remind me at 3 pm to call Ana", "5-minute timer", "add buy bread to my tasks". She speaks up and shows a Windows notification. |
+| ✉️ **Email** | Over IMAP/SMTP for Gmail, Outlook, Yahoo and iCloud: search, read, save attachments, and send if you allow it. |
+| 🎵 **Music** | Play, pause, skip and change the volume of whatever is playing. |
 | 🌐 **Search the web** | Search and read pages, with no extra API key. |
-| ✉️ **Check your email** | Read-only IMAP for Gmail, Outlook, Yahoo and iCloud: search, read and save attachments. She never sends, deletes or marks anything. |
 | 🧠 **Remember** | Each conversation is summarized into plain Markdown notes she can recall later: "what did we talk about yesterday?" |
 | 🔌 **Any model** | Switch providers in a guided setup that tests your key and lists the models your account can use. |
 
@@ -110,8 +115,10 @@ The installer is not code-signed yet, so Windows SmartScreen may warn you the fi
   - The local engine accepts only Elissa's own window, through a per-session token and an origin check.
   - A web page open in your browser cannot drive her.
 - **Microphone:** the microphone only opens while she listens, and she releases it a few seconds later.
-- **Read-only for now.** Actions that change things, such as sending an email, editing a file or clicking in an app,
-  are coming. Each one will show you exactly what will happen and wait for your click. Voice can never approve.
+- **Nothing changes without your click.**
+  - Sending, writing, moving, clicking and typing always show an approval card first.
+  - Only a real click in her window approves it: not your voice, not the shortcut, not the AI.
+  - Content she reads from web pages, emails, files or windows is treated as information, never as instructions.
 
 ## Roadmap
 
@@ -119,8 +126,8 @@ The installer is not code-signed yet, so Windows SmartScreen may warn you the fi
 |---|---|---|
 | Native window, tray, signed auto-updates | F1 | ✅ |
 | Character, animations, sounds | F2 | ✅ |
-| Actions with approval cards: open apps and sites, timers, tasks, send email, edit files, use the computer | F4 | 🔜 |
-| Voice: "Hola Elissa" wake word, local speech recognition | F3 | |
+| Actions with approval cards: open apps and sites, timers, tasks, send email, edit files, use the computer | F4 | ✅ |
+| Voice: "Hola Elissa" wake word, local speech recognition | F3 | 🔜 |
 | Coding assistant: understand projects, edit with diffs, run commands | F5 | |
 | Integrations through MCP: Jira, Confluence, GitHub, calendars | F6 | |
 | English UI, signed installer, 1.0 | F7 | |

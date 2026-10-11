@@ -30,8 +30,10 @@ def _human_size(n: int) -> str:
 
 
 class FileTools:
-    def __init__(self, allowed_folders: Callable[[], list[str]]):
+    def __init__(self, allowed_folders: Callable[[], list[str]], handed_over: Callable[[], set[str]] = set):
         self.allowed_folders = allowed_folders
+        # Files the user dropped on Elissa: allowed by that gesture even outside the allowed folders.
+        self.handed_over = handed_over
 
     # ----- path safety -----
 
@@ -44,6 +46,10 @@ class FileTools:
         if not p.is_absolute():
             p = Path.home() / p
         p = p.resolve()
+        if str(p).lower() in self.handed_over():
+            if any(fnmatch.fnmatch(p.name.lower(), pat) for pat in SENSITIVE_NAMES):
+                raise PermissionError("Ese archivo es sensible y no se puede leer.")
+            return p
         roots = [Path(f).expanduser().resolve() for f in self.allowed_folders()]
         root = next((r for r in roots if p == r or p.is_relative_to(r)), None)
         if root is None:

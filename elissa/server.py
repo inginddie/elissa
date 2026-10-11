@@ -11,6 +11,7 @@ import re
 import secrets
 import threading
 import time
+from pathlib import Path
 from contextlib import asynccontextmanager
 
 import edge_tts
@@ -21,16 +22,26 @@ from fastapi.staticfiles import StaticFiles
 
 from . import __version__, winutil
 from .agent import Agent
-from .config import (DEFAULTS, SOUNDS_DIR, STATIC, api_key_name, get_secret, load_settings, save_settings,
+from .config import (DEFAULTS, HOME, SOUNDS_DIR, STATIC, api_key_name, get_secret, load_settings, save_settings,
                      set_secret)
 from .llm import PROVIDERS, LLMError, Provider, build_provider
 from .memory import Memory
 from .memory import register as register_memory
 from .tools import ToolRegistry
+from .tools.actions import Actions
+from .tools.actions import register as register_actions
+from .tools.desktop import Desktop
+from .tools.desktop import register as register_desktop
+from .tools.file_edit import FileEditor
+from .tools.file_edit import register as register_file_edit
 from .tools.files import FileTools
 from .tools.files import register as register_files
 from .tools.mail import MailTools, guess_server
 from .tools.mail import register as register_mail
+from .tools.mail_send import MailSender
+from .tools.mail_send import register as register_mail_send
+from .tools.planner import Planner
+from .tools.planner import register as register_planner
 from .tools.web import register as register_web
 
 log = logging.getLogger("elissa")
@@ -108,6 +119,11 @@ class Brain:
         self._provider_key = None
         self.memory = Memory(self.provider_or_none)
         self.tools = ToolRegistry()
+        self.tools.approver = self.request_approval
+        self.approvals: dict[str, asyncio.Future] = {}
+        self.planner = Planner(HOME)
+        self.handed_over: set[str] = set()  # files dropped on Elissa during this conversation
+        self.desktop = Desktop(lambda: {os.getpid(), PARENT_PID})
         self.rebuild_tools()
         self.agent = Agent(lambda: self.settings, self.provider, self.tools, self.budget)
         self.turn = 0
@@ -145,11 +161,20 @@ class Brain:
     def rebuild_tools(self) -> None:
         reg = self.tools
         reg.clear()  # same registry object: the agent keeps its reference
-        register_files(reg, FileTools(lambda: self.settings.get("allowed_folders") or [os.path.expanduser("~")]))
+        files = FileTools(lambda: self.settings.get("allowed_folders") or [os.path.expanduser("~")],
+                          lambda: self.handed_over)
+        register_files(reg, files)
+        register_actions(reg, Actions(files))
+        register_file_edit(reg, FileEditor(files))
+        register_planner(reg, self.planner)
+        if self.settings.get("computer_use", True):
+            register_desktop(reg, self.desktop)
         register_web(reg)
         register_memory(reg, self.memory)
         if self.settings.get("mail_enabled"):
             register_mail(reg, MailTools(lambda: self.settings, lambda: get_secret(MAIL_SECRET)))
+            if self.settings.get("mail_send"):
+                register_mail_send(reg, MailSender(lambda: self.settings, lambda: get_secret(MAIL_SECRET), files))
 
     def status(self) -> dict:
         return {"type": "status", "ready": self.configured(), "configured": self.configured(),
@@ -214,6 +239,44 @@ class Brain:
     def new_conversation(self) -> None:
         self.memory.close()
         self.agent.reset()
+        self.handed_over.clear()
+
+    def hand_over(self, paths: list[str]) -> list[str]:
+        """Files the user dropped on the window; returns the full paths accepted."""
+        accepted = []
+        for raw in paths[:10]:
+            p = Path(str(raw)).resolve()
+            if p.is_file():
+                self.handed_over.add(str(p).lower())
+                accepted.append(str(p))
+        return accepted
+
+    # ----- approvals -----
+
+    async def request_approval(self, tool: str, card: dict) -> bool:
+        """Shows an approval card in the window and waits for the user's click. No window: denied."""
+        if not self.hub.clients:
+            return False
+        approval_id = secrets.token_hex(8)  # unguessable: only the window that shows the card can answer it
+        future = asyncio.get_running_loop().create_future()
+        self.approvals[approval_id] = future
+        log.info("approval %s requested for %s", approval_id, tool)
+        await self.hub.broadcast({"type": "approval", "id": approval_id, "turn": self.turn, "tool": tool, **card})
+        try:
+            return await future
+        finally:
+            self.approvals.pop(approval_id, None)
+            await self.hub.broadcast({"type": "approval_done", "id": approval_id})
+
+    def answer_approval(self, approval_id: str, approved: bool) -> None:
+        future = self.approvals.get(approval_id)
+        if future and not future.done():
+            future.set_result(approved)
+
+    def deny_all_approvals(self) -> None:
+        for future in self.approvals.values():
+            if not future.done():
+                future.set_result(False)
 
 
 hub = Hub()
@@ -241,6 +304,20 @@ def watch_parent(loop: asyncio.AbstractEventLoop) -> None:
     threading.Thread(target=wait, daemon=True).start()
 
 
+async def reminder_loop() -> None:
+    """Fires due reminders and timers: the window speaks them and shows a Windows notification."""
+    brain: Brain = state["brain"]
+    while True:
+        try:
+            # only with a window connected, so a reminder that comes due during startup isn't lost
+            for item in (await asyncio.to_thread(brain.planner.pop_due) if hub.clients else []):
+                log.info("reminder %s fired", item["id"])
+                await hub.broadcast({"type": "reminder", **item})
+        except Exception:
+            log.exception("reminder loop")
+        await asyncio.sleep(2)
+
+
 async def watchdog() -> None:
     while True:
         await asyncio.sleep(5)
@@ -256,7 +333,8 @@ async def watchdog() -> None:
 async def lifespan(app: FastAPI):
     brain = Brain(hub)
     state["brain"] = brain
-    tasks = [asyncio.create_task(watchdog()), asyncio.create_task(brain.memory.recover())]
+    tasks = [asyncio.create_task(watchdog()), asyncio.create_task(brain.memory.recover()),
+             asyncio.create_task(reminder_loop())]
     if PARENT_PID:
         watch_parent(asyncio.get_running_loop())
     yield
@@ -314,6 +392,20 @@ async def voices():
                    for v in found if v["Locale"].startswith(lang)), key=lambda v: v["id"])
 
 
+MIN_AUDIO_BYTES = 1500
+WEBM_MAGIC = bytes.fromhex("1a45dfa3")  # EBML header every WebM recording starts with
+
+
+def stt_error_message(status: int, body: str) -> str:
+    if status in (401, 403):
+        return "La API key de voz no es válida; revísala en Ajustes → Voz."
+    if status == 429:
+        return "El servicio de voz está saturado o llegaste al límite; intenta en un momento."
+    if "media" in body or "audio" in body:
+        return "No pude procesar el audio; intenta de nuevo."
+    return f"El servicio de voz falló ({status}); intenta de nuevo."
+
+
 def stt_service(s: dict) -> str | None:
     """Which transcription service to use: the chosen one, or in auto mode the chat provider's (if it has one),
     then any cloud key already stored, then the user's own endpoint."""
@@ -348,14 +440,21 @@ async def stt(file: UploadFile):
         url = s["stt_url"]
     else:
         return JSONResponse({"error": "Configura el reconocimiento de voz en Ajustes → Voz"}, 400)
+    audio = await file.read()
+    if len(audio) < MIN_AUDIO_BYTES:  # a click or an empty recording: nothing to transcribe
+        log.info("stt skipped: %d bytes of audio", len(audio))
+        return {"text": ""}
+    if not audio.startswith(WEBM_MAGIC):  # a recording without its header can't be decoded by any service
+        log.warning("stt skipped: corrupt recording (%d bytes, no WebM header)", len(audio))
+        return JSONResponse({"error": "No pude procesar el audio; intenta de nuevo."}, 422)
     try:
         async with httpx.AsyncClient(timeout=60) as client:
-            r = await client.post(url, headers=headers, data=data,
-                                  files={"file": ("audio.webm", await file.read(), "audio/webm")})
+            r = await client.post(url, headers=headers, data=data, files={"file": ("audio.webm", audio, "audio/webm")})
         r.raise_for_status()
     except httpx.HTTPStatusError as e:
-        log.warning("stt %s failed: %s %s", service, e.response.status_code, e.response.text[:300])
-        return JSONResponse({"error": f"El servicio de voz respondió {e.response.status_code}"}, 502)
+        log.warning("stt %s failed (%d bytes): %s %s", service, len(audio), e.response.status_code,
+                    e.response.text[:300])
+        return JSONResponse({"error": stt_error_message(e.response.status_code, e.response.text)}, 502)
     except httpx.HTTPError as e:
         return JSONResponse({"error": f"No pude conectar con el servicio de voz: {e}"}, 502)
     text = r.json().get("text", "").strip()
@@ -404,7 +503,7 @@ async def set_settings(changes: dict):
     changes = {k: v for k, v in changes.items() if k in DEFAULTS and k not in ("provider", "model", "base_url")}
     brain.settings.update(changes)
     save_settings(brain.settings)
-    if {"allowed_folders", "mail_enabled"} & changes.keys():
+    if {"allowed_folders", "mail_enabled", "mail_send", "computer_use"} & changes.keys():
         brain.rebuild_tools()
     await hub.broadcast({"type": "settings", "settings": brain.settings})
     return brain.settings
@@ -523,6 +622,14 @@ async def ws_endpoint(ws: WebSocket):
             elif kind == "interrupt":
                 log.info("interrupt requested by the window")
                 await brain.interrupt()
+            elif kind == "client_error":
+                log.warning("window error: %s", str(msg.get("message", ""))[:500])
+            elif kind == "attach":
+                accepted = brain.hand_over(list(msg.get("paths") or []))
+                log.info("%d file(s) handed over", len(accepted))
+                await ws.send_text(json.dumps({"type": "attached", "paths": accepted}, ensure_ascii=False))
+            elif kind == "approval_reply":
+                brain.answer_approval(str(msg.get("id", "")), msg.get("approved") is True)
             elif kind == "reset":
                 await brain.interrupt()
                 brain.new_conversation()
@@ -531,3 +638,5 @@ async def ws_endpoint(ws: WebSocket):
     finally:
         hub.clients.discard(ws)
         hub.last_left = time.time()
+        if not hub.clients:
+            brain.deny_all_approvals()  # nobody left to see the card

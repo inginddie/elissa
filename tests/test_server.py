@@ -68,3 +68,74 @@ def test_custom_sounds_are_listed_and_confined(client, tmp_path, monkeypatch):
     assert client.get("/api/sounds/listen.wav").status_code == 200
     assert client.get("/api/sounds/notes.txt").status_code == 404
     assert client.get("/api/sounds/..%2Fsecret.wav").status_code == 404
+
+
+def test_approval_needs_the_right_id_and_a_window():
+    import asyncio
+
+    class FakeHub:
+        def __init__(self):
+            self.clients = {object()}
+            self.sent = []
+
+        async def broadcast(self, msg):
+            self.sent.append(msg)
+
+    async def scenario():
+        hub = FakeHub()
+        brain = server.Brain(hub)
+        card = {"title": "Enviar correo", "kind": "text", "text": "hola"}
+
+        task = asyncio.create_task(brain.request_approval("enviar_correo", card))
+        await asyncio.sleep(0)
+        shown = hub.sent[0]
+        assert shown["type"] == "approval" and shown["title"] == "Enviar correo"
+        brain.answer_approval("adivinado", True)  # a wrong id changes nothing
+        await asyncio.sleep(0)
+        assert not task.done()
+        brain.answer_approval(shown["id"], True)
+        assert await task is True
+        assert hub.sent[-1] == {"type": "approval_done", "id": shown["id"]}
+
+        task = asyncio.create_task(brain.request_approval("enviar_correo", card))
+        await asyncio.sleep(0)
+        brain.deny_all_approvals()  # the window went away
+        assert await task is False
+
+        hub.clients = set()
+        assert await brain.request_approval("enviar_correo", card) is False
+
+    asyncio.run(scenario())
+
+
+def test_stt_rejects_empty_and_corrupt_audio_without_calling_the_service(client, monkeypatch):
+    calls = []
+
+    class NoNetwork:
+        def __init__(self, *a, **k):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *a):
+            return False
+
+        async def post(self, *a, **k):
+            calls.append(a)
+            raise AssertionError("should not reach the speech service")
+
+    monkeypatch.setattr(server.httpx, "AsyncClient", NoNetwork)
+    monkeypatch.setattr(server, "get_secret", lambda name: "key" if name == "api_key:groq" else "")
+    client.get("/?t=test-token")
+    client.post("/api/settings", json={"stt": "groq"})
+    tiny = client.post("/api/stt", files={"file": ("a.webm", b"\x1a\x45\xdf\xa3" + b"0" * 100, "audio/webm")})
+    assert tiny.status_code == 200 and tiny.json() == {"text": ""}
+    corrupt = client.post("/api/stt", files={"file": ("a.webm", b"\x00" * 5000, "audio/webm")})
+    assert corrupt.status_code == 422 and "intenta de nuevo" in corrupt.json()["error"]
+    assert calls == []
+
+
+def test_stt_error_messages_are_plain():
+    assert "API key" in server.stt_error_message(401, "")
+    assert "audio" in server.stt_error_message(400, '{"code":"invalid_media_file"}')

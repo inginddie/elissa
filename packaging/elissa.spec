@@ -14,7 +14,11 @@ hiddenimports = (
     + collect_submodules("elissa")
     + ["keyring.backends.Windows"]
 )
-for pkg in ("ddgs", "primp", "edge_tts"):
+# uiautomation drives Windows UI Automation through comtypes; its generated COM wrappers (comtypes.gen) are created
+# when uiautomation is first imported, so the build imports it before collecting.
+import uiautomation  # noqa: E402,F401
+
+for pkg in ("ddgs", "primp", "edge_tts", "uiautomation", "comtypes"):
     d, b, h = collect_all(pkg)
     datas += d
     binaries += b

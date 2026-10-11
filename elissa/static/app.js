@@ -13,6 +13,7 @@ const STATUS = {
   transcribing: 'Transcribiendo…',
   thinking: 'Pensando…',
   speaking: 'Hablando',
+  approval: 'Necesito tu aprobación',
   error: 'Error',
 };
 
@@ -67,13 +68,14 @@ function setState(s, statusText) {
 
 /* ---------- window modes: compact (just the face) · talk (face + caption + controls) · panel ---------- */
 
-const BUSY = new Set(['listening', 'transcribing', 'thinking', 'speaking', 'error']);
+const BUSY = new Set(['listening', 'transcribing', 'thinking', 'speaking', 'approval', 'error']);
 const REPLY_LINGER_MS = 9000;
 let mode = '';
 let openUntil = 0;
 let lingerTimer = null;
 
 function desiredMode() {
+  if (!$('#panel-approval').hidden) return 'approval';
   if (document.querySelector('.panel:not([hidden])')) return 'panel';
   if (BUSY.has(state) || performance.now() < openUntil) return 'talk';
   return 'compact';
@@ -182,13 +184,27 @@ function onMicFrame(data, ms) {
   else if (now - vad.start > MAX_LISTEN_MS) stopListening(true);
 }
 
+let starting = false;
+
 async function startListening() {
+  // Only one recording at a time: two recorders writing into one upload produce an invalid audio file.
+  if (rec || starting || state === 'listening' || state === 'transcribing') return;
+  starting = true;
   try {
+    // A microphone that was unplugged or switched leaves an ended track: get a fresh one.
+    if (micStream && micStream.getAudioTracks().some((t) => t.readyState === 'ended')) {
+      micStream.getTracks().forEach((t) => t.stop());
+      micProc?.disconnect();
+      micStream = micProc = null;
+    }
     await ensureAudio();
   } catch (e) {
     setState('error', 'No tengo acceso al micrófono');
     return;
+  } finally {
+    starting = false;
   }
+  if (rec) return;
   stopSpeech();
   startRecording();
   sfx.play('listen');
@@ -197,9 +213,11 @@ async function startListening() {
 }
 
 function startRecording() {
-  chunks = [];
+  const mine = []; // this recording's audio only, whatever else happens meanwhile
+  chunks = mine;
   rec = new MediaRecorder(micStream, { mimeType: 'audio/webm;codecs=opus' });
-  rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+  rec.chunks = mine;
+  rec.ondataavailable = (e) => e.data.size && mine.push(e.data);
   rec.start(250);
   vad = { start: performance.now(), lastVoice: 0, voicedMs: 0, speech: false };
 }
@@ -226,7 +244,7 @@ function stopListening(send, manual = false) {
     setState('transcribing');
     try {
       const fd = new FormData();
-      fd.append('file', new Blob(chunks, { type: 'audio/webm' }), 'audio.webm');
+      fd.append('file', new Blob(r.chunks, { type: 'audio/webm' }), 'audio.webm');
       const res = await fetch('/api/stt', { method: 'POST', body: fd });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -296,6 +314,11 @@ function stopSpeech() {
 
 function finishTurn() {
   if (state === 'listening') return;
+  if (announcing) {
+    announcing = false;
+    toIdle();
+    return;
+  }
   if (turnStarted && performance.now() - turnStarted > LONG_TURN_MS) sfx.play('done');
   if (turnStarted) face.play('happy', 1100);
   turnStarted = 0;
@@ -311,6 +334,17 @@ function finishTurn() {
 function sendText(text) {
   if (!ws || ws.readyState !== WebSocket.OPEN) {
     setState('error', 'Sin conexión con el servidor');
+    return;
+  }
+  if (attached.length) {
+    // the model gets the full paths; the history shows what the user said
+    ws.send(JSON.stringify({ type: 'text', text: `[Archivos que te pasé: ${attached.join(' | ')}]\n${text}` }));
+    attached = [];
+    addHistory('user', text);
+    showCaption(text, '');
+    setState('thinking', ready ? undefined : 'Configura tu IA en Ajustes');
+    turnStarted = performance.now();
+    turnDone = false;
     return;
   }
   ensureAudio(false).catch(() => {});
@@ -333,6 +367,7 @@ function interrupt() {
 }
 
 function primaryAction() {
+  if (approval) return; // the card needs a click: neither the shortcut nor the voice can answer it
   switch (state) {
     case 'listening':
       stopListening(true, true);
@@ -404,6 +439,18 @@ function handle(m) {
       if (replyText.trim()) addHistory('assistant', replyText.trim());
       if (!playing && state !== 'error') finishTurn();
       break;
+    case 'approval':
+      showApproval(m);
+      break;
+    case 'approval_done':
+      if (approval?.id === m.id) closeApproval();
+      break;
+    case 'reminder':
+      announceReminder(m);
+      break;
+    case 'attached':
+      onAttached(m.paths || []);
+      break;
     case 'error':
       if (m.turn !== undefined && m.turn !== currentTurn) break;
       stopSpeech();
@@ -423,6 +470,128 @@ function connect() {
     setState('waking', 'Reconectando…');
     setTimeout(connect, 1000);
   };
+}
+
+/* ---------- approvals ---------- */
+
+let approval = null;
+
+function el(tag, props = {}, ...children) {
+  const e = Object.assign(document.createElement(tag), props);
+  e.append(...children.filter((c) => c !== undefined && c !== null));
+  return e;
+}
+
+function renderApprovalBody(m) {
+  const body = $('#ap-body');
+  body.innerHTML = '';
+  if (m.kind === 'diff') {
+    if (m.path) body.append(el('p', { className: 'hint', textContent: m.path }));
+    const pre = el('pre');
+    for (const line of String(m.diff || '').split('\n')) {
+      const cls = line.startsWith('+') ? 'add' : line.startsWith('-') ? 'del' : line.startsWith('@@') ? 'meta' : '';
+      pre.append(el('span', { className: cls, textContent: line + '\n' }));
+    }
+    body.append(pre);
+  } else if (m.kind === 'email') {
+    const dl = el('dl');
+    for (const [k, v] of [['Para', m.to], ['CC', m.cc], ['Asunto', m.subject], ['Adjuntos', m.attachments]]) {
+      if (v) dl.append(el('dt', { textContent: k }), el('dd', { textContent: v }));
+    }
+    body.append(dl, el('pre', { textContent: m.body || '' }));
+  } else if (m.kind === 'action') {
+    body.append(el('ul', {}, ...(m.lines || []).map((l) => el('li', { textContent: l }))));
+  } else {
+    body.append(el('pre', { textContent: m.text || '' }));
+  }
+}
+
+function showApproval(m) {
+  approval = m;
+  $('#ap-title').textContent = m.title || 'Aprobar acción';
+  $('#ap-sub').textContent = m.subtitle || '';
+  $('#ap-sub').hidden = !m.subtitle;
+  $('#ap-warn').textContent = m.warning || '';
+  $('#ap-warn').hidden = !m.warning;
+  renderApprovalBody(m);
+  stopSpeech();
+  document.querySelectorAll('.panel').forEach((p) => (p.hidden = p.id !== 'panel-approval'));
+  $('#ap-ok').disabled = $('#ap-deny').disabled = false;
+  setState('approval');
+  sfx.play('approval');
+  shell.show();
+  $('#ap-deny').focus(); // the safe choice has the focus; approving takes a deliberate click
+}
+
+function closeApproval() {
+  approval = null;
+  $('#panel-approval').hidden = true;
+  if (state === 'approval') setState('thinking');
+  else updateMode();
+}
+
+function answerApproval(approved) {
+  if (!approval) return;
+  $('#ap-ok').disabled = $('#ap-deny').disabled = true;
+  ws?.send(JSON.stringify({ type: 'approval_reply', id: approval.id, approved }));
+  sfx.play(approved ? 'send' : 'close');
+  if (!approved) face.play('annoyed', 700);
+  closeApproval();
+}
+
+$('#ap-ok').addEventListener('click', (e) => {
+  if (e.isTrusted) answerApproval(true); // a real click, never a scripted one
+});
+$('#ap-deny').onclick = () => answerApproval(false);
+
+/* ---------- files dropped on Elissa ---------- */
+
+let attached = [];
+
+shell.on('tauri://drag-enter', () => {
+  face.play('surprised', 60000);
+  keepOpen(4000);
+});
+shell.on('tauri://drag-leave', () => face.play('idle', 10));
+shell.on('tauri://drag-drop', ({ paths }) => {
+  if (!paths?.length) return face.play('idle', 10);
+  ws?.send(JSON.stringify({ type: 'attach', paths }));
+});
+
+function onAttached(paths) {
+  if (!paths.length) {
+    face.play('error', 1200);
+    return;
+  }
+  attached = paths;
+  const names = paths.map((p) => p.split(/[\\/]/).pop()).join(', ');
+  face.play('happy', 1000);
+  sfx.play('happy');
+  shell.show();
+  showCaption('', `Recibí ${names}. ¿Qué hago con ${paths.length > 1 ? 'ellos' : 'él'}?`);
+  if (ready && (state === 'idle' || state === 'waking')) startListening();
+}
+
+/* ---------- reminders ---------- */
+
+let announcing = false;
+
+function announceReminder(m) {
+  const who = cfg.user_name ? `${cfg.user_name}, ` : '';
+  const late = m.late ? ' (llegó tarde porque estaba cerrada)' : '';
+  const said = m.kind === 'timer' ? `${who}se acabó el tiempo. ${m.text}` : `${who}te recuerdo: ${m.text}`;
+  shell.notify(m.kind === 'timer' ? 'Temporizador' : 'Recordatorio', m.text + late);
+  sfx.play('done');
+  face.play('surprised', 600);
+  if (state === 'listening' || state === 'thinking' || state === 'approval' || state === 'speaking') {
+    showCaption(undefined, said); // busy: show it, don't talk over the conversation
+    return;
+  }
+  shell.show();
+  showCaption('', said);
+  announcing = true;
+  turnDone = true;
+  enqueueSay(said);
 }
 
 /* ---------- history panel ---------- */
@@ -868,13 +1037,23 @@ $('#reset').onclick = () => {
 document.addEventListener('keydown', (e) => {
   if (e.target.matches('input, select')) return;
   if (e.key === 'Escape') {
+    if (approval) return answerApproval(false);
     if (!document.querySelector('.panel:not([hidden])')) silence();
     openPanel(null);
-  } else if (e.code === 'Space' && ready) {
+  } else if (e.code === 'Space' && ready && !approval) {
     e.preventDefault();
     primaryAction();
   }
 });
+
+// UI errors end up in the engine's log (%APPDATA%\Elissa\logs), which is what a bug report can include.
+function reportError(message) {
+  try {
+    if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'client_error', message: String(message) }));
+  } catch {}
+}
+window.addEventListener('error', (e) => reportError(`${e.message} @ ${e.filename?.split('/').pop()}:${e.lineno}`));
+window.addEventListener('unhandledrejection', (e) => reportError(`promise: ${e.reason?.stack || e.reason}`));
 
 document.body.classList.toggle('native', native);
 if (native) {

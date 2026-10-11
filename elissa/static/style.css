@@ -167,3 +167,23 @@ kbd { border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; font-si
 #folders { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 #folders li { display: flex; align-items: center; gap: 6px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; font-size: 12px; word-break: break-all; }
 #folders li button { margin-left: auto; background: none; border: 0; color: var(--muted); font-size: 16px; padding: 0 4px; }
+
+/* ----- approval card ----- */
+#panel-approval h2::before { content: "✋ "; }
+#ap-body { display: flex; flex-direction: column; gap: 8px; }
+#ap-body pre {
+  margin: 0; padding: 8px 10px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--line);
+  font: 12px/1.45 "Cascadia Mono", Consolas, monospace; white-space: pre-wrap; word-break: break-word;
+  max-height: 300px; overflow: auto;
+}
+#ap-body pre .add { color: #8ff0c7; background: rgba(60, 220, 160, .08); display: block; }
+#ap-body pre .del { color: #ff9c8f; background: rgba(242, 109, 91, .1); display: block; }
+#ap-body pre .meta { color: var(--muted); display: block; }
+#ap-body dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; margin: 0; }
+#ap-body dt { color: var(--muted); }
+#ap-body dd { margin: 0; word-break: break-word; }
+#ap-body ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.hint.warn { color: var(--coral); }
+.ap-actions { justify-content: flex-end; padding-top: 8px; }
+.ap-actions button { min-width: 108px; }
+#ap-ok { font-weight: 600; }

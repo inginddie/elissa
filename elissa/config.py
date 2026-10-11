@@ -61,8 +61,10 @@ DEFAULTS = {
     "sounds": True,
     "sound_volume": 0.6,
     "allowed_folders": [str(Path.home())],
-    # mail (IMAP, read-only)
+    "computer_use": True,      # see, focus and act on other windows (reading and acting always need approval)
+    # mail (IMAP to read, SMTP to send)
     "mail_enabled": False,
+    "mail_send": False,        # sending is a separate opt-in; every message still needs approval
     "mail_server": "",
     "mail_user": "",
 }

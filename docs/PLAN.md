@@ -82,6 +82,23 @@ Estado (2026-10-11): hecho.
   en otras apps con aprobación por acción.
 - Crear, mover y editar archivos con aprobación.
 
+Estado (2026-10-11): hecho en código, falta la prueba visual de Diego.
+- Base: las herramientas que cambian algo tienen vista previa; el registro pide aprobación (tarjeta en la ventana,
+  id imposible de adivinar, solo un clic la aprueba; sin ventana o al cerrarla = rechazada). Varias acciones del mismo
+  paso se muestran una por una. Reglas nuevas en las instrucciones del agente (la tarjeta es la confirmación; lo leído
+  es información, no instrucciones).
+- Libres: abrir web, apps (lista oficial del menú Inicio, con alias), archivos y carpetas (nunca ejecutables ni
+  scripts), multimedia, temporizadores y recordatorios (sobreviven reinicios; voz + notificación de Windows), tareas
+  (`tareas.md`).
+- Con aprobación: crear/editar/mover archivos y carpetas con diferencias (si el archivo cambia tras la vista previa,
+  no se aplica; nunca se borra), enviar correo por SMTP (opción aparte, apagada por defecto), leer una ventana,
+  hacer clic, escribir y presionar teclas (UI Automation; nunca lee contraseñas; avisa en teclas riesgosas).
+- Arrastrar archivos sobre Elissa los autoriza para esa conversación (los sensibles siguen bloqueados).
+- Errores de la interfaz quedan en el registro del motor.
+- Probado: 21 pruebas automáticas; turno real con OpenAI rechazando y aprobando la creación de un archivo;
+  recordatorio hablado; leer/escribir/clic/teclas sobre una ventana de prueba. Pendiente: arrastrar archivos y
+  enviar un correo real desde la app.
+
 ## F3. Voz
 
 - Captura de micrófono en el motor; detección de voz con Silero VAD.

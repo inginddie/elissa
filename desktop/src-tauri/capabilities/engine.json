@@ -21,6 +21,8 @@
     "allow-set-autostart",
     "allow-shell-info",
     "allow-open-url",
-    "allow-install-update"
+    "allow-install-update",
+    "allow-notify",
+    "allow-show-window-cmd"
   ]
 }
