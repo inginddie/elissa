@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<style>
+  /* Shown for the few seconds the engine takes to start: Elissa, half awake. */
+  html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; font: 12px "Segoe UI", sans-serif; }
+  .wrap { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 4px; }
+  img { width: 128px; height: 128px; animation: breathe 2.6s ease-in-out infinite; transform-origin: 50% 90%;
+        -webkit-user-drag: none; }
+  @keyframes breathe { 50% { transform: scale(1.02, 0.975); } }
+  #msg { color: #c9c3f0; text-shadow: 0 1px 2px #000a; text-align: center; padding: 0 10px; }
+  .err #msg { color: #ff8a95; background: #120e26e6; border-radius: 10px; padding: 6px 10px; }
+</style>
+</head>
+<body data-tauri-drag-region>
+  <div class="wrap" data-tauri-drag-region>
+    <img src="elissa.png" alt="" data-tauri-drag-region>
+    <div id="msg" data-tauri-drag-region>Despertando…</div>
+  </div>
+  <script>
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+    document.addEventListener('keydown', (e) => { if (e.key === 'F5' || (e.ctrlKey && 'rpsf'.includes(e.key.toLowerCase()))) e.preventDefault(); });
+    window.__TAURI__?.event.listen('engine-failed', (e) => {
+      document.body.classList.add('err');
+      document.getElementById('msg').textContent = e.payload === 'timeout'
+        ? 'Elissa tarda demasiado en arrancar. Ciérrala desde la bandeja y ábrela de nuevo.'
+        : 'No pude iniciar el motor de Elissa. Revisa %APPDATA%\Elissa\logs.';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Elissa · expresiones</title>
+<style>
+  body { margin: 0; background: #241a4a; font: 14px "Segoe UI", sans-serif; color: #dfe9ff; }
+  body.light { background: #e9eef5; color: #222; }
+  .grid { display: grid; grid-template-columns: repeat(5, 200px); gap: 10px; padding: 16px; }
+  figure { margin: 0; text-align: center; }
+  canvas { width: 200px; height: 190px; display: block; }
+</style>
+</head>
+<body>
+<div class="grid" id="g"></div>
+<script type="module">
+  import { Character } from '/elissa/static/character.js';
+  const names = ['idle', 'listening', 'thinking', 'speaking', 'happy', 'approval', 'error', 'sleeping', 'annoyed',
+    'dizzy', 'love', 'working', 'surprised', 'waking'];
+  if (location.hash === '#light') document.body.classList.add('light');
+  for (const n of names) {
+    const f = document.createElement('figure');
+    const c = document.createElement('canvas');
+    f.append(c, Object.assign(document.createElement('figcaption'), { textContent: n }));
+    document.getElementById('g').append(f);
+    const ch = new Character(c);
+    ch.levelSource = () => (n === 'speaking' || n === 'listening' ? 0.6 : 0);
+    ch.setState(n);
+    if (n === 'idle') ch.lookAt(900, 120);
+  }
+</script>
+</body>
+</html>

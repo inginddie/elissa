@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; width: 1024px; height: 1024px; overflow: hidden; background: transparent; }
+  canvas { position: absolute; width: 1100px; height: 1100px; left: -38px; top: -158px; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="module">
+  // Renders the app icon from the same code that draws Elissa (idle, looking at you).
+  import { Character } from '/elissa/static/character.js';
+  const ch = new Character(document.getElementById('c'));
+  ch.setState('idle');
+  ch.blink.next = Infinity;
+  ch.nextGlance = Infinity;
+</script>
+</body>
+</html>

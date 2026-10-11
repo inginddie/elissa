@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Elissa · asistente de voz</title>
+  <link rel="icon" href="/static/icon.png">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body data-state="waking" data-mode="compact">
+<div id="card">
+  <main id="stage">
+    <canvas id="face" title="Toca para hablar · arrástrala para moverla"></canvas>
+    <div id="mini">
+      <button class="icon" data-act="history" title="Escribir">
+        <svg viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4z"/></svg>
+      </button>
+      <button class="icon" data-act="settings" title="Ajustes">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>
+      </button>
+      <button class="icon" data-act="hide" title="Ocultar (sigue en la bandeja)">
+        <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+    </div>
+    <section id="caption" aria-live="polite">
+      <div id="status">Despertando…</div>
+      <div id="you"></div>
+      <div id="reply"></div>
+    </section>
+  </main>
+
+  <nav id="bar">
+    <button id="btn-history" class="icon" title="Historial y escribir">
+      <svg viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4z"/></svg>
+    </button>
+    <button id="btn-continuous" class="icon" title="Conversación continua">
+      <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3M18 3v4h-4M6 21v-4h4"/></svg>
+    </button>
+    <button id="btn-main" title="Hablar (Ctrl+Alt+Espacio)">
+      <svg class="mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+      <svg class="stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2"/></svg>
+    </button>
+    <button id="btn-pin" class="icon" title="Siempre visible">
+      <svg viewBox="0 0 24 24"><path d="M9 3h6l-1 6 3 3v2H7v-2l3-3zM12 14v7"/></svg>
+    </button>
+    <button id="btn-settings" class="icon" title="Ajustes">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>
+    </button>
+    <button id="btn-compact" class="icon" title="Encoger">
+      <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+  </nav>
+
+  <!-- Conversation log + typing -->
+  <section id="panel-history" class="panel" hidden>
+    <header><h2>Conversación</h2><button class="close" data-close>×</button></header>
+    <div id="log"></div>
+    <form id="typer">
+      <input id="typed" placeholder="Escribe en vez de hablar…" autocomplete="off">
+      <button type="submit">Enviar</button>
+    </form>
+  </section>
+
+  <!-- First-run / change provider wizard -->
+  <section id="panel-setup" class="panel" hidden>
+    <header><h2>Configura tu IA</h2><button class="close" data-close id="setup-close">×</button></header>
+    <div class="scroll">
+      <p class="hint">Elige qué modelo de inteligencia artificial usará tu asistente. Puedes usar uno en la nube con tu propia API key o uno local y gratuito con Ollama.</p>
+      <label>Proveedor <select id="setup-provider"></select></label>
+      <label id="setup-url-row" hidden>URL del servidor (compatible con OpenAI)
+        <input id="setup-url" placeholder="http://127.0.0.1:8080/v1">
+      </label>
+      <label id="setup-key-row">API key
+        <input id="setup-key" type="password" autocomplete="off" placeholder="Pega aquí tu clave">
+      </label>
+      <a id="setup-key-link" href="#" target="_blank" rel="noopener">¿Dónde la consigo?</a>
+      <button type="button" id="setup-test">Conectar y ver modelos</button>
+      <label id="setup-model-row" hidden>Modelo
+        <input id="setup-model" list="setup-models" autocomplete="off">
+        <datalist id="setup-models"></datalist>
+      </label>
+      <button type="button" id="setup-save" class="primary" hidden>Guardar y probar</button>
+      <p class="hint" id="setup-msg"></p>
+      <p class="hint small">Tu API key se guarda cifrada en el Administrador de credenciales de Windows, nunca en archivos.</p>
+    </div>
+  </section>
+
+  <!-- Settings -->
+  <section id="panel-settings" class="panel" hidden>
+    <header><h2>Ajustes</h2><button class="close" data-close>×</button></header>
+    <form id="settings" class="scroll" autocomplete="off">
+      <h3>General</h3>
+      <label>Nombre del asistente <input name="name" maxlength="20"></label>
+      <label>Tu nombre <input name="user_name" maxlength="30" placeholder="Para que te llame por tu nombre"></label>
+
+      <h3>Inteligencia artificial</h3>
+      <p class="hint" id="ai-current"></p>
+      <button type="button" id="open-setup">Cambiar proveedor o modelo</button>
+
+      <h3>Voz</h3>
+      <label>Voz <select name="voice" id="voice-select"></select></label>
+      <label>Velocidad <span id="speed-val"></span>
+        <input name="speed" type="range" min="0.8" max="1.6" step="0.05">
+      </label>
+      <label>Reconocimiento de voz
+        <select name="stt">
+          <option value="auto">Automático</option>
+          <option value="groq">Groq · muy rápido y económico</option>
+          <option value="openai">OpenAI</option>
+          <option value="endpoint">Servidor propio (Whisper u otro compatible)</option>
+        </select>
+      </label>
+      <p class="hint small" id="stt-status"></p>
+      <div id="stt-key-row" class="stack">
+        <label><span id="stt-key-label">API key para la voz</span>
+          <input id="stt-key" type="password" autocomplete="off" placeholder="Pega aquí la clave">
+        </label>
+        <div class="row"><button type="button" id="stt-key-save">Guardar clave de voz</button>
+          <a id="stt-key-link" href="https://console.groq.com/keys" target="_blank" rel="noopener">¿Dónde la consigo?</a></div>
+      </div>
+      <label id="stt-url-row">URL de transcripción <input name="stt_url" placeholder="http://127.0.0.1:2022/v1/audio/transcriptions"></label>
+      <label class="check"><input type="checkbox" name="continuous"> Conversación continua</label>
+      <label class="check"><input type="checkbox" name="pinned"> Siempre visible</label>
+      <label class="check"><input type="checkbox" id="autostart"> Iniciar con Windows</label>
+
+      <h3>Sonidos</h3>
+      <label class="check"><input type="checkbox" name="sounds"> Sonidos de Elissa</label>
+      <label>Volumen <input name="sound_volume" type="range" min="0" max="1" step="0.05"></label>
+      <p class="hint small">Puedes cambiar cualquier sonido dejando un archivo con su nombre (por ejemplo
+        <kbd>listen.wav</kbd>, <kbd>done.mp3</kbd>, <kbd>greet.ogg</kbd>) en la carpeta de sonidos.</p>
+      <div class="row">
+        <button type="button" id="sounds-folder">Abrir carpeta de sonidos</button>
+        <button type="button" id="sounds-reload">Recargar</button>
+      </div>
+
+      <h3>Correo (solo lectura)</h3>
+      <label class="check"><input type="checkbox" id="mail-enabled"> Permitir que lea mi correo</label>
+      <label>Dirección <input id="mail-user" type="email" placeholder="tu@gmail.com"></label>
+      <label>Contraseña de aplicación <input id="mail-pass" type="password" placeholder="16 caracteres, no tu contraseña normal"></label>
+      <label>Servidor IMAP <input id="mail-server" placeholder="se detecta solo (imap.gmail.com…)"></label>
+      <p class="hint small">Gmail: activa la verificación en dos pasos y crea la contraseña en <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener">myaccount.google.com/apppasswords</a>. Elissa nunca envía, borra ni marca correos como leídos.</p>
+      <button type="button" id="mail-save">Probar y guardar correo</button>
+      <p class="hint" id="mail-msg"></p>
+
+      <h3>Carpetas que puede leer</h3>
+      <ul id="folders"></ul>
+      <button type="button" id="folder-add">Agregar carpeta</button>
+
+      <h3>Memoria</h3>
+      <p class="hint small">Al terminar cada conversación, Elissa la resume y guarda lo importante. Atajo global: <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Espacio</kbd> para hablar o interrumpir; <kbd>Esc</kbd> para callarla.</p>
+      <button type="button" id="reset" class="danger">Nueva conversación</button>
+      <p class="hint small" id="version"></p>
+      <div id="update-row" class="stack" hidden>
+        <p class="hint ok" id="update-msg"></p>
+        <button type="button" id="update-btn" class="primary">Actualizar ahora</button>
+      </div>
+    </form>
+  </section>
+
+</div>
+  <script type="module" src="/static/app.js"></script>
+</body>
+</html>

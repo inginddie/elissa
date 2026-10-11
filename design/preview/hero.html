@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; width: 1600px; height: 720px; overflow: hidden; }
+  body { background: radial-gradient(ellipse at 50% 55%, #2a2058 0%, #17112f 45%, #0d0a1f 100%); }
+  /* faint dotted grid, like a desktop */
+  body::before { content: ''; position: absolute; inset: 0; opacity: .18;
+    background-image: radial-gradient(#9b8fe0 1px, transparent 1.2px); background-size: 28px 28px; }
+  canvas { position: absolute; width: 700px; height: 700px; left: 450px; top: 0px; }
+  .side { position: absolute; width: 330px; height: 330px; top: 240px; }
+</style>
+</head>
+<body>
+<canvas id="main"></canvas>
+<canvas id="l" class="side" style="left: 90px"></canvas>
+<canvas id="r" class="side" style="left: 1180px"></canvas>
+<script type="module">
+  // README hero: Elissa in the middle, listening on the left, happy on the right. Drawn by the app's own code.
+  import { Character } from '/elissa/static/character.js';
+  const freeze = (ch) => { ch.blink.next = Infinity; ch.nextGlance = Infinity; return ch; };
+  const main = freeze(new Character(document.getElementById('main')));
+  main.setState('idle');
+  const l = freeze(new Character(document.getElementById('l')));
+  l.levelSource = () => 0.7;
+  l.setState('listening');
+  const r = freeze(new Character(document.getElementById('r')));
+  r.setState('love');
+</script>
+</body>
+</html>

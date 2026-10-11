@@ -1,0 +1,26 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "engine",
+  "description": "The UI served by the local Python engine (127.0.0.1 only; the window never navigates elsewhere).",
+  "windows": [
+    "main"
+  ],
+  "remote": {
+    "urls": [
+      "http://127.0.0.1:*"
+    ]
+  },
+  "permissions": [
+    "core:event:default",
+    "core:window:allow-start-dragging",
+    "allow-set-mode",
+    "allow-set-pinned",
+    "allow-hide-window",
+    "allow-quit-app",
+    "allow-get-autostart",
+    "allow-set-autostart",
+    "allow-shell-info",
+    "allow-open-url",
+    "allow-install-update"
+  ]
+}

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-set-pinned"
+description = "Enables the set_pinned command without any pre-configured scope."
+commands.allow = ["set_pinned"]
+
+[[permission]]
+identifier = "deny-set-pinned"
+description = "Denies the set_pinned command without any pre-configured scope."
+commands.deny = ["set_pinned"]

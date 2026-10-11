@@ -1,0 +1,27 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# build output
+build/
+dist/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Desktop shell (Tauri)
+desktop/node_modules/
+desktop/src-tauri/target/
+desktop/src-tauri/gen/
+
+# Design scratch output
+design/out/
