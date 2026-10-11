@@ -141,20 +141,7 @@ powershell -File packaging\build.ps1      # engine (PyInstaller) + installer (Ta
 
 ### Architecture
 
-```
-┌──────────────── Elissa.exe (Tauri 2, Rust) ─────────────────┐
-│ transparent window · tray · global shortcut · autostart     │
-│ signed updates · global cursor feed · mic permission        │
-│   └─ WebView2 ── UI: character (canvas), sounds (Web Audio) │
-└───────────────┬─────────────────────────────────────────────┘
-                │ HTTP + WebSocket on 127.0.0.1, per-session token
-┌───────────────┴─────── elissa-engine.exe (Python) ──────────┐
-│ agent loop (streaming, tools, interruption, compaction)     │
-│ providers: OpenAI-compatible · Anthropic SDK                │
-│ tools: files · web · email (IMAP) · memory                  │
-│ speech: Edge TTS out · Groq / OpenAI / Whisper in           │
-└─────────────────────────────────────────────────────────────┘
-```
+<p align="center"><img src="docs/media/architecture.jpg" alt="Architecture: Elissa.exe (Tauri 2, Rust) with the transparent window, tray, global shortcut, autostart, signed updates, global cursor feed and microphone permission, hosting the WebView2 UI (character canvas and Web Audio sounds); it talks over HTTP and WebSocket on 127.0.0.1 with a per-session token to elissa-engine.exe (Python), which holds the agent loop, the providers (OpenAI-compatible and Anthropic SDK), the tools (files, web, IMAP email, memory) and speech (Edge TTS out; Groq, OpenAI or Whisper in)" width="100%"></p>
 
 | Path | What lives there |
 |---|---|

@@ -113,3 +113,10 @@ Estado (2026-10-11): hecho.
 - Palabra de activación en español con falsos positivos: apagada por defecto.
 - Ejecutables PyInstaller y falsos positivos de antivirus: firmar el instalador.
 - edge-tts es un servicio no oficial: respaldo con voces de Windows.
+
+## Backlog
+
+- CI: actualizar las acciones que aún usan Node 20 (`actions/checkout@v4`, `actions/setup-node@v4`,
+  `actions/upload-artifact@v4`, `astral-sh/setup-uv@v6`) a versiones con Node 24 antes de que GitHub retire Node 20
+  (aviso visto en la primera compilación, 2026-10-11).
+- Interfaz en inglés (F7) y revisar los modelos sugeridos por proveedor.

@@ -2,7 +2,7 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
-## [0.2.0] - sin publicar
+## [0.2.0] - 2026-10-11
 
 ### Añadido
 - Elissa tiene cuerpo: un personaje propio dibujado en código, con 14 expresiones, efectos y transiciones suaves.
