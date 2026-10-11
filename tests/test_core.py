@@ -140,3 +140,22 @@ def test_memory_title_ignores_echoed_template(tmp_path):
     index = CONV_INDEX.read_text("utf-8")
     assert "máx" not in index
     assert "TRM de hoy" in index
+
+
+def test_memory_drops_template_echoes_and_assistant_state():
+    from elissa.memory import _is_noise
+    assert _is_noise({"archivo": "slug-kebab-case", "name": "x", "contenido": "y"})
+    assert _is_noise({"archivo": "correo", "name": "Correo no configurado",
+                      "contenido": "No hay cuentas de correo configuradas en el dispositivo."})
+    assert _is_noise({"archivo": "quien-soy", "name": "¿Quién soy?", "contenido": "Mi nombre es Elissa y soy asistente."})
+    assert not _is_noise({"archivo": "usuario-diego", "name": "Nombre", "contenido": "El usuario se llama Diego."})
+    assert not _is_noise({"archivo": "mama", "name": "Mamá", "contenido": "La mamá de Diego no tiene correo."})
+
+
+def test_system_prompt_states_current_capabilities():
+    reg = ToolRegistry()
+    reg.add("buscar_correos", "x", "x", lambda: "", {})
+    agent = Agent(lambda: {"mail_user": "yo@gmail.com", "allowed_folders": ["C:/Users/yo"]}, lambda: None, reg,
+                  lambda: 1000)
+    prompt = agent.system_prompt()
+    assert "Correo: conectado (yo@gmail.com)" in prompt and "manda sobre cualquier recuerdo" in prompt

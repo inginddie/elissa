@@ -24,6 +24,7 @@ const MAX_LISTEN_MS = 60000;
 const CALIBRATE_MS = 300; // first part of each listen measures the room's background noise
 const MIC_IDLE_MS = 20000; // release the microphone (and Windows' mic indicator) after this long unused
 const MIN_VOICED_MS = 220;
+const BARGE_IN_MS = 350; // the user's voice over Elissa's for this long interrupts her
 
 let ws;
 let cfg = {};
@@ -61,6 +62,7 @@ function setState(s, statusText) {
   document.body.dataset.state = s;
   face.setState(s === 'transcribing' ? 'thinking' : s);
   activity();
+  if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'ui_state', state: s }));
   $('#status').textContent = statusText ?? STATUS[s];
   if (wasBusy && !BUSY.has(s)) keepOpen(REPLY_LINGER_MS); // leave the answer readable for a moment
   updateMode();
@@ -139,7 +141,7 @@ let micTimer = null;
 function scheduleMicRelease() {
   clearTimeout(micTimer);
   micTimer = setTimeout(() => {
-    if (!micStream || state === 'listening' || (cfg.continuous && !turnDone)) return;
+    if (!micStream || state === 'listening' || state === 'speaking' || (cfg.continuous && !turnDone)) return;
     micStream.getTracks().forEach((t) => t.stop());
     micProc.disconnect();
     micStream = micProc = null;
@@ -162,7 +164,14 @@ face.levelSource = () => {
 
 /* ---------- listening ---------- */
 
+let bargeMs = 0;
+
 function onMicFrame(data, ms) {
+  if (rec?.wav) rec.chunks.push(new Float32Array(data)); // copy: the node reuses its buffer
+  if (state === 'speaking' && cfg.barge_in) {
+    checkBargeIn(data, ms);
+    return;
+  }
   let s = 0;
   for (let i = 0; i < data.length; i++) s += data[i] * data[i];
   const rms = Math.sqrt(s / data.length);
@@ -185,6 +194,25 @@ function onMicFrame(data, ms) {
 }
 
 let starting = false;
+
+/**
+ * Talking over Elissa: the microphone level must stay well above both the room noise and what is left of her own
+ * voice after echo cancellation, for BARGE_IN_MS in a row.
+ */
+function checkBargeIn(data, ms) {
+  let s = 0;
+  for (let i = 0; i < data.length; i++) s += data[i] * data[i];
+  const rms = Math.sqrt(s / data.length);
+  const echo = outLevel() / 5; // outLevel() is scaled ×5 for the mouth animation
+  const loud = rms > Math.max(0.03, noiseFloor * 5) && rms > echo * 0.6;
+  bargeMs = loud ? bargeMs + ms : Math.max(0, bargeMs - ms);
+  if (bargeMs >= BARGE_IN_MS) {
+    bargeMs = 0;
+    interrupt();
+    setState('idle');
+    startListening();
+  }
+}
 
 async function startListening() {
   // Only one recording at a time: two recorders writing into one upload produce an invalid audio file.
@@ -215,10 +243,15 @@ async function startListening() {
 function startRecording() {
   const mine = []; // this recording's audio only, whatever else happens meanwhile
   chunks = mine;
-  rec = new MediaRecorder(micStream, { mimeType: 'audio/webm;codecs=opus' });
-  rec.chunks = mine;
-  rec.ondataavailable = (e) => e.data.size && mine.push(e.data);
-  rec.start(250);
+  if (sttService === 'local') {
+    // whisper.cpp reads WAV: keep the raw samples the microphone node already delivers
+    rec = { wav: true, chunks: mine, stop() { setTimeout(() => this.onstop?.(), 0); } };
+  } else {
+    rec = new MediaRecorder(micStream, { mimeType: 'audio/webm;codecs=opus' });
+    rec.chunks = mine;
+    rec.ondataavailable = (e) => e.data.size && mine.push(e.data);
+    rec.start(250);
+  }
   vad = { start: performance.now(), lastVoice: 0, voicedMs: 0, speech: false };
 }
 
@@ -244,7 +277,8 @@ function stopListening(send, manual = false) {
     setState('transcribing');
     try {
       const fd = new FormData();
-      fd.append('file', new Blob(r.chunks, { type: 'audio/webm' }), 'audio.webm');
+      if (r.wav) fd.append('file', encodeWav(r.chunks, actx.sampleRate), 'audio.wav');
+      else fd.append('file', new Blob(r.chunks, { type: 'audio/webm' }), 'audio.webm');
       const res = await fetch('/api/stt', { method: 'POST', body: fd });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -266,6 +300,39 @@ function stopListening(send, manual = false) {
   r.stop();
 }
 
+/** Float32 chunks at the context's rate -> 16 kHz mono 16-bit WAV (averaging down-sampler). */
+function encodeWav(chunks, rate) {
+  const total = chunks.reduce((n, c) => n + c.length, 0);
+  const ratio = rate / 16000;
+  const out = new Int16Array(Math.floor(total / ratio));
+  let pos = 0;
+  let acc = 0;
+  let count = 0;
+  let next = ratio;
+  let i = 0;
+  for (const c of chunks) {
+    for (const x of c) {
+      acc += x;
+      count++;
+      i++;
+      if (i >= next && pos < out.length) {
+        out[pos++] = Math.max(-1, Math.min(1, acc / count)) * 0x7fff;
+        acc = count = 0;
+        next += ratio;
+      }
+    }
+  }
+  const buf = new ArrayBuffer(44 + out.length * 2);
+  const v = new DataView(buf);
+  const str = (o, s) => [...s].forEach((ch, k) => v.setUint8(o + k, ch.charCodeAt(0)));
+  str(0, 'RIFF'); v.setUint32(4, 36 + out.length * 2, true); str(8, 'WAVE'); str(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, 16000, true);
+  v.setUint32(28, 32000, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); str(36, 'data');
+  v.setUint32(40, out.length * 2, true);
+  new Int16Array(buf, 44).set(out);
+  return new Blob([buf], { type: 'audio/wav' });
+}
+
 /* ---------- speaking ---------- */
 
 function enqueueSay(text) {
@@ -285,7 +352,11 @@ async function playNext() {
   }
   playing = true;
   const turn = currentTurn;
-  if (state !== 'speaking') setState('speaking');
+  if (state !== 'speaking') {
+    setState('speaking');
+    bargeMs = 0;
+    if (cfg.barge_in) ensureAudio(true).catch(() => {}); // listen while she talks
+  }
   const buf = await sayQueue.shift();
   if (turn !== currentTurn || !playing) return;
   if (!buf) return playNext();
@@ -450,6 +521,19 @@ function handle(m) {
       break;
     case 'attached':
       onAttached(m.paths || []);
+      break;
+    case 'wake':
+      if (!ready || approval || !['idle', 'waking', 'error'].includes(state)) break;
+      shell.show();
+      face.play('surprised', 350);
+      startListening();
+      break;
+    case 'stt_local_status':
+      showLocalStatus(m.status);
+      if (m.status === 'listo') refreshStt();
+      break;
+    case 'wake_status':
+      $('#wake-status').textContent = m.status && m.status !== 'apagado' ? `Estado: ${m.status}` : '';
       break;
     case 'error':
       if (m.turn !== undefined && m.turn !== currentTurn) break;
@@ -661,14 +745,28 @@ function applySettings(s) {
     : 'Sin configurar';
 }
 
-const STT_LABEL = { groq: 'Groq', openai: 'OpenAI', endpoint: 'tu servidor' };
+const STT_LABEL = { groq: 'Groq', openai: 'OpenAI', endpoint: 'tu servidor', local: 'tu PC (whisper.cpp)' };
+
+function showLocalStatus(status) {
+  $('#stt-local-status').textContent = status ? `Estado: ${status}` : '';
+}
 const STT_KEY_URL = { groq: 'https://console.groq.com/keys', openai: 'https://platform.openai.com/api-keys' };
+
+let sttService = null;
 
 async function refreshStt() {
   const { data } = await api('/api/stt/status');
   const service = data.service;
+  sttService = service;
+  $('#stt-local-row').hidden = cfg.stt !== 'local';
+  if (data.local) showLocalStatus(data.local.installed && !data.local.status ? 'listo' : data.local.status);
   const wanted = cfg.stt === 'auto' ? 'groq' : cfg.stt; // auto without any key: suggest Groq
   const needsKey = (cfg.stt === 'groq' || cfg.stt === 'openai') || (cfg.stt === 'auto' && !service);
+  if (cfg.stt === 'local') {
+    $('#stt-status').textContent = 'Lo que dices se transcribe en tu PC; nada sale a internet.';
+    $('#stt-key-row').hidden = true;
+    return;
+  }
   $('#stt-status').textContent = service
     ? `Usando ${STT_LABEL[service]} para entender tu voz.`
     : 'Falta configurar cómo entender tu voz: pega una API key de Groq (gratis para empezar) u OpenAI.';

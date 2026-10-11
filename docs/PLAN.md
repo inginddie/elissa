@@ -106,6 +106,18 @@ Estado (2026-10-11): hecho en código, falta la prueba visual de Diego.
 - Reconocimiento: Groq u OpenAI (nube, por defecto) o faster-whisper (local).
 - Voz: edge-tts con respaldo a las voces de Windows; interrupción mientras habla.
 
+Estado (2026-10-11): hecho en código, falta la prueba de Diego con su voz.
+- « Hola Elissa » / « Oye Elissa »: Vosk (modelo pequeño en español, 40 MB, descarga verificada con SHA-256) con una
+  gramática mínima y frases señuelo (« hola Melisa », « es Elisa »…) para evitar falsos positivos; solo procesa audio
+  cuando hay voz; se pausa mientras Elissa escucha o habla y con la sesión bloqueada. Apagado por defecto.
+  Probado con grabaciones sintéticas (`tests/audio`, se omiten en CI sin el modelo).
+- Reconocimiento local: whisper.cpp (build oficial b5454, 8,9 MB) + modelo base o small cuantizado, descargados a
+  pedido y verificados; servidor en puerto libre ligado a un job object; contexto de audio 512 (3x más rápido en CPU)
+  partiendo audios largos en silencios. 20 s de audio en ~3 s en el portátil de Diego. La ventana graba WAV 16 kHz.
+- Voces de Windows (SAPI) sin conexión: elegibles en la lista y respaldo automático si Edge falla.
+- Interrumpirla hablando (opcional, mejor con audífonos).
+- El motor crece a ~122 MB (las DLL de Vosk); el instalador ~45 MB.
+
 ## F5. Asistente de programación
 
 - Proyectos: leer, buscar, entender código; estado de git.

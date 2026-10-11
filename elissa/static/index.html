@@ -122,6 +122,7 @@
           <option value="auto">Automático</option>
           <option value="groq">Groq · muy rápido y económico</option>
           <option value="openai">OpenAI</option>
+          <option value="local">En tu PC · privado, sin internet</option>
           <option value="endpoint">Servidor propio (Whisper u otro compatible)</option>
         </select>
       </label>
@@ -133,7 +134,22 @@
         <div class="row"><button type="button" id="stt-key-save">Guardar clave de voz</button>
           <a id="stt-key-link" href="https://console.groq.com/keys" target="_blank" rel="noopener">¿Dónde la consigo?</a></div>
       </div>
+      <div id="stt-local-row" class="stack" hidden>
+        <label>Modelo local
+          <select name="stt_local_model">
+            <option value="base">Rápido · 60 MB</option>
+            <option value="small">Más preciso · 190 MB</option>
+          </select>
+        </label>
+        <p class="hint small" id="stt-local-status"></p>
+        <p class="hint small">Usa whisper.cpp en tu computador: lo que dices nunca sale de tu PC. Se descarga una sola vez.</p>
+      </div>
       <label id="stt-url-row">URL de transcripción <input name="stt_url" placeholder="http://127.0.0.1:2022/v1/audio/transcriptions"></label>
+      <label class="check"><input type="checkbox" name="wake_word"> Despertarla diciendo «Hola Elissa» u «Oye Elissa»</label>
+      <p class="hint small" id="wake-status"></p>
+      <p class="hint small">Funciona sin internet: nada de lo que escucha sale de tu PC hasta que la despiertas. Mientras esté activa,
+        Windows muestra el ícono del micrófono; se pausa sola con la pantalla bloqueada. La primera vez descarga un modelo de 40 MB.</p>
+      <label class="check"><input type="checkbox" name="barge_in"> Interrumpirla hablando mientras responde (mejor con audífonos)</label>
       <label class="check"><input type="checkbox" name="continuous"> Conversación continua</label>
       <label class="check"><input type="checkbox" name="pinned"> Siempre visible</label>
       <label class="check"><input type="checkbox" id="autostart"> Iniciar con Windows</label>

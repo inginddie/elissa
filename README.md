@@ -19,7 +19,7 @@
 
 ---
 
-Press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Space</kbd> from any app and talk. Elissa listens, thinks and answers out loud.
+Say **"Hola Elissa"**, or press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Space</kbd> from any app, and talk. Elissa listens, thinks and answers out loud.
 She can read your documents, search the web, handle your email, set reminders, use your apps and remember what you
 talked about. Anything that changes something waits for your click.
 You choose the brain: OpenAI, Claude, Gemini, OpenRouter, Groq, or a free local model with Ollama.
@@ -53,7 +53,8 @@ Elissa is drawn in code, not stitched from images, so she blends smoothly from o
 
 | | |
 |---|---|
-| 🗣️ **Talk** | Voice in, voice out, with natural Microsoft Edge voices. Interrupt her at any time, or keep the conversation going hands-free. |
+| 🗣️ **Talk** | Wake her with "Hola Elissa" (detected on your PC, offline). Voice in, voice out with natural Edge voices or offline Windows voices. Interrupt her by talking, or keep the conversation going hands-free. |
+| 🔒 **Private speech, if you want** | Speech recognition can run 100% on your PC with whisper.cpp (downloaded on demand), or in the cloud with Groq/OpenAI. |
 | ✋ **Act, with your OK** | Every action that changes something shows an approval card with exactly what will happen: the diff of a file, the full email, the button she'll click. Only your click approves it. |
 | 📄 **Files** | Find and read PDF, Word, Excel, CSV, text and code in the folders you allow; create, edit (with a diff), move and rename. Nothing is ever deleted. Drop a file on her to ask about it. |
 | 🖥️ **Use your computer** | Open apps, websites, files and folders. Read the window you're working in ("what is this?"), then click, type and press keys there. Password fields are never read. |
@@ -82,8 +83,9 @@ Elissa is drawn in code, not stitched from images, so she blends smoothly from o
 1. Download `Elissa_x.y.z_x64-setup.exe` from the [latest release](https://github.com/inginddie/elissa/releases).
 2. Run it. No administrator rights are needed.
 3. Pick an AI provider and paste your API key, or choose Ollama to run everything locally.
-4. To talk to her, open *Settings → Voice* and add a [Groq](https://console.groq.com/keys) or OpenAI key for speech
-   recognition, or point her at your own Whisper server.
+4. To talk to her, open *Settings → Voice* and pick how she understands you: a [Groq](https://console.groq.com/keys) or
+   OpenAI key, *On your PC* (private, offline, downloaded once), or your own Whisper server. Turn on "Hola Elissa" there
+   too.
 
 The installer is not code-signed yet, so Windows SmartScreen may warn you the first time. Choose *More info → Run anyway*.
 
@@ -110,7 +112,8 @@ The installer is not code-signed yet, so Windows SmartScreen may warn you the fi
   - What you say goes to the AI provider you picked.
   - Your voice audio goes to the speech service you picked.
   - Nothing else leaves your PC, and there is no telemetry.
-  - With Ollama and a local Whisper server, nothing leaves your PC at all.
+  - "Hola Elissa" is detected on your PC; nothing is sent anywhere until you wake her.
+  - With Ollama and on-PC speech recognition, nothing leaves your PC at all.
 - **Her engine is locked to her window.**
   - The local engine accepts only Elissa's own window, through a per-session token and an origin check.
   - A web page open in your browser cannot drive her.
@@ -127,8 +130,8 @@ The installer is not code-signed yet, so Windows SmartScreen may warn you the fi
 | Native window, tray, signed auto-updates | F1 | ✅ |
 | Character, animations, sounds | F2 | ✅ |
 | Actions with approval cards: open apps and sites, timers, tasks, send email, edit files, use the computer | F4 | ✅ |
-| Voice: "Hola Elissa" wake word, local speech recognition | F3 | 🔜 |
-| Coding assistant: understand projects, edit with diffs, run commands | F5 | |
+| Voice: "Hola Elissa" wake word, local speech recognition | F3 | ✅ |
+| Coding assistant: understand projects, edit with diffs, run commands | F5 | 🔜 |
 | Integrations through MCP: Jira, Confluence, GitHub, calendars | F6 | |
 | English UI, signed installer, 1.0 | F7 | |
 

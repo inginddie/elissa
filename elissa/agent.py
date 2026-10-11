@@ -74,7 +74,21 @@ class Agent:
     def system_prompt(self) -> str:
         s = self.settings()
         user = f" para {s['user_name']}" if s.get("user_name") else ""
-        return PERSONA.format(name=s.get("name") or "Elissa", user=user) + prompt_section()
+        return PERSONA.format(name=s.get("name") or "Elissa", user=user) + self.capabilities(s) + prompt_section()
+
+    def capabilities(self, s: dict) -> str:
+        """What is set up right now, so stale memories ("no mail configured") never win over the real state."""
+        names = {t.name for t in self.tools.specs()}
+        mail = (f"conectado ({s.get('mail_user')}); " + ("puedes enviar con aprobación" if "enviar_correo" in names
+                else "solo lectura: enviar está apagado en Ajustes → Correo")) if "buscar_correos" in names \
+            else "no configurado (el usuario lo activa en Ajustes → Correo)"
+        computer = "sí, con aprobación" if "leer_ventana" in names else "apagado en Ajustes"
+        return f"""
+# Lo que tienes activo ahora (manda sobre cualquier recuerdo)
+- Correo: {mail}
+- Usar otras ventanas: {computer}
+- Carpetas que puedes usar: {', '.join(s.get('allowed_folders') or []) or 'ninguna'}
+"""
 
     async def run_turn(self, text: str, emit: Emit) -> str:
         provider = self.provider()  # raises LLMError if not configured

@@ -18,7 +18,7 @@ hiddenimports = (
 # when uiautomation is first imported, so the build imports it before collecting.
 import uiautomation  # noqa: E402,F401
 
-for pkg in ("ddgs", "primp", "edge_tts", "uiautomation", "comtypes"):
+for pkg in ("ddgs", "primp", "edge_tts", "uiautomation", "comtypes", "vosk", "sounddevice", "_sounddevice_data"):
     d, b, h = collect_all(pkg)
     datas += d
     binaries += b

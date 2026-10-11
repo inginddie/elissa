@@ -20,7 +20,7 @@ from fastapi import FastAPI, Request, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from . import __version__, winutil
+from . import __version__, windows_tts, winutil
 from .agent import Agent
 from .config import (DEFAULTS, HOME, SOUNDS_DIR, STATIC, api_key_name, get_secret, load_settings, save_settings,
                      set_secret)
@@ -43,6 +43,9 @@ from .tools.mail_send import register as register_mail_send
 from .tools.planner import Planner
 from .tools.planner import register as register_planner
 from .tools.web import register as register_web
+from .local_stt import MODELS as LOCAL_MODELS
+from .local_stt import LocalWhisper, split_wav
+from .wake import WakeListener
 
 log = logging.getLogger("elissa")
 
@@ -124,6 +127,10 @@ class Brain:
         self.planner = Planner(HOME)
         self.handed_over: set[str] = set()  # files dropped on Elissa during this conversation
         self.desktop = Desktop(lambda: {os.getpid(), PARENT_PID})
+        self.loop: asyncio.AbstractEventLoop | None = None
+        self.wake = WakeListener(HOME / "models", self._on_wake, self._on_wake_status)
+        self.local_stt = LocalWhisper(HOME / "models",
+                                      lambda status: self._from_thread({"type": "stt_local_status", "status": status}))
         self.rebuild_tools()
         self.agent = Agent(lambda: self.settings, self.provider, self.tools, self.budget)
         self.turn = 0
@@ -251,6 +258,18 @@ class Brain:
                 accepted.append(str(p))
         return accepted
 
+    # ----- wake phrase (runs in its own thread) -----
+
+    def _from_thread(self, msg: dict) -> None:
+        if self.loop:
+            asyncio.run_coroutine_threadsafe(self.hub.broadcast(msg), self.loop)
+
+    def _on_wake(self) -> None:
+        self._from_thread({"type": "wake"})
+
+    def _on_wake_status(self, status: str) -> None:
+        self._from_thread({"type": "wake_status", "status": status})
+
     # ----- approvals -----
 
     async def request_approval(self, tool: str, card: dict) -> bool:
@@ -333,6 +352,10 @@ async def watchdog() -> None:
 async def lifespan(app: FastAPI):
     brain = Brain(hub)
     state["brain"] = brain
+    brain.loop = asyncio.get_running_loop()
+    brain.wake.set_enabled(bool(brain.settings.get("wake_word")))
+    if brain.settings.get("stt") == "local":
+        prepare_local_stt(brain)  # warm up, so the first sentence isn't slow
     tasks = [asyncio.create_task(watchdog()), asyncio.create_task(brain.memory.recover()),
              asyncio.create_task(reminder_loop())]
     if PARENT_PID:
@@ -372,28 +395,84 @@ async def index(request: Request, t: str = ""):
 
 # ----- voice -----
 
-@app.get("/api/tts")
-async def tts(text: str):
-    s = state["brain"].settings
-    rate = f"{round((float(s['speed']) - 1) * 100):+d}%"
+WINDOWS_VOICE = "windows:"  # voice ids for the offline Windows voices
+EDGE_TIMEOUT_S = 12
+
+
+async def _edge_tts(text: str, voice: str, speed: float) -> bytes:
+    rate = f"{round((speed - 1) * 100):+d}%"
     audio = bytearray()
-    async for chunk in edge_tts.Communicate(text, s["voice"], rate=rate).stream():
+    async for chunk in edge_tts.Communicate(text, voice, rate=rate).stream():
         if chunk["type"] == "audio":
             audio += chunk["data"]
-    return Response(bytes(audio), media_type="audio/mpeg")
+    if not audio:
+        raise RuntimeError("Edge TTS returned no audio")
+    return bytes(audio)
+
+
+@app.get("/api/tts")
+async def tts(text: str):
+    """Speech for a sentence: the chosen Edge voice, or a Windows voice (offline). If Edge can't be reached, the
+    Windows voice answers instead of leaving Elissa mute."""
+    s = state["brain"].settings
+    voice, speed = s.get("voice", ""), float(s.get("speed", 1.0))
+    if not voice.startswith(WINDOWS_VOICE):
+        try:
+            audio = await asyncio.wait_for(_edge_tts(text, voice, speed), EDGE_TIMEOUT_S)
+            return Response(audio, media_type="audio/mpeg")
+        except Exception as e:
+            log.warning("Edge voice failed (%s); using the Windows voice", e)
+            voice = ""
+    wav = await asyncio.to_thread(windows_tts.synthesize, text, voice.removeprefix(WINDOWS_VOICE), speed)
+    return Response(wav, media_type="audio/wav")
 
 
 @app.get("/api/voices")
 async def voices():
     lang = state["brain"].settings.get("language", "es-CO")[:2]
-    found = await edge_tts.list_voices()
-    return sorted(({"id": v["ShortName"], "label": f"{v['ShortName'].split('-')[-1].replace('Neural', '')} "
-                    f"({v['Locale']}, {'mujer' if v['Gender'] == 'Female' else 'hombre'})"}
-                   for v in found if v["Locale"].startswith(lang)), key=lambda v: v["id"])
+    out = []
+    try:
+        found = await asyncio.wait_for(edge_tts.list_voices(), EDGE_TIMEOUT_S)
+        out = sorted(({"id": v["ShortName"], "label": f"{v['ShortName'].split('-')[-1].replace('Neural', '')} "
+                       f"({v['Locale']}, {'mujer' if v['Gender'] == 'Female' else 'hombre'})"}
+                      for v in found if v["Locale"].startswith(lang)), key=lambda v: v["id"])
+    except Exception as e:
+        log.warning("could not list Edge voices: %s", e)
+    try:
+        for v in await asyncio.to_thread(windows_tts.list_voices):
+            spanish = v["lang"].upper() in windows_tts.SPANISH
+            if spanish or lang != "es":
+                short = v["name"].replace("Microsoft ", "").replace(" Desktop", "")
+                out.append({"id": WINDOWS_VOICE + v["name"], "label": f"{short} · Windows, sin conexión"})
+    except Exception as e:
+        log.warning("could not list Windows voices: %s", e)
+    return out
 
 
 MIN_AUDIO_BYTES = 1500
 WEBM_MAGIC = bytes.fromhex("1a45dfa3")  # EBML header every WebM recording starts with
+
+
+async def transcribe_locally(audio: bytes, s: dict):
+    if len(audio) < MIN_AUDIO_BYTES:
+        return {"text": ""}
+    if not audio.startswith(b"RIFF"):
+        return JSONResponse({"error": "No pude procesar el audio; intenta de nuevo."}, 422)
+    brain: Brain = state["brain"]
+    try:
+        url = await asyncio.to_thread(brain.local_stt.url, s.get("stt_local_model", "base"))
+        texts = []
+        async with httpx.AsyncClient(timeout=120) as client:
+            for piece in await asyncio.to_thread(split_wav, audio):
+                r = await client.post(url, data={"response_format": "json", "language": s.get("language", "es")[:2]},
+                                      files={"file": ("audio.wav", piece, "audio/wav")})
+                r.raise_for_status()
+                texts.append(r.json().get("text", "").strip())
+    except Exception as e:
+        log.warning("local stt failed: %s", e)
+        return JSONResponse({"error": f"El reconocimiento local falló: {e}"}, 502)
+    text = " ".join(t for t in texts if t).strip()
+    return {"text": "" if HALLUCINATIONS.match(text) or len(text) < 2 else text}
 
 
 def stt_error_message(status: int, body: str) -> str:
@@ -415,18 +494,42 @@ def stt_service(s: dict) -> str | None:
     for name in [s.get("provider")] + list(STT_SERVICES):
         if name in STT_SERVICES and get_secret(api_key_name(name)):
             return name
-    return "endpoint" if s.get("stt_url") else None
+    if s.get("stt_url"):
+        return "endpoint"
+    brain = state.get("brain")
+    if brain and brain.local_stt.installed(s.get("stt_local_model", "base")):
+        return "local"
+    return None
+
+
+def prepare_local_stt(brain: "Brain") -> None:
+    """Downloads (if needed) and starts local recognition in the background, reporting progress to the window."""
+    key = brain.settings.get("stt_local_model", "base")
+
+    def work():
+        try:
+            brain.local_stt.url(key)
+        except Exception as e:
+            log.warning("local speech recognition unavailable: %s", e)
+            brain._from_thread({"type": "stt_local_status", "status": f"error: {e}"})
+    threading.Thread(target=work, name="local-stt", daemon=True).start()
 
 
 @app.get("/api/stt/status")
 async def stt_status():
-    return {"service": stt_service(state["brain"].settings)}
+    brain: Brain = state["brain"]
+    key = brain.settings.get("stt_local_model", "base")
+    return {"service": stt_service(brain.settings),
+            "local": {"installed": brain.local_stt.installed(key), "status": brain.local_stt.status,
+                      "models": {k: v[2] for k, v in LOCAL_MODELS.items()}}}
 
 
 @app.post("/api/stt")
 async def stt(file: UploadFile):
     s = state["brain"].settings
     service = stt_service(s)
+    if service == "local":
+        return await transcribe_locally(await file.read(), s)
     data = {"response_format": "json", "language": s.get("language", "es")[:2]}
     headers = {}
     if service in STT_SERVICES:
@@ -505,6 +608,10 @@ async def set_settings(changes: dict):
     save_settings(brain.settings)
     if {"allowed_folders", "mail_enabled", "mail_send", "computer_use"} & changes.keys():
         brain.rebuild_tools()
+    if "wake_word" in changes:
+        brain.wake.set_enabled(bool(brain.settings["wake_word"]))
+    if brain.settings.get("stt") == "local" and {"stt", "stt_local_model"} & changes.keys():
+        prepare_local_stt(brain)
     await hub.broadcast({"type": "settings", "settings": brain.settings})
     return brain.settings
 
@@ -613,6 +720,7 @@ async def ws_endpoint(ws: WebSocket):
     brain: Brain = state["brain"]
     await ws.send_text(json.dumps({"type": "settings", "settings": brain.settings}, ensure_ascii=False))
     await ws.send_text(json.dumps(brain.status()))
+    await ws.send_text(json.dumps({"type": "wake_status", "status": brain.wake.status}, ensure_ascii=False))
     try:
         while True:
             msg = json.loads(await ws.receive_text())
@@ -622,6 +730,9 @@ async def ws_endpoint(ws: WebSocket):
             elif kind == "interrupt":
                 log.info("interrupt requested by the window")
                 await brain.interrupt()
+            elif kind == "ui_state":
+                # the wake phrase pauses while Elissa herself listens or speaks
+                brain.wake.busy = msg.get("state") in ("listening", "transcribing", "speaking")
             elif kind == "client_error":
                 log.warning("window error: %s", str(msg.get("message", ""))[:500])
             elif kind == "attach":

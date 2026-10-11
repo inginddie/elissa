@@ -139,3 +139,33 @@ def test_stt_rejects_empty_and_corrupt_audio_without_calling_the_service(client,
 def test_stt_error_messages_are_plain():
     assert "API key" in server.stt_error_message(401, "")
     assert "audio" in server.stt_error_message(400, '{"code":"invalid_media_file"}')
+
+
+def test_tts_falls_back_to_the_windows_voice(client, monkeypatch):
+    async def edge_down(*a):
+        raise OSError("sin internet")
+
+    spoken = []
+    monkeypatch.setattr(server, "_edge_tts", edge_down)
+    monkeypatch.setattr(server.windows_tts, "synthesize", lambda text, name, rate: spoken.append((text, name)) or b"RIFFwav")
+    client.get("/?t=test-token")
+    r = client.get("/api/tts", params={"text": "hola"})
+    assert r.status_code == 200 and r.headers["content-type"] == "audio/wav" and spoken == [("hola", "")]
+    client.post("/api/settings", json={"voice": "windows:Microsoft Sabina Desktop - Spanish (Mexico)"})
+    client.get("/api/tts", params={"text": "chao"})
+    assert spoken[-1] == ("chao", "Microsoft Sabina Desktop - Spanish (Mexico)")
+
+
+def test_local_stt_route(client, monkeypatch):
+    seen = []
+
+    async def fake_local(audio, s):
+        seen.append(audio[:4])
+        return {"text": "hola"}
+
+    monkeypatch.setattr(server, "transcribe_locally", fake_local)
+    monkeypatch.setattr(server, "prepare_local_stt", lambda brain: None)  # no downloads in tests
+    client.get("/?t=test-token")
+    client.post("/api/settings", json={"stt": "local"})
+    r = client.post("/api/stt", files={"file": ("audio.wav", b"RIFF" + b"0" * 3000, "audio/wav")})
+    assert r.json() == {"text": "hola"} and seen == [b"RIFF"]

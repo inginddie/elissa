@@ -70,6 +70,11 @@ def selftest() -> int:
         d.save(path)
         return extract_text(path).strip()
 
+    def microphone():
+        import sounddevice
+        import vosk  # noqa: F401  (wake phrase engine is bundled)
+        return f"{len([d for d in sounddevice.query_devices() if d['max_input_channels'] > 0])} entradas de audio"
+
     def windows():
         import uiautomation as auto
         return f"{len(auto.GetRootControl().GetChildren())} ventanas"
@@ -79,6 +84,7 @@ def selftest() -> int:
     check("keyring", roundtrip)
     check("documentos", office)
     check("ventanas", windows)
+    check("microfono", microphone)
     for name, result in checks.items():
         logging.info("selftest %s: %s", name, result)
     (LOG_DIR / "selftest.txt").write_text("\n".join(f"{k}: {v}" for k, v in checks.items()), "utf-8")

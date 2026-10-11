@@ -2,6 +2,21 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [0.4.0] - 2026-10-11
+
+### Añadido
+- « Hola Elissa » y « Oye Elissa » para despertarla sin tocar nada. Funciona sin internet: nada de lo que escucha sale
+  de tu PC hasta que la despiertas. Se activa en Ajustes → Voz y se pausa con la pantalla bloqueada.
+- Reconocimiento de voz en tu PC (whisper.cpp): privado, sin API key ni internet. Se descarga una sola vez, en versión
+  rápida (60 MB) o más precisa (190 MB).
+- Voces de Windows sin conexión, y respaldo automático si la voz de Edge no responde.
+- Interrumpirla hablando mientras responde (opcional; mejor con audífonos).
+
+### Corregido
+- Elissa decía que el correo no estaba configurado aunque sí lo estaba: había guardado ese estado como recuerdo.
+  La memoria ya no guarda estados del propio asistente, en cada turno sabe qué tiene activo de verdad y descarta
+  recuerdos que copian la plantilla.
+
 ## [0.3.0] - 2026-10-11
 
 ### Añadido

@@ -52,11 +52,14 @@ DEFAULTS = {
     # voice
     "voice": "es-CO-SalomeNeural",
     "speed": 1.1,
-    "stt": "auto",             # auto | openai | groq | endpoint (auto: first cloud key available, else endpoint)
+    "stt": "auto",             # auto | openai | groq | local | endpoint (auto: a cloud key, else endpoint, else local)
+    "stt_local_model": "base", # whisper.cpp model when stt == local: base | small
     "stt_url": "",             # OpenAI-compatible /audio/transcriptions endpoint when stt == endpoint
     "language": "es-CO",
     # behaviour
     "continuous": True,
+    "wake_word": False,
+    "barge_in": False,         # talking over Elissa interrupts her (best with headphones)        # « Hola Elissa »: local wake phrase (keeps the microphone open)
     "pinned": True,
     "sounds": True,
     "sound_volume": 0.6,
@@ -75,7 +78,7 @@ def load_settings() -> dict:
     if SETTINGS_FILE.exists():
         stored = json.loads(SETTINGS_FILE.read_text("utf-8"))
         settings.update({k: v for k, v in stored.items() if k in DEFAULTS})
-    if settings["stt"] not in ("auto", "openai", "groq", "endpoint"):  # v0.1 used Edge's recognizer
+    if settings["stt"] not in ("auto", "openai", "groq", "local", "endpoint"):  # v0.1 used Edge's recognizer
         settings["stt"] = "endpoint" if settings["stt_url"] else "auto"
     return settings
 

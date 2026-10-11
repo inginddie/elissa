@@ -1,6 +1,6 @@
 [package]
 name = "elissa"
-version = "0.3.0"
+version = "0.4.0"
 description = "Elissa, asistente de escritorio"
 authors = ["Diego Bustos"]
 license = "MIT"
