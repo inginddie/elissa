@@ -14,11 +14,13 @@ Capabilities:
 - command: run shell commands in a project
 - agent_hooks: alerts from Claude Code / Codex hooks
 """
+import subprocess
 import sys
 
 import psutil
 
 IS_WINDOWS = sys.platform == "win32"
+NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)  # creationflags: no console window for child processes
 IS_MAC = sys.platform == "darwin"
 IS_LINUX = sys.platform.startswith("linux")
 NAME = "windows" if IS_WINDOWS else "macos" if IS_MAC else "linux"

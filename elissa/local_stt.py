@@ -21,6 +21,8 @@ from typing import Callable
 
 import httpx
 
+from . import system
+
 log = logging.getLogger(__name__)
 
 SERVER_URL = "https://github.com/ggml-org/whisper.cpp/releases/download/b5454/whisper-bin-x64.zip"
@@ -160,7 +162,7 @@ class LocalWhisper:
                 [str(exe), "-m", str(self.model_file(key)), "-l", "es", "-t", str(threads), "-ac", str(AUDIO_CTX),
                  "--host", "127.0.0.1", "--port", str(self.port)],
                 cwd=str(exe.parent), stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                creationflags=subprocess.CREATE_NO_WINDOW)
+                creationflags=system.NO_WINDOW)
             try:
                 self._job = self._job or system.ChildGuard()
                 self._job.add(self.proc)

@@ -130,7 +130,7 @@ class CodeTools:
                 args += ["-g", glob]
             args += ["--", pattern, str(root)]
             out = subprocess.run(args, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                                 timeout=30, creationflags=subprocess.CREATE_NO_WINDOW).stdout.splitlines()
+                                 timeout=30, creationflags=system.NO_WINDOW).stdout.splitlines()
         else:
             out = self._search_python(root, pattern, glob, regex, limit)
         out = out[:limit]
@@ -187,7 +187,7 @@ class CodeTools:
         parts = []
         for args in commands[action]:
             r = subprocess.run([git, "-C", str(root), *args], capture_output=True, text=True, encoding="utf-8",
-                               errors="replace", timeout=30, creationflags=subprocess.CREATE_NO_WINDOW)
+                               errors="replace", timeout=30, creationflags=system.NO_WINDOW)
             parts.append((r.stdout or r.stderr).strip())
         return _clip("\n\n".join(p for p in parts if p) or "(sin cambios)")
 
@@ -211,13 +211,13 @@ class CodeTools:
             ["powershell", "-NoProfile", "-NonInteractive", "-Command",
              "[Console]::OutputEncoding=[Text.Encoding]::UTF8; " + command],
             cwd=str(cwd), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
-            creationflags=subprocess.CREATE_NO_WINDOW)
+            creationflags=system.NO_WINDOW)
         try:
             raw, _ = proc.communicate(timeout=timeout)
             status = f"Terminó con código {proc.returncode}."
         except subprocess.TimeoutExpired:
             subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)], capture_output=True,
-                           creationflags=subprocess.CREATE_NO_WINDOW)
+                           creationflags=system.NO_WINDOW)
             raw, _ = proc.communicate()
             status = f"Lo detuve: pasó de {timeout} s."
         out = raw.decode("utf-8", errors="replace").strip()
