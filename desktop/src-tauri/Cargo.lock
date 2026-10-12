@@ -922,7 +922,9 @@ dependencies = [
  "tauri-plugin-updater",
  "tokio",
  "uuid",
+ "webkit2gtk",
  "windows-sys 0.61.2",
+ "x11rb",
 ]
 
 [[package]]

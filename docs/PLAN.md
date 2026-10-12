@@ -169,6 +169,9 @@ F8.1 publicada en 1.4.0. F8.2 en la rama `f8-macos` (1.5.0): cursor global (core
 por AppleScript (Spotify, Música), volumen y ducking de esos reproductores, voces `say` (`offline_voice.py`),
 bloqueo de sesión (CoreGraphics), comandos en zsh con reglas de bloqueo de Unix, `notify.sh`, Ajustes por
 capacidades (`/api/system`, `data-cap`, `data-os`). STT local y uso del computador pasan a F8.4.
+F8.2 publicada en 1.5.0. F8.3 en la rama `f8-linux` (1.6.0): MPRIS por D-Bus (jeepney), volumen y ducking por
+app con `pactl` (PulseAudio/PipeWire), espeak-ng, apps `.desktop` (XDG, Flatpak, Snap), logind `LockedHint`, cursor
+X11 (x11rb), micrófono en WebKitGTK (`enable-media-stream` + permiso solo al motor). Capacidades según lo instalado.
 Decisiones de Diego (2026-10-12): **macOS primero**, **sin cuenta de Apple Developer**, pruebas en un Mac físico y en
 un Linux en máquina virtual.
 

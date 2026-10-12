@@ -1,8 +1,8 @@
 """Volume: the system volume, and lowering other apps (ducking) while Elissa listens and answers.
 
 Ducking lowers every app that is playing (Spotify, a browser, a game…) to a fraction of its own volume, never Elissa
-herself, and gives each one back its volume afterwards. macOS has no per-app volume: there it lowers the players it
-can talk to (Spotify, Music) through their own volume. Safety rules: an app whose volume the user changed meanwhile
+herself, and gives each one back its volume afterwards. On Linux that goes through PulseAudio/PipeWire (pactl).
+macOS has no per-app volume: there it lowers the players it can talk to (Spotify, Music) through their own volume. Safety rules: an app whose volume the user changed meanwhile
 is left alone, and the volume always comes back when the conversation ends, the window goes away, the engine exits,
 or after MAX_DUCK_S at the latest.
 
@@ -30,6 +30,12 @@ def _init_com() -> None:
     except ImportError:  # not Windows: nothing to initialize (and no mixer capability)
         return
     comtypes.CoInitialize()
+
+
+def _native():
+    """The system module with get_volume/set_volume (macOS, Linux)."""
+    from .system import linux, macos
+    return macos if system.IS_MAC else linux
 
 
 class Mixer:
@@ -67,15 +73,13 @@ class Mixer:
         return self._get_volume()
 
     async def volume(self) -> dict:
-        if system.IS_MAC:
-            from .system import macos
-            return await asyncio.to_thread(macos.get_volume)
+        if not system.IS_WINDOWS:
+            return await asyncio.to_thread(_native().get_volume)
         return await self._run(self._get_volume)
 
     async def set_volume(self, percent: int | None = None, delta: int | None = None, mute: bool | None = None) -> dict:
-        if system.IS_MAC:
-            from .system import macos
-            return await asyncio.to_thread(macos.set_volume, percent, delta, mute)
+        if not system.IS_WINDOWS:
+            return await asyncio.to_thread(_native().set_volume, percent, delta, mute)
         return await self._run(self._set_volume, percent, delta, mute)
 
     # ----- ducking -----
@@ -87,6 +91,8 @@ class Mixer:
     def _duck(self, level: float) -> int:
         if system.IS_MAC:
             return self._duck_players(level)
+        if system.IS_LINUX:
+            return self._duck_sink_inputs(level)
         own = self.own_pids()
         count = 0
         for s in self._sessions():
@@ -108,6 +114,8 @@ class Mixer:
     def _restore(self) -> int:
         if system.IS_MAC:
             return self._restore_players()
+        if system.IS_LINUX:
+            return self._restore_sink_inputs()
         count = 0
         for s in self._sessions():
             entry = self._ducked.get(s.ProcessId)
@@ -144,6 +152,34 @@ class Mixer:
             current = macos.player_volume(app)
             if current is not None and abs(current - target) <= 1:  # the user didn't change it meanwhile
                 macos.set_player_volume(app, original)
+                count += 1
+        self._ducked.clear()
+        return count
+
+    # Linux: each app's stream (sink input) in PulseAudio/PipeWire, keyed by its index; volumes in percent
+
+    def _duck_sink_inputs(self, level: float) -> int:
+        from .system import linux
+        own = self.own_pids()
+        count = 0
+        for s in linux.sink_inputs():
+            if not s["playing"] or s["pid"] in own or s["index"] in self._ducked or s["volume"] <= 0:
+                continue
+            target = round(s["volume"] * level)
+            linux.set_sink_input_volume(s["index"], target)
+            self._ducked[s["index"]] = (s["volume"], target)
+            count += 1
+        if count:
+            self._since = time.monotonic()
+        return count
+
+    def _restore_sink_inputs(self) -> int:
+        from .system import linux
+        current = {s["index"]: s["volume"] for s in linux.sink_inputs()}
+        count = 0
+        for index, (original, target) in self._ducked.items():
+            if index in current and abs(current[index] - target) <= 1:  # the user didn't change it meanwhile
+                linux.set_sink_input_volume(index, original)
                 count += 1
         self._ducked.clear()
         return count

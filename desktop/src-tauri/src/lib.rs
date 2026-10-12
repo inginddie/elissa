@@ -284,9 +284,23 @@ fn global_cursor() -> Option<(i32, i32)> {
     Some((p.x as i32, p.y as i32))
 }
 
+/// Linux: X11 (also XWayland). A pure Wayland session doesn't expose the global cursor: the eyes stay put.
 #[cfg(all(not(windows), not(target_os = "macos")))]
 fn global_cursor() -> Option<(i32, i32)> {
-    None // Linux: F8.3 (X11); Wayland doesn't expose the global cursor
+    use std::sync::OnceLock;
+    use x11rb::connection::Connection;
+    use x11rb::protocol::xproto::ConnectionExt;
+    use x11rb::rust_connection::RustConnection;
+    static X: OnceLock<Option<(RustConnection, u32)>> = OnceLock::new();
+    let (conn, root) = X
+        .get_or_init(|| {
+            let (conn, screen) = x11rb::connect(None).ok()?;
+            let root = conn.setup().roots.get(screen)?.root;
+            Some((conn, root))
+        })
+        .as_ref()?;
+    let p = conn.query_pointer(*root).ok()?.reply().ok()?;
+    Some((p.root_x as i32, p.root_y as i32))
 }
 
 /// Feeds the global cursor position (relative to the window, in CSS pixels) to the page, so Elissa's eyes can
@@ -453,6 +467,34 @@ fn open_in_browser(url: &str) -> Result<(), String> {
     Command::new("xdg-open").arg(url).spawn().map(|_| ()).map_err(|e| e.to_string())
 }
 
+/// WebKitGTK ships with getUserMedia off and asks through its own signal: turn it on and grant the microphone
+/// (only that, and only to this launch's engine page), like on_permission_request does on the other systems.
+#[cfg(target_os = "linux")]
+fn allow_microphone_on_linux(window: &tauri::WebviewWindow, port: u16) {
+    let _ = window.with_webview(move |w| {
+        use webkit2gtk::glib::prelude::*;
+        use webkit2gtk::{PermissionRequestExt, SettingsExt, UserMediaPermissionRequest, WebViewExt};
+        let view = w.inner();
+        if let Some(settings) = WebViewExt::settings(&view) {
+            settings.set_enable_media_stream(true);
+        }
+        view.connect_permission_request(move |view, request| {
+            let ours = view
+                .uri()
+                .and_then(|u| Url::parse(u.as_str()).ok())
+                .map(|u| u.host_str() == Some("127.0.0.1") && u.port() == Some(port))
+                .unwrap_or(false);
+            match request.downcast_ref::<UserMediaPermissionRequest>() {
+                Some(media) if ours && !webkit2gtk::UserMediaPermissionRequestExt::is_for_video_device(media) => {
+                    request.allow()
+                }
+                _ => request.deny(),
+            }
+            true
+        });
+    });
+}
+
 // ----- app -----
 
 fn build_tray(app: &AppHandle) -> tauri::Result<()> {
@@ -615,6 +657,8 @@ pub fn run() {
                     }
                 })
                 .build()?;
+            #[cfg(target_os = "linux")]
+            allow_microphone_on_linux(&window, port);
             place_bottom_right(&window, "compact");
             let moved = window.clone();
             window.on_window_event(move |event| {
