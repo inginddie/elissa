@@ -83,6 +83,10 @@ Elissa is drawn in code, not stitched from images, so she blends smoothly from o
 
 ## Install
 
+Elissa runs on **Windows**, and as a preview on **macOS** (Apple Silicon) and **Linux** (see what works there below).
+
+### Windows
+
 1. Download `Elissa_x.y.z_x64-setup.exe` from the [latest release](https://github.com/inginddie/elissa/releases).
 2. Run it. No administrator rights are needed.
 3. Pick an AI provider and paste your API key, or choose Ollama to run everything locally.
@@ -97,6 +101,25 @@ Every release is built and self-tested by GitHub Actions from this repository's 
 See the [code signing policy](docs/CODE_SIGNING.md) and the [privacy policy](PRIVACY.md).
 
 **Requirements:** Windows 10 (1809+) or Windows 11, 64-bit, with WebView2 (built into Windows 11), a microphone and speakers.
+
+### macOS (preview, Apple Silicon)
+
+1. Download `Elissa_x.y.z_aarch64.dmg` from the [latest release](https://github.com/inginddie/elissa/releases), open it and
+   drag Elissa to *Applications*.
+2. The app isn't notarized by Apple, so the first time macOS won't open it. Go to *System Settings → Privacy &
+   Security*, scroll down and choose **Open Anyway**. (Or run `xattr -dr com.apple.quarantine /Applications/Elissa.app`.)
+3. Allow the microphone when she asks. After an update macOS may ask again.
+
+### Linux (preview)
+
+Download the `.deb` (Ubuntu, Debian and derivatives: `sudo apt install ./Elissa_x.y.z_amd64.deb`) or the `.AppImage`
+(any distribution; make it executable and run it; it needs `libportaudio2` for the microphone).
+
+### What the macOS and Linux previews do
+
+Talking with the shortcut or by voice through a cloud speech service, chat, files, web search, memory, reminders,
+Spotify, MCP integrations and opening apps (macOS). Coming next: music control and "what's playing?", turning other
+apps down while you talk, offline voices, on-PC speech recognition, using other windows and terminal commands.
 
 ### Everyday use
 

@@ -2,6 +2,17 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [1.4.0] - 2026-10-12
+
+### Añadido
+- Vista previa para **macOS** (Apple Silicon, `.dmg`) y **Linux** (`.deb` y AppImage), con actualizaciones
+  automáticas. Funcionan: hablarle con el atajo o la voz (reconocimiento en la nube), chat, archivos, búsqueda web,
+  memoria, recordatorios, Spotify, integraciones MCP y abrir apps (macOS). En macOS la app no está notarizada: la
+  primera vez se abre desde Ajustes del Sistema → Privacidad y seguridad → « Abrir igualmente ».
+
+### Cambiado
+- Por dentro, todo lo que depende del sistema operativo pasa por una sola capa (Windows sigue igual).
+
 ## [1.3.0] - 2026-10-12
 
 ### Añadido
