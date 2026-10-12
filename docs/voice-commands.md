@@ -52,7 +52,7 @@ No exact phrases needed: talk naturally, in Spanish or English. ✋ means she sh
 
     "What is this project?" · "what changed?" · "run the tests and fix the bug" ✋
 
--   :material-monitor: **Your computer** (Windows)
+-   :material-monitor: **Your computer** (Windows, macOS)
 
     ---
 
@@ -92,8 +92,8 @@ No exact phrases needed: talk naturally, in Spanish or English. ✋ means she sh
 ## Good to know
 
 - **Music:** playing what you ask for needs [Spotify connected](settings.md#spotify). Pause and skip work with any
-  player on Windows, with Spotify and Music on macOS.
-- **Apps, volume and commands:** Windows and macOS. **Your computer:** Windows.
+  player on Windows and Linux, with Spotify and Music on macOS.
+- **Your computer:** Windows and macOS.
 - **Email** needs [Email](settings.md#email) turned on.
 - **Never:** she doesn't delete files or email, open programs or scripts, or read password fields. Commands that
   delete or discard work are refused, even if you ask.

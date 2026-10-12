@@ -35,6 +35,8 @@ published for every system, and installed copies update themselves.
     3. Allow the microphone when she asks. After an update macOS may ask again; Elissa tells you where to turn it
        back on.
     4. The first time she controls Spotify or Music, macOS asks you to let Elissa control that app. Allow it.
+    5. To let her use other windows, allow Elissa in *System Settings → Privacy & Security → Accessibility* when
+       she asks.
 
 === ":fontawesome-brands-linux: Linux"
 
@@ -52,7 +54,14 @@ published for every system, and installed copies update themselves.
     ./Elissa_*.AppImage
     ```
 
-    To add folders from *Settings → Folders she can use*, install `zenity`.
+    For music turned down while you talk, the system volume and offline voices, also install:
+
+    ```bash
+    sudo apt install pulseaudio-utils espeak-ng
+    ```
+
+    To add folders from *Settings → Folders she can use*, install `zenity`. On Wayland her eyes don't follow the
+    cursor outside her window.
 
 ## After installing
 
@@ -65,24 +74,24 @@ Continue with the [first steps](first-steps.md).
 
 ## What works on each system
 
-Windows has everything. macOS and Linux are previews: what isn't available there is hidden or explained in Settings.
+macOS and Linux are previews. What isn't available on your system doesn't show up in Settings.
 
 | Feature | Windows | macOS | Linux |
 |---|:-:|:-:|:-:|
-| Talk with the shortcut, chat, files, web, memory, reminders, email | :material-check: | :material-check: | :material-check: |
-| Speech recognition in the cloud (Groq, OpenAI, your own server) | :material-check: | :material-check: | :material-check: |
-| Natural voices (Edge) | :material-check: | :material-check: | :material-check: |
-| Spotify (play what you ask for) and MCP integrations | :material-check: | :material-check: | :material-check: |
-| "Hey Elissa" wake phrase | :material-check: | :material-check: | not tested |
-| Open installed apps | :material-check: | :material-check: | — |
-| "What's playing?", pause, skip | any player | Spotify and Music | only with Spotify connected |
-| Turn other apps down while you talk | any app | Spotify and Music | — |
-| System volume | :material-check: | :material-check: | — |
-| Offline voices | :material-check: | :material-check: | — |
-| Terminal commands in your projects | PowerShell | zsh | — |
-| Claude Code and Codex alerts | :material-check: | :material-check: | — |
-| Speech recognition on your computer (whisper.cpp) | :material-check: | — | — |
-| Use other windows (read, click, type) | :material-check: | — | — |
+| Talk, chat, files, web, memory, reminders, email | :material-check: | :material-check: | :material-check: |
+| Speech recognition in the cloud or on your computer | :material-check: | :material-check: | :material-check: |
+| "Hey Elissa" wake phrase | :material-check: | :material-check: | :material-check: |
+| Natural voices (Edge) and offline voices | :material-check: | :material-check: | :material-check: ¹ |
+| Spotify and MCP integrations | :material-check: | :material-check: | :material-check: |
+| Open installed apps | :material-check: | :material-check: | :material-check: |
+| "What's playing?", pause, skip | any player | Spotify and Music | any MPRIS player |
+| Turn music down while you talk, system volume | :material-check: | :material-check: | :material-check: ¹ |
+| Terminal commands in your projects | PowerShell | zsh | bash |
+| Claude Code and Codex alerts | :material-check: | :material-check: | :material-check: |
+| Use other windows (read, click, type) | :material-check: | :material-check: ² | — |
+
+¹ With `pulseaudio-utils` (also for PipeWire) and `espeak-ng` installed.
+² macOS asks for the Accessibility permission the first time.
 
 ## Updates
 

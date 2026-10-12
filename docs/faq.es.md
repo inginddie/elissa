@@ -24,7 +24,7 @@ Desinstalar Elissa no borra esta carpeta.
 
 ??? question "¿Puedo usarla sin internet?"
 
-    Sí, en Windows: elige Ollama o LM Studio como IA, *En tu PC* para el reconocimiento de voz y una voz de Windows. La
+    Sí: elige Ollama o LM Studio como IA, *En tu PC* para el reconocimiento de voz y una voz sin conexión. La
     frase de activación siempre funciona sin internet. La búsqueda web, el correo y las integraciones sí necesitan
     internet.
 

@@ -41,7 +41,7 @@ solo tu clic lo aprueba.
 - :material-account-voice: **Hablar** sin manos, e interrumpirla cuando quieras
 - :material-brain: **Cualquier IA**: OpenAI, Claude, Gemini, OpenRouter, Groq, o gratis y local con Ollama
 - :material-file-document: **Tus archivos**: lee PDF, Word, Excel; escribe con un diff; nunca borra
-- :material-monitor: **Tu computador**: abre apps y sitios; en Windows, usa otras ventanas
+- :material-monitor: **Tu computador**: abre apps y sitios, y usa otras ventanas
 - :material-alarm: **Temporizadores, recordatorios y tareas**
 - :material-email: **Correo**: busca, lee y envía con tu permiso
 - :material-code-braces: **Código**: entiende un proyecto, edita, corre tus pruebas

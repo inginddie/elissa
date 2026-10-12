@@ -24,7 +24,7 @@ Uninstalling Elissa doesn't delete this folder.
 
 ??? question "Can I use her without internet?"
 
-    Yes, on Windows: pick Ollama or LM Studio as the AI, *On your PC* for speech recognition and a Windows voice. The wake
+    Yes: pick Ollama or LM Studio as the AI, *On your PC* for speech recognition and an offline voice. The wake
     phrase always works offline. Web search, email and integrations need internet, of course.
 
 ??? question "She doesn't hear me"

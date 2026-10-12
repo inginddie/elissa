@@ -41,7 +41,7 @@ card first, and only your click approves it.
 - :material-account-voice: **Talk**, hands-free, and interrupt her any time
 - :material-brain: **Any AI**: OpenAI, Claude, Gemini, OpenRouter, Groq, or free and local with Ollama
 - :material-file-document: **Your files**: read PDF, Word, Excel; write with a diff; never delete
-- :material-monitor: **Your computer**: open apps and sites; on Windows, use other windows
+- :material-monitor: **Your computer**: open apps and sites, and use other windows
 - :material-alarm: **Timers, reminders and tasks**
 - :material-email: **Email**: search, read, and send with your OK
 - :material-code-braces: **Code**: understand a project, edit, run your tests

@@ -36,6 +36,8 @@ versión para todos los sistemas, y las copias instaladas se actualizan solas.
     3. Permite el micrófono cuando lo pida. Después de una actualización macOS puede volver a preguntar; Elissa te
        dice dónde activarlo.
     4. La primera vez que controle Spotify o Música, macOS te pide permitir que Elissa controle esa app. Permítelo.
+    5. Para que use otras ventanas, permite Elissa en *Ajustes del Sistema → Privacidad y seguridad → Accesibilidad*
+       cuando lo pida.
 
 === ":fontawesome-brands-linux: Linux"
 
@@ -53,7 +55,14 @@ versión para todos los sistemas, y las copias instaladas se actualizan solas.
     ./Elissa_*.AppImage
     ```
 
-    Para agregar carpetas desde *Ajustes → Carpetas que puede usar*, instala `zenity`.
+    Para bajar la música mientras hablas, el volumen del sistema y las voces sin conexión, instala también:
+
+    ```bash
+    sudo apt install pulseaudio-utils espeak-ng
+    ```
+
+    Para agregar carpetas desde *Ajustes → Carpetas que puede usar*, instala `zenity`. En Wayland sus ojos no
+    siguen el cursor fuera de su ventana.
 
 ## Después de instalar
 
@@ -66,24 +75,24 @@ donde quieras. Sigue con los [primeros pasos](first-steps.md).
 
 ## Qué funciona en cada sistema
 
-Windows tiene todo. macOS y Linux son vistas previas: lo que no está disponible ahí se oculta o se explica en Ajustes.
+macOS y Linux son vistas previas. Lo que no está disponible en tu sistema no aparece en Ajustes.
 
 | Función | Windows | macOS | Linux |
 |---|:-:|:-:|:-:|
-| Hablar con el atajo, chat, archivos, web, memoria, recordatorios, correo | :material-check: | :material-check: | :material-check: |
-| Reconocimiento de voz en la nube (Groq, OpenAI, servidor propio) | :material-check: | :material-check: | :material-check: |
-| Voces naturales (Edge) | :material-check: | :material-check: | :material-check: |
-| Spotify (poner lo que pidas) e integraciones MCP | :material-check: | :material-check: | :material-check: |
-| Palabra de activación «Hola Elissa» | :material-check: | :material-check: | sin probar |
-| Abrir apps instaladas | :material-check: | :material-check: | — |
-| «¿Qué suena?», pausar, siguiente | cualquier reproductor | Spotify y Música | solo con Spotify conectado |
-| Bajar las demás apps mientras hablas | cualquier app | Spotify y Música | — |
-| Volumen del sistema | :material-check: | :material-check: | — |
-| Voces sin conexión | :material-check: | :material-check: | — |
-| Comandos de terminal en tus proyectos | PowerShell | zsh | — |
-| Avisos de Claude Code y Codex | :material-check: | :material-check: | — |
-| Reconocimiento de voz en tu PC (whisper.cpp) | :material-check: | — | — |
-| Usar otras ventanas (leer, clic, escribir) | :material-check: | — | — |
+| Hablar, chat, archivos, web, memoria, recordatorios, correo | :material-check: | :material-check: | :material-check: |
+| Reconocimiento de voz en la nube o en tu equipo | :material-check: | :material-check: | :material-check: |
+| Frase de activación «Hola Elissa» | :material-check: | :material-check: | :material-check: |
+| Voces naturales (Edge) y voces sin conexión | :material-check: | :material-check: | :material-check: ¹ |
+| Spotify e integraciones MCP | :material-check: | :material-check: | :material-check: |
+| Abrir apps instaladas | :material-check: | :material-check: | :material-check: |
+| «¿Qué suena?», pausar, siguiente | cualquier reproductor | Spotify y Música | cualquier reproductor MPRIS |
+| Bajar la música mientras hablas, volumen del sistema | :material-check: | :material-check: | :material-check: ¹ |
+| Comandos de terminal en tus proyectos | PowerShell | zsh | bash |
+| Avisos de Claude Code y Codex | :material-check: | :material-check: | :material-check: |
+| Usar otras ventanas (leer, clic, escribir) | :material-check: | :material-check: ² | — |
+
+¹ Con `pulseaudio-utils` (sirve también con PipeWire) y `espeak-ng` instalados.
+² macOS pide el permiso de Accesibilidad la primera vez.
 
 ## Actualizaciones
 

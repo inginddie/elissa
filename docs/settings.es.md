@@ -30,13 +30,13 @@ solos. Las secciones que no aplican a tu sistema no aparecen.
 
     | Opción | Por defecto | Notas |
     |---|---|---|
-    | Voz | Salomé (es) / Ava (en) | Voces naturales de Edge, más voces del sistema sin conexión en Windows y macOS |
+    | Voz | Salomé (es) / Ava (en) | Voces naturales de Edge, más voces del sistema sin conexión |
     | Velocidad | 1,10× | 0,8× a 1,6× |
-    | Reconocimiento de voz | Automático | Groq, OpenAI, En tu PC (Windows), Servidor propio |
+    | Reconocimiento de voz | Automático | Groq, OpenAI, En tu PC, Servidor propio |
     | Modelo local | Rápido · 60 MB | O Más preciso · 190 MB. Solo para En tu PC |
     | Despertarla diciendo… | Apagado | «Hola / Oye Elissa» con voz en español; «Hey / Hi / Okay Elissa» con voz en inglés. Descarga 40 MB una vez |
     | Interrumpirla hablando | Apagado | |
-    | Bajar las demás apps mientras hablamos | 20 % | 10 %, 20 %, 35 % o no bajarlas. Spotify y Música en macOS; no está en Linux |
+    | Bajar las demás apps mientras hablamos | 20 % | 10 %, 20 %, 35 % o no bajarlas. En macOS, Spotify y Música |
     | Conversación continua | Activo | Vuelve a escuchar después de cada respuesta |
     | Siempre visible | Activo | |
     | Iniciar con el sistema | — | |
@@ -93,8 +93,7 @@ Leer corre libre; cambiar datos te pregunta antes.
 2. Agrega el Redirect URI `http://127.0.0.1/spotify/callback` y marca **Web API**.
 3. Pega su **Client ID** y **Conectar con Spotify**.
 
-Poner lo que pidas necesita Spotify Premium. Pausar, siguiente y «¿qué suena?» funcionan sin conectar nada
-(Windows y macOS).
+Poner lo que pidas necesita Spotify Premium. Pausar, siguiente y «¿qué suena?» funcionan sin conectar nada.
 
 ## Avisos de Claude Code y Codex
 
@@ -102,7 +101,7 @@ Poner lo que pidas necesita Spotify Premium. Pausar, siguiente y «¿qué suena?
 ![La sección de avisos con botones Instalar para Claude Code y Codex, la opción Uso del computador y las carpetas permitidas](media/screens/es/settings-alerts.png)
 </figure>
 
-*Windows y macOS.* Elige **Instalar** y Elissa te avisa cuando una sesión termina o necesita tu permiso.
+Elige **Instalar** y Elissa te avisa cuando una sesión termina o necesita tu permiso.
 
 - Conserva tu configuración y guarda una copia (`*.elissa-backup`).
 - En Codex, apruébalo una vez con `/hooks`.
@@ -110,8 +109,9 @@ Poner lo que pidas necesita Spotify Premium. Pausar, siguiente y «¿qué suena?
 
 ## Uso del computador
 
-*Windows.* **Permitir que vea y use otras ventanas**: leer la ventana en la que estás, hacer clic, escribir y
-presionar teclas, siempre con tu aprobación. Nunca lee campos de contraseña.
+*Windows y macOS.* **Permitir que vea y use otras ventanas**: leer la ventana en la que estás, hacer clic, escribir y
+presionar teclas, siempre con tu aprobación. Nunca lee campos de contraseña. En macOS,
+permite Elissa en *Accesibilidad* cuando lo pida.
 
 ## Carpetas que puede usar
 

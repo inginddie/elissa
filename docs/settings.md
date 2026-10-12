@@ -30,13 +30,13 @@ that don't apply to your system don't show up.
 
     | Option | Default | Notes |
     |---|---|---|
-    | Voice | Salomé (es) / Ava (en) | Natural Edge voices, plus offline system voices on Windows and macOS |
+    | Voice | Salomé (es) / Ava (en) | Natural Edge voices, plus offline system voices |
     | Speed | 1.10× | 0.8× to 1.6× |
-    | Speech recognition | Automatic | Groq, OpenAI, On your PC (Windows), Your own server |
+    | Speech recognition | Automatic | Groq, OpenAI, On your PC, Your own server |
     | Local model | Fast · 60 MB | Or More accurate · 190 MB. Only for On your PC |
     | Wake her by saying… | Off | "Hola / Oye Elissa" with a Spanish voice; "Hey / Hi / Okay Elissa" with an English one. Downloads 40 MB once |
     | Interrupt her by talking | Off | |
-    | Turn other apps down while we talk | 20 % | 10 %, 20 %, 35 % or not at all. Spotify and Music on macOS; not on Linux |
+    | Turn other apps down while we talk | 20 % | 10 %, 20 %, 35 % or not at all. On macOS, Spotify and Music |
     | Continuous conversation | On | She listens again after each answer |
     | Always on top | On | |
     | Start with the system | — | |
@@ -93,8 +93,7 @@ Reading runs freely; changing data asks first.
 2. Add the Redirect URI `http://127.0.0.1/spotify/callback` and tick **Web API**.
 3. Paste its **Client ID** and **Connect Spotify**.
 
-Playing what you ask for needs Spotify Premium. Pause, next and "what's playing?" work without connecting
-(Windows and macOS).
+Playing what you ask for needs Spotify Premium. Pause, next and "what's playing?" work without connecting.
 
 ## Claude Code and Codex alerts
 
@@ -102,7 +101,7 @@ Playing what you ask for needs Spotify Premium. Pause, next and "what's playing?
 ![The alerts section with Install buttons for Claude Code and Codex, the Using the computer option and the allowed folders](media/screens/en/settings-alerts.png)
 </figure>
 
-*Windows and macOS.* Choose **Install** and Elissa tells you when a session finishes or needs your permission.
+Choose **Install** and Elissa tells you when a session finishes or needs your permission.
 
 - It keeps your settings and saves a backup (`*.elissa-backup`).
 - In Codex, approve it once with `/hooks`.
@@ -110,8 +109,8 @@ Playing what you ask for needs Spotify Premium. Pause, next and "what's playing?
 
 ## Using the computer
 
-*Windows.* **Let her see and use other windows**: read the window you're in, click, type and press keys, always
-with your approval. Password fields are never read.
+*Windows and macOS.* **Let her see and use other windows**: read the window you're in, click, type and press keys, always
+with your approval. Password fields are never read. On macOS, allow Elissa in *Accessibility* when she asks.
 
 ## Folders she can use
 

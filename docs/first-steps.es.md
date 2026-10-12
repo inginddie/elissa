@@ -50,7 +50,7 @@ Abre *Ajustes* (:material-cog-outline:) → **Voz** → **Reconocimiento de voz*
 |---|---|
 | **Groq** | Rápido y económico, gratis para empezar. [Consigue una clave](https://console.groq.com/keys) |
 | **OpenAI** | [Consigue una clave](https://platform.openai.com/api-keys) |
-| **En tu PC** | Privado y sin internet (Windows) |
+| **En tu PC** | Privado y sin internet |
 | **Servidor propio** | Cualquier URL compatible con Whisper |
 
 Pega la clave en **API key para la voz** y elige **Guardar clave de voz**.

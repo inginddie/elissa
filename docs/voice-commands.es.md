@@ -53,7 +53,7 @@ tarjeta.
 
     «¿Qué es este proyecto?» · «¿qué cambió?» · «corre las pruebas y arregla el error» ✋
 
--   :material-monitor: **Tu computador** (Windows)
+-   :material-monitor: **Tu computador** (Windows, macOS)
 
     ---
 
@@ -93,8 +93,8 @@ tarjeta.
 ## Bueno saber
 
 - **Música:** poner lo que pidas necesita [Spotify conectado](settings.md#spotify). Pausar y siguiente funcionan con
-  cualquier reproductor en Windows, con Spotify y Música en macOS.
-- **Apps, volumen y comandos:** Windows y macOS. **Tu computador:** Windows.
+  cualquier reproductor en Windows y Linux, con Spotify y Música en macOS.
+- **Tu computador:** Windows y macOS.
 - **Correo** necesita [Correo](settings.md#correo) activo.
 - **Nunca:** no borra archivos ni correos, no abre programas ni scripts, y no lee campos de contraseña. Los comandos
   que borran o descartan trabajo se rechazan, aunque se lo pidas.

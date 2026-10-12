@@ -50,7 +50,7 @@ Open *Settings* (:material-cog-outline:) → **Voice** → **Speech recognition*
 |---|---|
 | **Groq** | Fast and cheap, free to start. [Get a key](https://console.groq.com/keys) |
 | **OpenAI** | [Get a key](https://platform.openai.com/api-keys) |
-| **On your PC** | Private and offline (Windows) |
+| **On your PC** | Private and offline |
 | **Your own server** | Any Whisper-compatible URL |
 
 Paste the key in **API key for speech** and choose **Save speech key**.
