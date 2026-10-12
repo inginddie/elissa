@@ -237,10 +237,11 @@ Listo cuando: en cada sistema se instala desde GitHub sin pasos manuales, se act
 self-test del motor en CI, y lo esencial funciona con la voz real en un equipo físico. Lo que no aplica en un
 sistema aparece explicado en Ajustes.
 
-### Decisiones pendientes de Diego
+### Decisiones tomadas (2026-10-12)
 
-- Linux: ¿qué distribuciones soportar oficialmente? Se propone Ubuntu/Debian (`.deb`) y AppImage para el resto.
-- Mac de pruebas: ¿Apple Silicon o Intel, y qué versión de macOS? Define qué build se prueba primero.
+- Mac de pruebas con **Apple Silicon**: el primer build de macOS es arm64 (runner `macos-14`); el de Intel (x64) va
+  después, en el mismo CI.
+- Linux: **`.deb`** (Ubuntu/Debian) y **AppImage** para el resto de distribuciones.
 
 ## Riesgos
 
