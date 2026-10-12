@@ -94,6 +94,7 @@ The installer is not code-signed yet, so Windows SmartScreen may warn you the fi
 If Microsoft Defender flags it, that's a false positive common with unsigned apps built with PyInstaller: update
 Defender (`Update-MpSignature` in PowerShell) and try again, or [report it](https://www.microsoft.com/wdsi/filesubmission).
 Every release is built and self-tested by GitHub Actions from this repository's code, and its updates are signed.
+See the [code signing policy](docs/CODE_SIGNING.md) and the [privacy policy](PRIVACY.md).
 
 **Requirements:** Windows 10 (1809+) or Windows 11, 64-bit, with WebView2 (built into Windows 11), a microphone and speakers.
 
@@ -110,6 +111,8 @@ Every release is built and self-tested by GitHub Actions from this repository's 
 | Make her sound different | *Settings → Sounds*: volume, or drop your own `listen.wav`, `done.mp3`… in the sounds folder |
 
 ## Privacy and security
+
+The full [privacy policy](PRIVACY.md) lists every service Elissa can contact and how to turn each one off.
 
 - **Your keys stay in Windows.** API keys and the email password are stored in the Windows Credential Manager, never in files.
 - **Your data is yours.** Settings, memory and logs live in `%APPDATA%\Elissa` as readable Markdown and JSON.

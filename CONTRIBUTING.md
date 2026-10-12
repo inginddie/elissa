@@ -51,4 +51,5 @@ for trying a change end to end without clicking.
 2. Update `CHANGELOG.md`.
 3. Tag `vX.Y.Z`. CI tests the code, builds and self-tests the engine, and builds the signed installer as a draft
    release.
-4. Publish the release as **latest**, not as a pre-release. The updater reads `/releases/latest`.
+4. Publish the release as **latest**, not as a pre-release. The updater reads `/releases/latest`. Add the policy
+   links to its page: `gh release edit vX.Y.Z --notes "$(uv run python scripts/release_notes.py vX.Y.Z --release)"`.

@@ -166,9 +166,16 @@ backlog): requiere una decisión y un trámite de Diego.
 - ~~CI: acciones con Node 20~~ hecho en 1.0.0 (checkout@v7, setup-node@v7, upload-artifact@v7, setup-uv@v10).
 - ~~Interfaz en inglés~~ hecho en 1.0.0. ~~Modelos sugeridos por proveedor~~ al día en 1.1.0 (migra los retirados).
 - ~~Notas de versión en la actualización~~ hecho en 1.1.0 (`scripts/release_notes.py` lee el CHANGELOG).
-- Firma del instalador (quita el aviso de SmartScreen). Opciones: SignPath Foundation (gratis para proyectos de código
-  abierto, hay que postular el repositorio) o Azure Artifact Signing (~10 USD/mes, con requisitos de identidad).
-  Requiere que Diego elija y haga el trámite; luego se agrega el paso de firma en CI.
+- Firma del instalador con **SignPath Foundation** (elegida el 2026-10-12). Listo para postular: política de firma
+  (`docs/CODE_SIGNING.md`), política de privacidad (`PRIVACY.md`), aviso de privacidad y licencia en el instalador
+  (`packaging/installer-notice.txt`, `bundle.licenseFile`), enlaces en el README y en cada release. Falta:
+  1. Diego: MFA en GitHub; postular en https://signpath.org/apply (repo, licencia MIT, descarga en Releases).
+  2. Al aprobar: crear en SignPath el trusted build system "GitHub.com", instalar la SignPath GitHub App, y guardar
+     `SIGNPATH_API_TOKEN` (secreto) y organization id / project / signing policy / artifact configuration.
+  3. CI: subir el engine y el setup con `actions/upload-artifact@v7` (id) y firmarlos con
+     `signpath/github-action-submit-signing-request@v3` (aprobación manual de cada release). NSIS no admite firma
+     profunda: firmar `elissa-engine.exe` antes de empaquetar y el setup al final. Después de firmar el setup,
+     regenerar su `.sig` con `tauri signer sign` y actualizar `latest.json` (la firma Authenticode cambia los bytes).
 - ~~« Hola Elissa » en inglés~~ hecho en 1.1.0: « Hey / Hi / Okay Elissa » con el modelo Vosk pequeño en inglés
   (sigue el idioma de la voz; en inglés Vosk la oye como « alyssa »). 0 errores en 68 grabaciones sintéticas
   (4 voces, señuelos y frases cotidianas).

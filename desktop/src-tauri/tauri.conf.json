@@ -15,6 +15,7 @@
   },
   "bundle": {
     "active": true,
+    "licenseFile": "../../packaging/installer-notice.txt",
     "targets": [
       "nsis"
     ],

@@ -1,0 +1,33 @@
+ELISSA - PRIVACY NOTICE AND LICENSE
+
+Elissa runs on your PC: no account, no server of its own, no telemetry. Your settings and memory stay in
+%APPDATA%\Elissa; your keys stay in the Windows Credential Manager.
+
+To work, Elissa contacts only the services you choose, and only for the features you use:
+- your AI provider (what you say or type, and what she reads for you); choose Ollama or LM Studio to keep it local;
+- your speech-to-text service (your voice); choose "On your PC" to keep it local;
+- Microsoft Edge's speech service (the text of her answers); choose a Windows voice to avoid it;
+- DuckDuckGo and websites (only when you ask her to search the web);
+- your mail server and the integrations you add (only if you set them up);
+- GitHub, to check for updates.
+The wake phrase is detected on your PC; nothing is sent until you wake her.
+Full privacy policy: https://github.com/inginddie/elissa/blob/main/PRIVACY.md
+
+------------------------------------------------------------------------
+
+MIT License
+
+Copyright (c) 2026 Diego Bustos
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

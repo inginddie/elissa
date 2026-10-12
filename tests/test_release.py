@@ -38,3 +38,9 @@ def test_missing_version_fails():
 def test_real_changelog_has_current_version():
     version = (ROOT / "pyproject.toml").read_text(encoding="utf-8").split('version = "')[1].split('"')[0]
     assert release_notes.notes_for(version, (ROOT / "CHANGELOG.md").read_text(encoding="utf-8"))
+
+
+def test_release_footer_links_the_policies():
+    assert "docs/CODE_SIGNING.md" in release_notes.FOOTER and "PRIVACY.md" in release_notes.FOOTER
+    assert (ROOT / "docs" / "CODE_SIGNING.md").exists() and (ROOT / "PRIVACY.md").exists()
+    assert "SignPath Foundation" in (ROOT / "docs" / "CODE_SIGNING.md").read_text(encoding="utf-8")
