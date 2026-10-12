@@ -2,7 +2,7 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
-## [1.1.0] - sin publicar
+## [1.1.0] - 2026-10-12
 
 ### Añadido
 - « Hey Elissa » (o « Hi Elissa », « Okay Elissa ») para despertarla cuando su voz está en inglés; con la voz en
