@@ -53,15 +53,15 @@ def selftest() -> int:
             checks[name] = f"FALLA: {e!r}"
 
     def synth():
-        """Edge's online voice (with its host fallback); the offline Windows voice is the fallback in the app too."""
-        from elissa import edge_voice, windows_tts
+        """Edge's online voice (with its host fallback); the system's offline voice is the fallback in the app too."""
+        from elissa import edge_voice, offline_voice
         try:
             return f"Edge, {len(asyncio.run(edge_voice.synthesize('Hola', 'es-CO-SalomeNeural')))} bytes"
         except Exception as e:
             if not system.has("offline_voice"):
                 raise
-            wav = windows_tts.synthesize("Hola")
-            return f"Edge no disponible ({str(e)[:60]}); voz de Windows, {len(wav)} bytes"
+            wav = offline_voice.synthesize("Hola", "", 1.0)
+            return f"Edge no disponible ({str(e)[:60]}); voz del sistema, {len(wav)} bytes"
 
     def roundtrip():
         set_secret("selftest", "x")
@@ -94,6 +94,12 @@ def selftest() -> int:
         from pycaw.pycaw import AudioUtilities  # noqa: F401  (volume and ducking)
         return "controles multimedia y volumen de Windows"
 
+    def offline():
+        from elissa import offline_voice
+        voices = offline_voice.list_voices("es") + offline_voice.list_voices("en")
+        wav = offline_voice.synthesize("Hola", voices[0]["id"] if voices else "", 1.0)
+        return f"{len(voices)} voces, {len(wav)} bytes"
+
     def windows():
         import uiautomation as auto
         return f"{len(auto.GetRootControl().GetChildren())} ventanas"
@@ -109,8 +115,10 @@ def selftest() -> int:
         check("ventanas", windows)
     check("microfono", microphone)
     check("integraciones", integrations)
-    if system.has("mixer"):
+    if system.has("mixer") and system.IS_WINDOWS:
         check("multimedia", media)
+    if system.has("offline_voice"):
+        check("voz_sin_conexion", offline)
     checks["sistema"] = f"ok ({system.NAME}: {', '.join(sorted(system.CAPS)) or 'básico'})"
     for name, result in checks.items():
         logging.info("selftest %s: %s", name, result)

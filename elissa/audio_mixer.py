@@ -1,7 +1,8 @@
 """Volume: the system volume, and lowering other apps (ducking) while Elissa listens and answers.
 
 Ducking lowers every app that is playing (Spotify, a browser, a game…) to a fraction of its own volume, never Elissa
-herself, and gives each one back its volume afterwards. Safety rules: an app whose volume the user changed meanwhile
+herself, and gives each one back its volume afterwards. macOS has no per-app volume: there it lowers the players it
+can talk to (Spotify, Music) through their own volume. Safety rules: an app whose volume the user changed meanwhile
 is left alone, and the volume always comes back when the conversation ends, the window goes away, the engine exits,
 or after MAX_DUCK_S at the latest.
 
@@ -35,7 +36,7 @@ class Mixer:
     def __init__(self, own_pids=lambda: {os.getpid()}):
         self.own_pids = own_pids  # Elissa's own processes (engine, shell, its WebView2) are never ducked
         self._pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="mixer", initializer=_init_com)
-        self._ducked: dict[int, tuple[float, float]] = {}  # pid -> (original volume, ducked volume)
+        self._ducked: dict[int | str, tuple[float, float]] = {}  # pid (macOS: player) -> (original, ducked)
         self._since = 0.0
         atexit.register(self.restore_now)
 
@@ -66,9 +67,15 @@ class Mixer:
         return self._get_volume()
 
     async def volume(self) -> dict:
+        if system.IS_MAC:
+            from .system import macos
+            return await asyncio.to_thread(macos.get_volume)
         return await self._run(self._get_volume)
 
     async def set_volume(self, percent: int | None = None, delta: int | None = None, mute: bool | None = None) -> dict:
+        if system.IS_MAC:
+            from .system import macos
+            return await asyncio.to_thread(macos.set_volume, percent, delta, mute)
         return await self._run(self._set_volume, percent, delta, mute)
 
     # ----- ducking -----
@@ -78,6 +85,8 @@ class Mixer:
         return AudioUtilities.GetAllSessions()
 
     def _duck(self, level: float) -> int:
+        if system.IS_MAC:
+            return self._duck_players(level)
         own = self.own_pids()
         count = 0
         for s in self._sessions():
@@ -97,6 +106,8 @@ class Mixer:
         return count
 
     def _restore(self) -> int:
+        if system.IS_MAC:
+            return self._restore_players()
         count = 0
         for s in self._sessions():
             entry = self._ducked.get(s.ProcessId)
@@ -106,6 +117,33 @@ class Mixer:
             vol = s.SimpleAudioVolume
             if abs(vol.GetMasterVolume() - target) <= TOLERANCE:  # the user didn't change it meanwhile
                 vol.SetMasterVolume(original, None)
+                count += 1
+        self._ducked.clear()
+        return count
+
+    # macOS: the players' own volume (0-100), keyed by app name
+
+    def _duck_players(self, level: float) -> int:
+        from .system import macos
+        count = 0
+        for app, original in macos.playing_players().items():
+            if app in self._ducked or original <= 0:
+                continue
+            target = round(original * level)
+            macos.set_player_volume(app, target)
+            self._ducked[app] = (original, target)
+            count += 1
+        if count:
+            self._since = time.monotonic()
+        return count
+
+    def _restore_players(self) -> int:
+        from .system import macos
+        count = 0
+        for app, (original, target) in self._ducked.items():
+            current = macos.player_volume(app)
+            if current is not None and abs(current - target) <= 1:  # the user didn't change it meanwhile
+                macos.set_player_volume(app, original)
                 count += 1
         self._ducked.clear()
         return count

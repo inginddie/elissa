@@ -274,9 +274,19 @@ fn global_cursor() -> Option<(i32, i32)> {
     (unsafe { GetCursorPos(&mut p) } != 0).then_some((p.x, p.y))
 }
 
-#[cfg(not(windows))]
+/// macOS gives the cursor in points (not pixels); the feed scales it like the window's position.
+#[cfg(target_os = "macos")]
 fn global_cursor() -> Option<(i32, i32)> {
-    None
+    use core_graphics::event::CGEvent;
+    use core_graphics::event_source::{CGEventSource, CGEventSourceStateID};
+    let source = CGEventSource::new(CGEventSourceStateID::CombinedSessionState).ok()?;
+    let p = CGEvent::new(source).ok()?.location();
+    Some((p.x as i32, p.y as i32))
+}
+
+#[cfg(all(not(windows), not(target_os = "macos")))]
+fn global_cursor() -> Option<(i32, i32)> {
+    None // Linux: F8.3 (X11); Wayland doesn't expose the global cursor
 }
 
 /// Feeds the global cursor position (relative to the window, in CSS pixels) to the page, so Elissa's eyes can
@@ -297,8 +307,14 @@ fn start_cursor_feed(app: AppHandle) {
             }
             last = c;
             let scale = geometry.scale_milli.load(Ordering::Relaxed).max(1) as f64 / 1000.0;
-            let rel_x = (c.0 - geometry.x.load(Ordering::Relaxed)) as f64 / scale;
-            let rel_y = (c.1 - geometry.y.load(Ordering::Relaxed)) as f64 / scale;
+            // Windows reports physical pixels; macOS reports points, so they get the window's scale first.
+            let (cx, cy) = if cfg!(target_os = "macos") {
+                (c.0 as f64 * scale, c.1 as f64 * scale)
+            } else {
+                (c.0 as f64, c.1 as f64)
+            };
+            let rel_x = (cx - geometry.x.load(Ordering::Relaxed) as f64) / scale;
+            let rel_y = (cy - geometry.y.load(Ordering::Relaxed) as f64) / scale;
             let _ = app.emit_to("main", "cursor", serde_json::json!({ "x": rel_x, "y": rel_y }));
         }
     });

@@ -910,6 +910,7 @@ checksum = "d0881ea181b1df73ff77ffaaf9c7544ecc11e82fba9b5f27b262a3c73a332555"
 name = "elissa"
 version = "1.4.0"
 dependencies = [
+ "core-graphics",
  "serde",
  "serde_json",
  "tauri",

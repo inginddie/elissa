@@ -71,7 +71,7 @@ def test_codex_install_from_scratch(homes):
     assert json.loads(agent_hooks.CODEX_HOOKS.read_text("utf-8")) == {}
 
 
-@pytest.mark.skipif(sys.platform != "win32", reason="hook script is PowerShell: Windows only for now (F8)")
+@pytest.mark.skipif(not agent_hooks.system.has("agent_hooks"), reason="no hook script on this system yet")
 def test_endpoint_needs_the_hook_token():
     from fastapi.testclient import TestClient
 
@@ -82,6 +82,12 @@ def test_endpoint_needs_the_hook_token():
                         headers={"X-Elissa-Hook": agent_hooks.TOKEN})
         assert r.status_code == 200
         assert client.get("/api/agent-hooks").status_code == 403  # settings stay behind the session cookie
+        # notify.sh passes the hook's own JSON; only event, type and folder are used
+        raw = {"hook_event_name": "Notification", "notification_type": "permission_prompt", "cwd": "/Users/d/web",
+               "message": "x" * 50000}
+        r = client.post("/hooks/agent-event", json=raw, headers={"X-Elissa-Hook": agent_hooks.TOKEN,
+                                                                 "X-Elissa-Source": "codex"})
+        assert r.status_code == 200
         endpoint = json.loads(agent_hooks.ENDPOINT_FILE.read_text("utf-8"))
         assert endpoint["token"] == agent_hooks.TOKEN and agent_hooks.SCRIPT.exists()
 
@@ -95,3 +101,9 @@ def test_users_own_notify_script_is_left_alone(homes):
     agent_hooks.set_installed("claude", True)
     agent_hooks.set_installed("claude", False)
     assert json.loads(path.read_text("utf-8")) == {"hooks": {"Stop": [{"hooks": [theirs]}]}}
+
+
+def test_raw_hook_is_reduced():
+    raw = {"hook_event_name": "Stop", "cwd": "/Users/d/elissa", "last_assistant_message": "secret", "session_id": "s"}
+    assert agent_hooks.from_raw_hook(raw, "claude") == {"source": "claude", "event": "Stop", "type": "",
+                                                        "cwd": "/Users/d/elissa"}

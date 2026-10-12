@@ -96,7 +96,9 @@
       </label>
       <button type="button" id="setup-save" class="primary" hidden>Guardar y probar</button>
       <p class="hint" id="setup-msg"></p>
-      <p class="hint small">Tu API key se guarda cifrada en el Administrador de credenciales de Windows, nunca en archivos.</p>
+      <p class="hint small" data-os="windows">Tu API key se guarda cifrada en el Administrador de credenciales de Windows, nunca en archivos.</p>
+      <p class="hint small" data-os="macos" hidden>Tu API key se guarda cifrada en el Llavero de macOS, nunca en archivos.</p>
+      <p class="hint small" data-os="linux" hidden>Tu API key se guarda cifrada en el llavero del sistema (Secret Service), nunca en archivos.</p>
     </div>
   </section>
 
@@ -107,7 +109,7 @@
       <h3>General</h3>
       <label>Idioma
         <select name="ui_language">
-          <option value="auto">Automático (según Windows)</option>
+          <option value="auto">Automático (según el sistema)</option>
           <option value="es">Español</option>
           <option value="en">English</option>
         </select>
@@ -129,7 +131,7 @@
           <option value="auto">Automático</option>
           <option value="groq">Groq · muy rápido y económico</option>
           <option value="openai">OpenAI</option>
-          <option value="local">En tu PC · privado, sin internet</option>
+          <option value="local" data-cap="local_stt">En tu PC · privado, sin internet</option>
           <option value="endpoint">Servidor propio (Whisper u otro compatible)</option>
         </select>
       </label>
@@ -155,9 +157,9 @@
       <label class="check"><input type="checkbox" name="wake_word"> Despertarla diciendo «Hola Elissa» u «Oye Elissa» (con la voz en inglés: «Hey Elissa»)</label>
       <p class="hint small" id="wake-status"></p>
       <p class="hint small">Funciona sin internet: nada de lo que escucha sale de tu PC hasta que la despiertas. Mientras esté activa,
-        Windows muestra el ícono del micrófono; se pausa sola con la pantalla bloqueada. La primera vez descarga un modelo de 40 MB.</p>
+        el sistema muestra el ícono del micrófono; se pausa sola con la pantalla bloqueada. La primera vez descarga un modelo de 40 MB.</p>
       <label class="check"><input type="checkbox" name="barge_in"> Interrumpirla hablando mientras responde (mejor con audífonos)</label>
-      <label>Mientras hablamos, bajar las demás apps (música, videos)
+      <label data-cap="mixer"><span data-os="windows">Mientras hablamos, bajar las demás apps (música, videos)</span><span data-os="macos" hidden>Mientras hablamos, bajar Spotify y Música</span>
         <select name="duck_level">
           <option value="0.1">al 10 %</option>
           <option value="0.2">al 20 %</option>
@@ -167,7 +169,7 @@
       </label>
       <label class="check"><input type="checkbox" name="continuous"> Conversación continua</label>
       <label class="check"><input type="checkbox" name="pinned"> Siempre visible</label>
-      <label class="check"><input type="checkbox" id="autostart"> Iniciar con Windows</label>
+      <label class="check"><input type="checkbox" id="autostart"> Iniciar con el sistema</label>
       <label>Atajo para hablar
         <input id="hotkey" readonly placeholder="Haz clic y presiona la combinación…">
       </label>
@@ -237,6 +239,7 @@
         sin conectar nada.</p>
       <p class="hint" id="spotify-msg"></p>
 
+      <div data-cap="agent_hooks" class="stack">
       <h3>Avisos de Claude Code y Codex</h3>
       <p class="hint small">Elissa te avisa cuando una sesión termina o necesita tu permiso. Instala un hook en la
         configuración de cada herramienta (conserva lo que ya tengas y guarda una copia). Solo recibe el tipo de aviso y el
@@ -244,10 +247,13 @@
       <ul id="agents-list" class="items"></ul>
       <label class="check"><input type="checkbox" name="agent_alerts_voice"> Decir los avisos en voz alta</label>
       <p class="hint" id="agents-msg"></p>
+      </div>
 
+      <div data-cap="computer_use" class="stack">
       <h3>Uso del computador</h3>
       <label class="check"><input type="checkbox" name="computer_use"> Permitir que vea y use otras ventanas</label>
       <p class="hint small">Leer una ventana, hacer clic, escribir o presionar teclas siempre te pide aprobación. Nunca lee campos de contraseña.</p>
+      </div>
 
       <h3>Carpetas que puede usar</h3>
       <ul id="folders"></ul>

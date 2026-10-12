@@ -1,9 +1,13 @@
-"""What is playing, and play/pause/next/previous, through Windows' media controls (the ones in the volume flyout).
+"""What is playing, and play/pause/next/previous: Windows' media controls (the ones in the volume flyout), or on
+macOS the players' own AppleScript (Spotify, Music).
 
 Unlike the media keys, this targets one player (Spotify first, desktop or in the browser) and can tell what is
 playing. No account or network is involved. Returns None when the API is unavailable so callers can fall back.
 """
+import asyncio
 import logging
+
+from . import system
 
 log = logging.getLogger(__name__)
 
@@ -42,6 +46,8 @@ async def pick_session(prefer: str = "spotify"):
 
 
 async def now_playing(prefer: str = "spotify") -> dict | None:
+    if not system.IS_WINDOWS:
+        return await asyncio.to_thread(system.media_now_playing) if system.has("media_session") else None
     try:
         session = await pick_session(prefer)
         if session is None:
@@ -62,6 +68,8 @@ async def control(action: str, prefer: str = "spotify") -> bool | None:
     """True if the player took the command, False if it refused, None if there is no session or API."""
     if action not in ACTIONS:
         raise ValueError(f"Acción desconocida: {action}")
+    if not system.IS_WINDOWS:
+        return await asyncio.to_thread(system.media_control, action) if system.has("media_session") else None
     try:
         session = await pick_session(prefer)
         if session is None:

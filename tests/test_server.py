@@ -141,19 +141,22 @@ def test_stt_error_messages_are_plain():
     assert "audio" in server.stt_error_message(400, '{"code":"invalid_media_file"}')
 
 
-def test_tts_falls_back_to_the_windows_voice(client, monkeypatch):
+@pytest.mark.skipif(not server.offline_voice.available(), reason="no offline voice on this system yet")
+def test_tts_falls_back_to_the_system_voice(client, monkeypatch):
     async def edge_down(*a):
         raise OSError("sin internet")
 
     spoken = []
     monkeypatch.setattr(server, "_edge_tts", edge_down)
-    monkeypatch.setattr(server.windows_tts, "synthesize", lambda text, name, rate: spoken.append((text, name)) or b"RIFFwav")
+    monkeypatch.setattr(server.offline_voice, "synthesize",
+                        lambda text, voice, speed, lang: spoken.append((text, voice)) or b"RIFFwav")
     client.get("/?t=test-token")
     r = client.get("/api/tts", params={"text": "hola"})
     assert r.status_code == 200 and r.headers["content-type"] == "audio/wav" and spoken == [("hola", "")]
-    client.post("/api/settings", json={"voice": "windows:Microsoft Sabina Desktop - Spanish (Mexico)"})
+    voice = server.offline_voice.PREFIX + "Sabina"
+    client.post("/api/settings", json={"voice": voice})
     client.get("/api/tts", params={"text": "chao"})
-    assert spoken[-1] == ("chao", "Microsoft Sabina Desktop - Spanish (Mexico)")
+    assert spoken[-1] == ("chao", voice)
 
 
 def test_local_stt_route(client, monkeypatch):

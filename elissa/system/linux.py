@@ -42,6 +42,14 @@ def press_media_key(vk: int) -> bool:
     return False  # F8.3: MPRIS
 
 
+def media_now_playing() -> dict | None:
+    return None  # F8.3: MPRIS
+
+
+def media_control(action: str) -> bool | None:
+    return None  # F8.3: MPRIS
+
+
 def session_locked() -> bool:
     return False  # F8.3: logind LockedHint
 

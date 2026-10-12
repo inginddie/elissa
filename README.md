@@ -118,8 +118,10 @@ Download the `.deb` (Ubuntu, Debian and derivatives: `sudo apt install ./Elissa_
 ### What the macOS and Linux previews do
 
 Talking with the shortcut or by voice through a cloud speech service, chat, files, web search, memory, reminders,
-Spotify, MCP integrations and opening apps (macOS). Coming next: music control and "what's playing?", turning other
-apps down while you talk, offline voices, on-PC speech recognition, using other windows and terminal commands.
+Spotify, MCP integrations and opening apps. On macOS also: "what's playing?" and playback control for Spotify and
+Music (turned down while you talk), system volume, offline voices, terminal commands in your projects and Claude
+Code / Codex alerts. Coming next: on-PC speech recognition and using other windows (macOS); music, volume and the
+rest on Linux.
 
 ### Everyday use
 
