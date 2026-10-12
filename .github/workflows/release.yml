@@ -31,10 +31,12 @@ jobs:
         id: create
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # The id comes from the creation's own response: a draft just created isn't listed right away.
         run: |
           uv run --no-project python scripts/release_notes.py "${{ github.ref_name }}" > notes.md
-          gh release create "${{ github.ref_name }}" --draft --title "Elissa ${{ github.ref_name }}" --notes-file notes.md
-          echo "id=$(gh api "repos/${{ github.repository }}/releases" --jq '.[] | select(.tag_name == "${{ github.ref_name }}") | .id')" >> "$GITHUB_OUTPUT"
+          id=$(gh api -X POST "repos/${{ github.repository }}/releases" -f tag_name="${{ github.ref_name }}"             -f name="Elissa ${{ github.ref_name }}" -F draft=true -F body=@notes.md --jq .id)
+          test -n "$id"
+          echo "id=$id" >> "$GITHUB_OUTPUT"
 
   build:
     needs: release
