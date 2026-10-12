@@ -39,15 +39,15 @@ Elissa is drawn in code, not stitched from images, so she blends smoothly from o
 - Poke her (right click) and she gets annoyed; three pokes and she gets dizzy. Rest the pointer on her and she sends hearts.
 - After five quiet minutes she falls asleep, and she wakes up when you come back.
 
-<img src="docs/media/app-listening.png" alt="Elissa's window while listening: the character with her ears up, sound waves and the talk controls" width="300" align="right">
+<p align="center">
+  <img src="docs/media/app-listening.png" alt="Elissa's window while listening: the character with her ears up, sound waves and the talk controls" width="300">
+</p>
 
 **She stays out of your way.**
 - She is a small floating bubble that grows into a card while you talk and shrinks back when she is done.
 - Drag her anywhere; she expands from that corner.
 - She lives in the system tray, can start with Windows and updates herself.
 - She uses under 1% CPU at rest. The microphone is only on while she listens.
-
-<br clear="right">
 
 ## What she can do
 
