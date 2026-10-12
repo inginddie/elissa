@@ -295,7 +295,7 @@ Windows, macOS y Linux desde el principio).
 - Firma del instalador con **SignPath Foundation** (elegida el 2026-10-12). Listo para postular: política de firma
   (`docs/CODE_SIGNING.md`), política de privacidad (`PRIVACY.md`), aviso de privacidad y licencia en el instalador
   (`packaging/installer-notice.txt`, `bundle.licenseFile`), enlaces en el README y en cada release. Falta:
-  1. Diego: MFA en GitHub; postular en https://signpath.org/apply (repo, licencia MIT, descarga en Releases).
+  1. ~~Diego: MFA en GitHub; postular en https://signpath.org/apply~~ postulado por Diego (2026-10-12); esperando respuesta.
   2. Al aprobar: crear en SignPath el trusted build system "GitHub.com", instalar la SignPath GitHub App, y guardar
      `SIGNPATH_API_TOKEN` (secreto) y organization id / project / signing policy / artifact configuration.
   3. CI: subir el engine y el setup con `actions/upload-artifact@v7` (id) y firmarlos con
