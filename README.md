@@ -147,6 +147,7 @@ The full [privacy policy](PRIVACY.md) lists every service Elissa can contact and
 | English UI, configurable shortcut, security policy, 1.0 | F7 | ✅ |
 | English wake phrase, Claude Code/Codex session alerts, current models | 1.1 | ✅ |
 | Signed installer | next | |
+| macOS and Linux ([plan](docs/PLAN.md#f8-macos-y-linux)) | F8 | planned |
 
 The detailed plan is in [`docs/PLAN.md`](docs/PLAN.md) (Spanish) and the release notes in [`CHANGELOG.md`](CHANGELOG.md).
 

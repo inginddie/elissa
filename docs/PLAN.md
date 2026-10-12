@@ -15,6 +15,7 @@ No se publica hasta completar el plan. Sin afán: prima la calidad.
 | Publicación | Se publica al terminar el plan, no la v0.1. |
 | Diseño | Personaje y animaciones propios, dibujados en código, con referencias generadas con Nano Banana 2. |
 | Orden | F1 → F2 → F4 → F3 → F5 → F6 → F7 |
+| Otros sistemas (2026-10-12) | F8: macOS y Linux después de la 1.x en Windows, con una capa de plataforma. |
 
 ## Reglas de seguridad (no negociables)
 
@@ -154,12 +155,87 @@ reconocimiento siguen el idioma), atajo configurable (comando `set_hotkey` en el
 SECURITY.md con reporte privado activado en GitHub, CONTRIBUTING.md. La firma del instalador queda pendiente (ver
 backlog): requiere una decisión y un trámite de Diego.
 
+## F8. macOS y Linux
+
+Objetivo: la misma Elissa en macOS (Apple Silicon e Intel) y Linux (Ubuntu 22.04+ y derivadas, X11 y Wayland), con
+instalador, actualizaciones automáticas y las mismas reglas de seguridad. Windows no puede perder nada en el camino.
+
+Estado (2026-10-12): planeado. Inventario hecho: 13 módulos de Python y 3 puntos del shell en Rust dependen de Windows.
+
+### Estrategia
+
+- **Capa de plataforma.** Un paquete `elissa/platform/` con una interfaz por capacidad (abrir apps, multimedia,
+  volumen y ducking, voz offline, sesión bloqueada, procesos hijos, uso del computador) y una implementación por
+  sistema (`windows.py`, `macos.py`, `linux.py`). Las herramientas solo hablan con la interfaz. Lo que un sistema no
+  pueda hacer no se registra como herramienta, en vez de fallar al usarla.
+- **Rutas con `platformdirs`.** `%APPDATA%\Elissa` pasa a ser `~/Library/Application Support/Elissa` en macOS y
+  `~/.config/elissa` + `~/.local/share/elissa` en Linux. En Windows no cambia nada.
+- **CI en matriz.** Pruebas y build en `windows-latest`, `macos-14` (arm64), `macos-13` (x64) y `ubuntu-22.04`.
+  PyInstaller no compila cruzado: cada motor se construye en su propio sistema. Las pruebas que usan `winreg` o
+  `ctypes.windll` se marcan solo para Windows.
+- **Por etapas.** Primero lo esencial en cada sistema (hablar con el atajo, chat, archivos, web, memoria,
+  recordatorios, Spotify, MCP, avisos de agentes). Después la palabra de activación, el reconocimiento local, el
+  ducking y el uso del computador.
+
+### Qué cambia por componente
+
+| Componente | Windows (hoy) | macOS | Linux | Esfuerzo |
+|---|---|---|---|---|
+| Ventana Tauri transparente, bandeja, atajo | ✅ | `macOSPrivateApi` para la transparencia; atajo global sin permisos extra | X11 bien; en Wayland la ventana siempre encima y el atajo global dependen del compositor (portal de GlobalShortcuts) | Medio |
+| Ojos que siguen el cursor (Rust) | `GetCursorPos` | `CGEventGetLocation` (crate core-graphics) | X11: `XQueryPointer`; Wayland no da el cursor global → solo dentro de la ventana | Bajo |
+| Abrir enlaces (Rust) | `rundll32` | `tauri-plugin-opener` en los tres | igual | Bajo |
+| Instalador | NSIS | `.dmg` + `.app` | AppImage + `.deb` (y `.rpm`) | Medio |
+| Actualizaciones | `latest.json` firmado | `.app.tar.gz` firmado; tauri-action une las plataformas en un solo `latest.json` | AppImage firmado (los `.deb` se actualizan con el paquete) | Bajo |
+| Firma de código | SignPath (en trámite) | **Apple Developer ID (99 USD/año) + notarización**; sin eso Gatekeeper la bloquea | No obligatoria (opcional GPG) | Trámite |
+| Llaves y contraseñas | Administrador de credenciales | Llavero (keyring ya lo soporta) | Secret Service/libsecret; sin un llavero activo, avisar y no guardar en texto plano | Bajo |
+| Micrófono | WebView2 | Permiso `NSMicrophoneUsageDescription` y manejo del permiso en WKWebView | WebKitGTK necesita habilitar `getUserMedia`; **riesgo: verificarlo primero** | Medio |
+| Voz natural (Edge) | ✅ | igual | igual | — |
+| Voz offline | SAPI | `say` / AVSpeechSynthesizer | Piper (mejor calidad) o espeak-ng | Medio |
+| Reconocimiento local (whisper.cpp) | binario oficial x64 + job object | compilar con Metal en CI y fijar versión; el proceso hijo muere con el motor vía kqueue o sondeo | compilar en CI; `PR_SET_PDEATHSIG` | Medio |
+| « Hola Elissa » (Vosk) | ✅ | wheels oficiales; sesión bloqueada con `CGSessionCopyCurrentDictionary` | wheels oficiales; sesión bloqueada con logind (`LockedHint` por D-Bus) | Bajo |
+| Abrir apps y archivos | `Get-StartApps`, `os.startfile` | `/Applications` + `open -a`, `open` | archivos `.desktop` (XDG) + `gtk-launch`, `xdg-open` | Medio |
+| Archivos que nunca se abren | `.exe`, `.ps1`, `.lnk`… | sumar `.app`, `.command`, `.sh`, `.pkg` | sumar `.sh`, `.AppImage`, `.desktop`, `.run` y todo lo que tenga bit de ejecución | Bajo |
+| Multimedia y « ¿qué suena? » | SMTC (winrt) | Sin API pública (MediaRemote es privada y cambió en macOS 15.4): AppleScript para Spotify y Música, y la Web API de Spotify | **MPRIS por D-Bus**: todos los reproductores, con título y artista | Medio |
+| Ducking por app | pycaw | **No hay volumen por app**: bajar Spotify (AppleScript o Web API) o, si se activa, el volumen general | PipeWire/PulseAudio por app (`pulsectl`): igual que en Windows | Medio |
+| Volumen del sistema | pycaw | `osascript` (set volume) | `pactl` / `pulsectl` | Bajo |
+| Uso del computador (leer ventanas, clic, teclas) | UI Automation | Accessibility API (AXUIElement con pyobjc, permiso de Accesibilidad) | AT-SPI en X11; **Wayland no permite** ver ni controlar otras ventanas | **Alto** |
+| `ejecutar_comando` | PowerShell + lista de bloqueos | shell del usuario (zsh) con lista propia (`rm -rf`, `sudo`, `git reset --hard`…) | bash, igual | Medio |
+| Avisos de Claude Code y Codex | `notify.ps1` | `notify.sh` (curl), mismo `~/.claude` y `~/.codex` | igual | Bajo |
+| Spotify de escritorio | `winreg` + protocolo `spotify:` | `/Applications/Spotify.app`, `open -a Spotify` | `spotify` en el PATH o Flatpak | Bajo |
+| Iniciar con el sistema, notificaciones | plugins de Tauri | igual (LaunchAgent) | igual (`~/.config/autostart`) | — |
+| Textos que nombran Windows | « Administrador de credenciales », rutas | por plataforma | por plataforma | Bajo |
+
+### Orden propuesto
+
+1. **F8.1 Base (sin cambio visible).** Capa de plataforma, `platformdirs`, CI en matriz con las pruebas pasando en los
+   tres sistemas y Windows idéntico.
+2. **F8.2 Linux.** Va primero porque no exige pagar firma y porque MPRIS y PipeWire dan casi la misma experiencia que
+   Windows, ducking incluido. Antes que nada, verificar el micrófono en WebKitGTK y el comportamiento en Wayland.
+3. **F8.3 macOS.** Requiere la cuenta de Apple Developer para firmar y notarizar, permisos de micrófono y
+   Accesibilidad, y aceptar el ducking limitado.
+4. **F8.4 Paridad.** Uso del computador en macOS y en Linux X11. En Wayland queda documentado como no disponible.
+
+Listo cuando: en cada sistema se instala desde GitHub sin pasos manuales, se actualiza sola, pasa las pruebas y el
+self-test del motor en CI, y lo esencial funciona con la voz real en un equipo físico. Lo que no aplica en un
+sistema aparece explicado en Ajustes.
+
+### Decisiones pendientes de Diego
+
+- ¿Linux primero, como se propone, o macOS?
+- macOS: ¿pagar la cuenta de Apple Developer (99 USD/año)? Sin ella, Gatekeeper bloquea la app y el usuario debe
+  autorizarla a mano.
+- Equipos de prueba: ¿hay un Mac y un Linux físicos? Una VM sirve para lo básico, pero no para el micrófono ni el
+  audio.
+- Linux: ¿qué distribuciones soportar oficialmente? Se propone Ubuntu/Debian (`.deb`) y AppImage para el resto.
+
 ## Riesgos
 
 - Reconocimiento local lento en equipos sin GPU: la nube es la opción por defecto.
 - Palabra de activación en español con falsos positivos: apagada por defecto.
 - Ejecutables PyInstaller y falsos positivos de antivirus: firmar el instalador.
 - edge-tts es un servicio no oficial: respaldo con voces de Windows.
+- macOS y Linux (F8): micrófono en WebKitGTK, límites de Wayland (cursor, atajo global, uso del computador), sin
+  volumen por app en macOS y costo de la firma de Apple.
 
 ## Backlog
 
