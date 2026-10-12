@@ -74,7 +74,7 @@ const EN = {
   // settings
   'General': 'General',
   'Idioma': 'Language',
-  'Automático (según Windows)': 'Automatic (from Windows)',
+  'Automático (según el sistema)': 'Automatic (from the system)',
   'Nombre del asistente': "Assistant's name",
   'Tu nombre': 'Your name',
   'Para que te llame por tu nombre': 'So she calls you by your name',
@@ -152,10 +152,15 @@ const EN = {
   'descargando {pct}%': 'downloading {pct}%',
   'en pausa (pantalla bloqueada)': 'paused (screen locked)',
   'sin micrófono, reintentando…': 'no microphone, retrying…',
-  'Funciona sin internet: nada de lo que escucha sale de tu PC hasta que la despiertas. Mientras esté activa, Windows muestra el ícono del micrófono; se pausa sola con la pantalla bloqueada. La primera vez descarga un modelo de 40 MB.':
-    'Works offline: nothing she hears leaves your PC until you wake her. While it is on, Windows shows the microphone icon; it pauses when the screen is locked. It downloads a 40 MB model the first time.',
+  'Funciona sin internet: nada de lo que escucha sale de tu PC hasta que la despiertas. Mientras esté activa, el sistema muestra el ícono del micrófono; se pausa sola con la pantalla bloqueada. La primera vez descarga un modelo de 40 MB.':
+    'Works offline: nothing she hears leaves your computer until you wake her. While it is on, the system shows the microphone icon; it pauses when the screen is locked. It downloads a 40 MB model the first time.',
   'Interrumpirla hablando mientras responde (mejor con audífonos)': 'Interrupt her by talking while she answers (best with headphones)',
-  'Iniciar con Windows': 'Start with Windows',
+  'Iniciar con el sistema': 'Start with the system',
+  'Tu API key se guarda cifrada en el Llavero de macOS, nunca en archivos.': 'Your API key is stored encrypted in the macOS Keychain, never in files.',
+  'Tu API key se guarda cifrada en el llavero del sistema (Secret Service), nunca en archivos.': 'Your API key is stored encrypted in the system keyring (Secret Service), never in files.',
+  'Mientras hablamos, bajar Spotify y Música': 'While we talk, turn Spotify and Music down',
+  'macOS bloqueó el micrófono. Actívalo en Ajustes del Sistema → Privacidad y seguridad → Micrófono → Elissa.':
+    'macOS blocked the microphone. Turn it on in System Settings → Privacy & Security → Microphone → Elissa.',
   'Sonidos': 'Sounds',
   'Sonidos de Elissa': "Elissa's sounds",
   'Volumen': 'Volume',

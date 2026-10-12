@@ -22,7 +22,7 @@ from fastapi import FastAPI, Query, Request, UploadFile, WebSocket, WebSocketDis
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from . import __version__, edge_voice, system, windows_tts
+from . import __version__, edge_voice, offline_voice, system
 from .agent import Agent
 from .config import (DEFAULTS, HOME, SOUNDS_DIR, STATIC, api_key_name, get_secret, load_settings, save_settings,
                      set_secret)
@@ -445,7 +445,6 @@ async def index(request: Request, t: str = ""):
 
 # ----- voice -----
 
-WINDOWS_VOICE = "windows:"  # voice ids for the offline Windows voices
 EDGE_TIMEOUT_S = 12
 
 
@@ -455,18 +454,20 @@ async def _edge_tts(text: str, voice: str, speed: float) -> bytes:
 
 @app.get("/api/tts")
 async def tts(text: str):
-    """Speech for a sentence: the chosen Edge voice, or a Windows voice (offline). If Edge can't be reached, the
-    Windows voice answers instead of leaving Elissa mute."""
+    """Speech for a sentence: the chosen Edge voice, or a system voice (offline). If Edge can't be reached, a
+    system voice answers instead of leaving Elissa mute."""
     s = state["brain"].settings
     voice, speed = s.get("voice", ""), float(s.get("speed", 1.0))
-    if not voice.startswith(WINDOWS_VOICE):
+    if not offline_voice.is_offline(voice):
         try:
             audio = await asyncio.wait_for(_edge_tts(text, voice, speed), EDGE_TIMEOUT_S)
             return Response(audio, media_type="audio/mpeg")
         except Exception as e:
-            log.warning("Edge voice failed (%s); using the Windows voice", e)
+            if not offline_voice.available():
+                raise
+            log.warning("Edge voice failed (%s); using the system voice", e)
             voice = ""
-    wav = await asyncio.to_thread(windows_tts.synthesize, text, voice.removeprefix(WINDOWS_VOICE), speed)
+    wav = await asyncio.to_thread(offline_voice.synthesize, text, voice, speed, s.get("language", "es")[:2])
     return Response(wav, media_type="audio/wav")
 
 
@@ -474,7 +475,8 @@ async def tts(text: str):
 async def voices():
     lang = state["brain"].settings.get("language", "es-CO")[:2]
     english = lang == "en"
-    female, male, offline = ("female", "male", "Windows, offline") if english else ("mujer", "hombre", "Windows, sin conexión")
+    female, male, offline = (("female", "male", f"{offline_voice.LABEL}, offline") if english
+                             else ("mujer", "hombre", f"{offline_voice.LABEL}, sin conexión"))
     out = []
     try:
         found = await asyncio.wait_for(edge_tts.list_voices(), EDGE_TIMEOUT_S)
@@ -484,13 +486,10 @@ async def voices():
     except Exception as e:
         log.warning("could not list Edge voices: %s", e)
     try:
-        for v in (await asyncio.to_thread(windows_tts.list_voices) if system.has("offline_voice") else []):
-            spanish = v["lang"].upper() in windows_tts.SPANISH
-            if spanish or lang != "es":
-                short = v["name"].replace("Microsoft ", "").replace(" Desktop", "")
-                out.append({"id": WINDOWS_VOICE + v["name"], "label": f"{short} · {offline}"})
+        for v in (await asyncio.to_thread(offline_voice.list_voices, lang) if offline_voice.available() else []):
+            out.append({"id": v["id"], "label": f"{v['name']} · {offline}"})
     except Exception as e:
-        log.warning("could not list Windows voices: %s", e)
+        log.warning("could not list the system voices: %s", e)
     return out
 
 
@@ -705,16 +704,19 @@ async def spotify_callback(code: str = "", state_: str = Query("", alias="state"
 
 @app.post("/hooks/agent-event")
 async def agent_event(request: Request):
-    """Called by hooks/notify.ps1; outside /api/ because it carries the hook token instead of the session cookie."""
+    """Called by hooks/notify.ps1 or notify.sh; outside /api/ because it carries the hook token instead of the session
+    cookie. notify.sh passes the hook's own JSON (it may carry the last answer): only three fields are kept."""
     if not agent_hooks.authorized(request.headers.get("x-elissa-hook")):
         return JSONResponse({"error": "No autorizado"}, 403)
     body = await request.body()
-    if len(body) > 4096:
+    if len(body) > 2_000_000:
         return JSONResponse({"error": "Demasiado grande"}, 413)
     try:
         data = json.loads(body)
     except ValueError:
         return JSONResponse({"error": "JSON no válido"}, 400)
+    if isinstance(data, dict) and "hook_event_name" in data:
+        data = agent_hooks.from_raw_hook(data, request.headers.get("x-elissa-source", ""))
     alert = agent_hooks.parse_event(data) if isinstance(data, dict) else None
     if alert:
         log.info("agent alert: %s %s %s", alert["source"], alert["kind"], alert["project"])

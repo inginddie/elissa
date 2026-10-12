@@ -239,7 +239,11 @@ async function startListening(auto = false) {
     }
     await ensureAudio();
   } catch (e) {
-    setState('error', t('No tengo acceso al micrófono'));
+    // macOS can drop the permission after an update (the app isn't notarized): say where to give it back
+    const denied = e?.name === 'NotAllowedError' && document.body.dataset.os === 'macos';
+    setState('error', denied
+      ? t('macOS bloqueó el micrófono. Actívalo en Ajustes del Sistema → Privacidad y seguridad → Micrófono → Elissa.')
+      : t('No tengo acceso al micrófono'));
     return;
   } finally {
     starting = false;
@@ -1305,6 +1309,19 @@ async function loadMcp() {
   }
 }
 
+/** Shows what applies on this system: texts per OS (data-os) and features it has (data-cap). */
+async function applySystem() {
+  const { ok, data } = await api('/api/system');
+  if (!ok) return;
+  document.body.dataset.os = data.name;
+  const caps = new Set(data.caps);
+  document.querySelectorAll('[data-os]').forEach((el) => (el.hidden = el.dataset.os !== data.name));
+  document.querySelectorAll('[data-cap]').forEach((el) => {
+    el.hidden = !caps.has(el.dataset.cap);
+    if (el.tagName === 'OPTION') el.disabled = el.hidden;
+  });
+}
+
 async function loadSpotify() {
   const { data: s } = await api('/api/spotify');
   $('#spotify-redirect').textContent = s.redirect_uri;
@@ -1482,6 +1499,7 @@ if (native) {
 }
 setState('waking');
 connect();
+applySystem();
 ensureAudio(false)
   .then(async () => sfx.loadCustom((await api('/api/sounds')).data))
   .catch(() => {});

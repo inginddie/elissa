@@ -2,6 +2,23 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [1.5.0] - sin publicar
+
+### Añadido (macOS)
+- Los ojos de Elissa siguen el cursor por todo el escritorio.
+- Música: « ¿qué suena? », pausar, reanudar, siguiente y anterior con Spotify y Música (la primera vez macOS pide
+  permiso para que Elissa los controle).
+- Mientras te escucha y responde, baja el volumen de Spotify y Música y lo devuelve al terminar (macOS no tiene
+  volumen por app). Volumen del sistema por voz.
+- Voces sin internet: las voces del sistema (`say`), también como respaldo si la voz de Edge falla.
+- « Hola Elissa » se pausa con la pantalla bloqueada.
+- Comandos de terminal en los proyectos (zsh), con tarjeta de aprobación y su propia lista de comandos prohibidos.
+- Avisos de Claude Code y Codex.
+- Si macOS quita el permiso de micrófono (puede pasar tras una actualización), Elissa dice cómo devolverlo.
+
+### Cambiado
+- Ajustes muestra solo lo que aplica en cada sistema y con sus nombres (Llavero de macOS, Credenciales de Windows).
+
 ## [1.4.0] - 2026-10-12
 
 ### Añadido

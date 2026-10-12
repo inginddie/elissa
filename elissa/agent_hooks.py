@@ -1,10 +1,12 @@
 """Alerts from coding agents: Claude Code and Codex tell Elissa when a session finishes or needs the user.
 
 Elissa installs, on request, a command hook in each tool (~/.claude/settings.json, ~/.codex/hooks.json) that runs
-hooks/notify.ps1. The script reads the hook's JSON from stdin and posts a small event to the running engine, using
-the port and a hook-only token from agent-hooks.json (rewritten on every launch). Only the event, the alert type and
-the project folder's name are sent: never prompts, answers or transcripts. If Elissa is closed the script gives up at
-once. It always prints "{}" and exits 0, so it can never block or steer a session.
+hooks/notify.ps1 (Windows) or hooks/notify.sh (macOS, Linux). The script posts the hook's event to the running engine
+on this PC, using the port and a hook-only token from agent-hooks.json (rewritten on every launch). The PowerShell
+script sends only the event, the alert type and the project folder; the shell script can't parse JSON reliably, so
+it passes the event as is and the engine keeps only those three fields: prompts, answers and transcripts are never
+kept, logged or sent anywhere. If Elissa is closed the script gives up at once. It always prints "{}" and exits 0,
+so it can never block or steer a session.
 """
 import json
 import logging
@@ -15,16 +17,17 @@ import shutil
 import time
 from pathlib import Path
 
+from . import system
 from .config import HOME
 
 log = logging.getLogger(__name__)
 
 ENDPOINT_FILE = HOME / "agent-hooks.json"
-SCRIPT = HOME / "hooks" / "notify.ps1"
+SCRIPT = HOME / "hooks" / ("notify.ps1" if system.IS_WINDOWS else "notify.sh")
 CLAUDE_SETTINGS = Path.home() / ".claude" / "settings.json"
 CODEX_HOOKS = Path.home() / ".codex" / "hooks.json"
 
-SCRIPT_TEXT = r"""# Elissa: forwards Claude Code / Codex hook events to the running Elissa. Always prints {} and exits 0.
+PS1_TEXT = r"""# Elissa: forwards Claude Code / Codex hook events to the running Elissa. Always prints {} and exits 0.
 param([string]$Source = "claude")
 $ErrorActionPreference = "SilentlyContinue"
 try {
@@ -45,6 +48,22 @@ try {
 exit 0
 """
 
+SH_TEXT = r"""#!/bin/sh
+# Elissa: forwards Claude Code / Codex hook events to the running Elissa on this PC. Always prints {} and exits 0.
+cfg=$(cat "$(dirname "$0")/../agent-hooks.json" 2>/dev/null)
+port=$(printf '%s' "$cfg" | sed -n 's/.*"port": *\([0-9][0-9]*\).*/\1/p')
+token=$(printf '%s' "$cfg" | sed -n 's/.*"token": *"\([0-9a-f]*\)".*/\1/p')
+if [ -n "$port" ] && [ -n "$token" ]; then
+  curl -s -o /dev/null --connect-timeout 0.3 -m 3 -X POST -H "X-Elissa-Hook: $token" -H "X-Elissa-Source: ${1:-claude}" \
+    -H "Content-Type: application/json" --data-binary @- "http://127.0.0.1:$port/hooks/agent-event" >/dev/null 2>&1
+else
+  cat >/dev/null
+fi
+echo '{}'
+exit 0
+"""
+SCRIPT_TEXT = PS1_TEXT if system.IS_WINDOWS else SH_TEXT
+
 SOURCES = {"claude": "Claude Code", "codex": "Codex"}
 REPEAT_S = 5  # the same alert for the same project within this window is shown once
 
@@ -56,12 +75,21 @@ def publish_endpoint(port: int) -> None:
     """Writes the hook script and where to reach this engine; called on every launch."""
     SCRIPT.parent.mkdir(parents=True, exist_ok=True)
     if not SCRIPT.exists() or SCRIPT.read_text("utf-8-sig") != SCRIPT_TEXT:
-        SCRIPT.write_text(SCRIPT_TEXT, "utf-8-sig")  # BOM: Windows PowerShell 5.1 reads UTF-8 only with it
+        # BOM: Windows PowerShell 5.1 reads UTF-8 only with it; a shell script must not have one
+        SCRIPT.write_text(SCRIPT_TEXT, "utf-8-sig" if system.IS_WINDOWS else "utf-8", newline="\n")
+    if not system.IS_WINDOWS:
+        SCRIPT.chmod(0o755)
     ENDPOINT_FILE.write_text(json.dumps({"port": port, "token": TOKEN}), "utf-8")
 
 
 def authorized(header: str | None) -> bool:
     return bool(header) and secrets.compare_digest(header, TOKEN)
+
+
+def from_raw_hook(data: dict, source: str) -> dict:
+    """The hook's own JSON (what notify.sh passes along) reduced to the fields Elissa uses; the rest is dropped."""
+    return {"source": source, "event": data.get("hook_event_name"), "type": data.get("notification_type") or "",
+            "cwd": data.get("cwd") or ""}
 
 
 def parse_event(body: dict, now: float | None = None) -> dict | None:
@@ -93,7 +121,9 @@ def parse_event(body: dict, now: float | None = None) -> dict | None:
 # ----- installing the hooks -----
 
 def _command() -> list[str]:
-    return ["powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", str(SCRIPT)]
+    if system.IS_WINDOWS:
+        return ["powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", str(SCRIPT)]
+    return ["/bin/sh", str(SCRIPT)]
 
 
 def _ours(handler: dict) -> bool:
@@ -142,14 +172,16 @@ def _strip(hooks: dict) -> dict:
 
 def _targets(tool: str) -> tuple[Path, dict]:
     if tool == "claude":
-        handler = {"type": "command", "command": "powershell.exe", "args": _command()[1:] + ["claude"],
+        handler = {"type": "command", "command": _command()[0], "args": _command()[1:] + ["claude"],
                    "async": True, "timeout": 10}
         return CLAUDE_SETTINGS, {"Stop": [{"hooks": [handler]}], "StopFailure": [{"hooks": [handler]}],
                                  "Notification": [{"matcher": "permission_prompt|idle_prompt|agent_needs_input",
                                                    "hooks": [handler]}]}
     if tool == "codex":
         line = " ".join(f'"{a}"' if " " in a else a for a in _command() + ["codex"])
-        handler = {"type": "command", "command": line, "commandWindows": line, "async": True, "timeout": 10}
+        handler = {"type": "command", "command": line, "async": True, "timeout": 10}
+        if system.IS_WINDOWS:
+            handler["commandWindows"] = line
         return CODEX_HOOKS, {"Stop": [{"hooks": [handler]}], "PermissionRequest": [{"hooks": [handler]}]}
     raise ValueError(tool)
 

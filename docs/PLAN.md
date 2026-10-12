@@ -165,6 +165,10 @@ F8.1 lista en CI (PR #1, rama `f8-platform`; falta la prueba en el Mac de Diego)
 `platformdirs`, dependencias de Windows marcadas `sys_platform == 'win32'`, spec de PyInstaller y shell de Rust para
 los tres sistemas (firma ad hoc en macOS, `Info.plist` con permiso de micrófono), CI en matriz con un release en
 borrador al que cada sistema suma su instalador.
+F8.1 publicada en 1.4.0. F8.2 en la rama `f8-macos` (1.5.0): cursor global (core-graphics), música y « qué suena »
+por AppleScript (Spotify, Música), volumen y ducking de esos reproductores, voces `say` (`offline_voice.py`),
+bloqueo de sesión (CoreGraphics), comandos en zsh con reglas de bloqueo de Unix, `notify.sh`, Ajustes por
+capacidades (`/api/system`, `data-cap`, `data-os`). STT local y uso del computador pasan a F8.4.
 Decisiones de Diego (2026-10-12): **macOS primero**, **sin cuenta de Apple Developer**, pruebas en un Mac físico y en
 un Linux en máquina virtual.
 

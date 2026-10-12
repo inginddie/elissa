@@ -6,6 +6,7 @@ delete or throw work away are refused outright, so Elissa keeps her promise of n
 import os
 import re
 import shutil
+import signal
 import subprocess
 from pathlib import Path
 
@@ -45,12 +46,23 @@ FORBIDDEN = [
     (r"\breg(\.exe)?\s+delete\b|remove-itemproperty", "borra del registro de Windows"),
     (r"\b(drop\s+(table|database)|truncate\s+table)\b", "borra datos de una base de datos"),
     (r"\b(iex|invoke-expression)\b|\|\s*(sh|bash|iex|powershell)\b", "ejecuta código descargado o dinámico"),
+    # macOS and Linux shells
+    (r"\b(sudo|doas|su)\b", "pide permisos de administrador"),
+    (r"\b(zsh|bash|sh|fish)\s+-c\b|\beval\b|\|\s*(zsh|fish|xargs)\b|\$\(\s*(curl|wget)\b",
+     "oculta el comando real (lo ejecuta de forma indirecta)"),
+    (r"\b(mkfs(\.\w+)?|fdisk|parted|diskutil\s+(erase\w*|partition\w*|zero\w*|reformat))\b|\bdd\b.*\bof=",
+     "toca el sistema o los discos"),
+    (r"\b(launchctl\s+(unload|remove|bootout)|defaults\s+delete|tmutil\s+delete|csrutil|nvram|pmset)\b",
+     "toca el sistema o los discos"),
+    (r"\bchmod\s+(-r\s+)?[0-7]*777\b|\bchown\s+-r\b", "cambia permisos de forma amplia"),  # matched lowercased
+    (r"\b(trash|srm)\b|>\s*/dev/(sd|disk|nvme)", "borra archivos o carpetas"),
 ]
 # Commands that run but deserve a warning on the card.
 RISKY = [
     (r"\bgit\s+(push|commit|merge|rebase|tag)\b", "Cambia el repositorio (o lo publica)."),
     (r"\b(npm|pnpm|yarn)\s+publish\b|\btwine\s+upload\b|\bcargo\s+publish\b", "Publica un paquete."),
-    (r"\b(stop-process|taskkill|kill)\b", "Detiene procesos."),
+    (r"\b(stop-process|taskkill|kill|pkill|killall)\b", "Detiene procesos."),
+    (r"\b(brew|apt|apt-get|dnf|pacman|port)\s+(install|remove|uninstall|upgrade|update)\b", "Instala o cambia programas."),
     (r"\b(move-item|mv|move|rename-item|ren)\b", "Mueve o renombra archivos."),
     (r"\b(set-content|out-file|add-content)\b|>\s*\S", "Escribe en archivos."),
     (r"\b(pip|uv|npm|pnpm|yarn|winget|choco|cargo)\s+(install|add|i|update|upgrade|remove|uninstall)\b",
@@ -207,17 +219,23 @@ class CodeTools:
         if forbidden_reason(command):
             raise PermissionError("Comando no permitido.")
         timeout = max(5, min(int(timeout or 120), 1800))
-        proc = subprocess.Popen(
-            ["powershell", "-NoProfile", "-NonInteractive", "-Command",
-             "[Console]::OutputEncoding=[Text.Encoding]::UTF8; " + command],
-            cwd=str(cwd), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
-            creationflags=system.NO_WINDOW)
+        if system.IS_WINDOWS:
+            argv = ["powershell", "-NoProfile", "-NonInteractive", "-Command",
+                    "[Console]::OutputEncoding=[Text.Encoding]::UTF8; " + command]
+        else:  # the user's login shell setup (PATH from Homebrew, nvm…), in a process group of its own
+            argv = ["/bin/zsh" if system.IS_MAC else "/bin/bash", "-lc", command]
+        proc = subprocess.Popen(argv, cwd=str(cwd), stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                stdin=subprocess.DEVNULL, creationflags=system.NO_WINDOW,
+                                start_new_session=not system.IS_WINDOWS)
         try:
             raw, _ = proc.communicate(timeout=timeout)
             status = f"Terminó con código {proc.returncode}."
         except subprocess.TimeoutExpired:
-            subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)], capture_output=True,
-                           creationflags=system.NO_WINDOW)
+            if system.IS_WINDOWS:
+                subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)], capture_output=True,
+                               creationflags=system.NO_WINDOW)
+            else:
+                os.killpg(proc.pid, signal.SIGKILL)  # the whole tree: tests, servers it started…
             raw, _ = proc.communicate()
             status = f"Lo detuve: pasó de {timeout} s."
         out = raw.decode("utf-8", errors="replace").strip()
@@ -246,7 +264,8 @@ def register(reg: ToolRegistry, code: CodeTools) -> None:
             ["path"])
     if not system.has("command"):
         return
-    reg.add("ejecutar_comando", "Ejecuta un comando de PowerShell en la carpeta de un proyecto (tests, build, lint, "
+    shell = "PowerShell" if system.IS_WINDOWS else "zsh" if system.IS_MAC else "bash"
+    reg.add("ejecutar_comando", f"Ejecuta un comando de {shell} en la carpeta de un proyecto (tests, build, lint, "
             "git commit…) y devuelve la salida. El usuario ve el comando exacto y debe aprobarlo. Nunca borra "
             "archivos ni descarta trabajo.", "Preparando el comando…", code.run,
             {"command": {"type": "string"}, "path": {"type": "string", "description": "Carpeta donde se ejecuta"},

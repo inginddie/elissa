@@ -29,15 +29,16 @@ if IS_WINDOWS:
     from .windows import (CAPS, ChildGuard, launch_app, list_apps, open_path, pick_folder, press_media_key, reveal,
                           session_locked, spotify_installed, launch_spotify)
 elif IS_MAC:
-    from .macos import (CAPS, ChildGuard, launch_app, list_apps, open_path, pick_folder, press_media_key, reveal,
-                        session_locked, spotify_installed, launch_spotify)
+    from .macos import (CAPS, ChildGuard, launch_app, list_apps, media_control, media_now_playing, open_path,
+                        pick_folder, press_media_key, reveal, session_locked, spotify_installed, launch_spotify)
 else:
-    from .linux import (CAPS, ChildGuard, launch_app, list_apps, open_path, pick_folder, press_media_key, reveal,
-                        session_locked, spotify_installed, launch_spotify)
+    from .linux import (CAPS, ChildGuard, launch_app, list_apps, media_control, media_now_playing, open_path,
+                        pick_folder, press_media_key, reveal, session_locked, spotify_installed, launch_spotify)
 
-__all__ = ["CAPS", "IS_LINUX", "IS_MAC", "IS_WINDOWS", "NAME", "ChildGuard", "has", "launch_app", "launch_spotify",
-           "list_apps", "open_path", "pick_folder", "press_media_key", "reveal", "session_locked", "spotify_installed",
-           "wait_for_exit"]
+__all__ = ["CAPS", "IS_LINUX", "IS_MAC", "IS_WINDOWS", "NAME", "NO_WINDOW", "ChildGuard", "has", "launch_app",
+           "launch_spotify", "list_apps", "open_path", "pick_folder", "press_media_key", "reveal", "session_locked",
+           "spotify_installed", "wait_for_exit"]
+# media_now_playing / media_control exist on macOS and Linux; Windows uses its media controls in media_session.
 
 
 def has(capability: str) -> bool:
