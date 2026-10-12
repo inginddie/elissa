@@ -87,7 +87,9 @@ def selftest() -> int:
     def media():
         import winrt.windows.foundation  # noqa: F401  (needed at runtime by the media controls)
         from winrt.windows.media.control import GlobalSystemMediaTransportControlsSessionManager  # noqa: F401
-        return "controles multimedia de Windows"
+        import psutil  # noqa: F401  (finds Elissa's own processes so ducking skips them)
+        from pycaw.pycaw import AudioUtilities  # noqa: F401  (volume and ducking)
+        return "controles multimedia y volumen de Windows"
 
     def windows():
         import uiautomation as auto

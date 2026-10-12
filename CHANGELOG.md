@@ -2,6 +2,21 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [1.3.0] - 2026-10-12
+
+### Añadido
+- Mientras Elissa te escucha y te responde, las demás apps que suenan (Spotify, YouTube, cualquier reproductor) bajan
+  al 20 % sin pausarse, y vuelven a su volumen al terminar. Configurable en Ajustes → Voz (10, 20, 35 % o no bajarlas).
+  Si moviste el volumen de una app mientras tanto, Elissa no lo toca; y siempre lo devuelve aunque se cierre.
+- Terminar la conversación por voz: « listo », « gracias », « eso es todo », « chao »… y deja de esperar en el modo
+  continuo. « Minimízate » o « escóndete » además la ocultan. Las frases cortas se reconocen al instante, sin la IA.
+- Volumen del sistema por voz: « baja el volumen al 30 », « súbele un poco », « silencia ».
+
+### Corregido
+- Con música sonando, Elissa se quedaba « escuchando » hasta un minuto y enviaba la música al reconocimiento: ahora
+  mide el ambiente después de bajar la música, aprende el nivel de tu voz y termina cuando dejas de hablar. El
+  máximo por intervención baja de 60 s a 20 s.
+
 ## [1.2.0] - 2026-10-12
 
 ### Añadido

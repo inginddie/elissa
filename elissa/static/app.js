@@ -21,8 +21,10 @@ const STATUS = {
 // Voice activity detection tuning (ms / RMS units)
 const SILENCE_MS = 1100;
 const NO_SPEECH_MS = 7000;
-const MAX_LISTEN_MS = 60000;
+const MAX_LISTEN_MS = 20000;
 const CALIBRATE_MS = 300; // first part of each listen measures the room's background noise
+const DUCK_SETTLE_MS = 150; // other apps are being turned down meanwhile: measure the room after that
+const VOICE_DROP = 0.3; // once you speak, sound this far below your own voice counts as silence (music)
 const MIC_IDLE_MS = 20000; // release the microphone (and Windows' mic indicator) after this long unused
 const MIN_VOICED_MS = 220;
 const BARGE_IN_MS = 350; // the user's voice over Elissa's for this long interrupts her
@@ -179,14 +181,22 @@ function onMicFrame(data, ms) {
   micLevel = rms;
   if (!vad) return;
   const now = performance.now();
-  if (now - vad.start < CALIBRATE_MS) {
+  const since = now - vad.start;
+  if (since < DUCK_SETTLE_MS) return;
+  if (since < DUCK_SETTLE_MS + CALIBRATE_MS) {
     noiseFloor = noiseFloor * 0.6 + Math.min(rms, 0.05) * 0.4;
     return;
   }
+  // The background keeps being learned: quiet moments pull the floor down, and a steady louder background (music)
+  // slowly pushes it up before you start talking, so the music itself doesn't count as speech.
+  if (rms < noiseFloor * 1.5) noiseFloor = noiseFloor * 0.95 + rms * 0.05;
+  else if (!vad.speech) noiseFloor = Math.min(noiseFloor * 1.003, 0.05);
   const threshold = Math.max(0.01, noiseFloor * 3);
-  if (rms > threshold) {
+  // After you start, only sound near your own voice level counts: music left in the background reads as silence.
+  if (rms > threshold && (!vad.speech || rms > vad.peak * VOICE_DROP)) {
     vad.voicedMs += ms;
     vad.lastVoice = now;
+    vad.peak = Math.max(vad.peak * 0.998, rms);
     if (vad.voicedMs > MIN_VOICED_MS) vad.speech = true;
   }
   if (vad.speech && now - vad.lastVoice > SILENCE_MS) stopListening(true);
@@ -215,7 +225,8 @@ function checkBargeIn(data, ms) {
   }
 }
 
-async function startListening() {
+async function startListening(auto = false) {
+  if (!auto) conversationOver = false; // called again by the user: a new conversation
   // Only one recording at a time: two recorders writing into one upload produce an invalid audio file.
   if (rec || starting || state === 'listening' || state === 'transcribing') return;
   starting = true;
@@ -253,7 +264,7 @@ function startRecording() {
     rec.ondataavailable = (e) => e.data.size && mine.push(e.data);
     rec.start(250);
   }
-  vad = { start: performance.now(), lastVoice: 0, voicedMs: 0, speech: false };
+  vad = { start: performance.now(), lastVoice: 0, voicedMs: 0, speech: false, peak: 0 };
 }
 
 function stopListening(send, manual = false) {
@@ -292,6 +303,13 @@ function stopListening(send, manual = false) {
         toIdle(t('No te entendí, intenta de nuevo'));
         return;
       }
+      const local = localCommand(text);
+      if (local) {
+        addHistory('user', text);
+        showCaption(text, '');
+        endConversation(local === 'hide');
+        return;
+      }
       sendText(text);
     } catch {
       setState('error', t('Falló el reconocimiento de voz'));
@@ -299,6 +317,39 @@ function stopListening(send, manual = false) {
     }
   };
   r.stop();
+}
+
+/* ---------- ending the conversation by voice ---------- */
+
+// Whole utterances only (after an optional "Elissa"), so these words inside a real request never end anything.
+const END_PHRASES = ['listo', 'listo gracias', 'gracias', 'muchas gracias', 'eso es todo', 'eso seria todo',
+  'gracias eso es todo', 'nada mas', 'ya', 'ya esta', 'chao', 'chau', 'adios', 'hasta luego', 'termina', 'terminar',
+  'finaliza', 'finalizar', 'deja de escuchar', 'para de escuchar', 'thanks', 'thank you', 'thats all',
+  'thats all thanks', 'thank you thats all', 'bye', 'goodbye', 'stop listening', 'nothing else', 'done', 'im done'];
+const HIDE_PHRASES = ['minimizate', 'minimizar', 'minimiza', 'escondete', 'ocultate', 'vete', 'desaparece',
+  'minimize', 'hide', 'go away'];
+
+function normalizeSpoken(text) {
+  return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]/g, '')
+    .replace(/\s+/g, ' ').trim().replace(/^(hola |oye |hey |ok |okay )?(elissa|elisa|alyssa)\s*/, '').trim();
+}
+
+function localCommand(text) {
+  const said = normalizeSpoken(text);
+  if (HIDE_PHRASES.includes(said)) return 'hide';
+  if (END_PHRASES.includes(said)) return 'end';
+  return '';
+}
+
+let conversationOver = false; // set when the user says goodbye: continuous mode stops listening until called again
+let hideAfterTurn = false;
+
+function endConversation(hide) {
+  conversationOver = true;
+  sfx.play('close');
+  face.play('happy', 900);
+  toIdle();
+  if (hide) setTimeout(() => shell.hide(), 700);
 }
 
 /** Float32 chunks at the context's rate -> 16 kHz mono 16-bit WAV (averaging down-sampler). */
@@ -394,8 +445,12 @@ function finishTurn() {
   if (turnStarted && performance.now() - turnStarted > LONG_TURN_MS) sfx.play('done');
   if (turnStarted) face.play('happy', 1100);
   turnStarted = 0;
-  if (cfg.continuous) {
-    setTimeout(() => state !== 'listening' && turnDone && !playing && startListening(), 350);
+  if (hideAfterTurn) {
+    hideAfterTurn = false;
+    toIdle();
+    setTimeout(() => shell.hide(), 700);
+  } else if (cfg.continuous && !conversationOver) {
+    setTimeout(() => state !== 'listening' && turnDone && !playing && !conversationOver && startListening(true), 350);
   } else {
     toIdle();
   }
@@ -522,6 +577,10 @@ function handle(m) {
       break;
     case 'agent_alert':
       announceAgent(m);
+      break;
+    case 'end_conversation':
+      conversationOver = true;
+      hideAfterTurn = !!m.hide;
       break;
     case 'spotify':
       if (m.connected) msg($('#spotify-msg'), t('Spotify quedó conectado.'), 'ok');

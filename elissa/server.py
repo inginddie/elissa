@@ -47,8 +47,10 @@ from .tools.mail_send import register as register_mail_send
 from .tools.planner import Planner
 from .tools.planner import register as register_planner
 from .tools.music import register as register_music
+from .tools.session import register as register_session
 from .tools.web import register as register_web
 from . import agent_hooks, mcp_client
+from .audio_mixer import Mixer
 from .spotify import Spotify, SpotifyError, desktop_installed as spotify_desktop_installed
 from .local_stt import MODELS as LOCAL_MODELS
 from .local_stt import LocalWhisper, split_wav
@@ -138,6 +140,7 @@ class Brain:
         self.wake = WakeListener(HOME / "models", self._on_wake, self._on_wake_status,
                                  self.settings.get("language", "es"))
         self.mcp = mcp_client.McpManager(self._mcp_changed)
+        self.mixer = Mixer(own_pids)
         self.spotify = Spotify(lambda: self.settings.get("spotify_client_id", ""),
                                int(os.environ.get("ELISSA_PORT", "8740")))
         self.local_stt = LocalWhisper(HOME / "models",
@@ -191,6 +194,8 @@ class Brain:
         if hasattr(self, "mcp"):
             self.mcp.register(reg)
         register_music(reg, getattr(self, "spotify", None))
+        if hasattr(self, "mixer"):
+            register_session(reg, self.mixer, self._from_thread)
         register_web(reg)
         register_memory(reg, self.memory)
         if self.settings.get("mail_enabled"):
@@ -328,6 +333,7 @@ state: dict = {}
 async def stop_engine(reason: str) -> None:
     log.info("%s; saving memory and exiting", reason)
     brain: Brain = state["brain"]
+    brain.mixer.restore_now()  # os._exit below skips atexit: give the other apps their volume back first
     await brain.interrupt()
     task = brain.memory.close()
     if task:
@@ -336,6 +342,19 @@ async def stop_engine(reason: str) -> None:
         except Exception:
             log.exception("memory consolidation failed on exit")
     os._exit(0)
+
+
+def own_pids() -> set[int]:
+    """Elissa's processes: the engine, the desktop shell and the shell's WebView2 (her voice plays there)."""
+    pids = {os.getpid()}
+    if PARENT_PID:
+        pids.add(PARENT_PID)
+        try:
+            import psutil
+            pids.update(p.pid for p in psutil.Process(PARENT_PID).children(recursive=True))
+        except Exception:
+            pass
+    return pids
 
 
 def watch_parent(loop: asyncio.AbstractEventLoop) -> None:
@@ -367,6 +386,7 @@ async def watchdog() -> None:
         if (not PARENT_PID and hub.ever_connected and not hub.clients
                 and time.time() - hub.last_left > IDLE_SHUTDOWN_S):
             await stop_engine("browser window closed")
+        await brain.mixer.watchdog()
         if brain.memory.idle_expired() and not (brain.task and not brain.task.done()):
             brain.new_conversation()
 
@@ -922,6 +942,11 @@ async def ws_endpoint(ws: WebSocket):
             elif kind == "ui_state":
                 # the wake phrase pauses while Elissa herself listens or speaks
                 brain.wake.busy = msg.get("state") in ("listening", "transcribing", "speaking")
+                # other apps play quieter from the moment she listens until she has answered
+                if msg.get("state") == "listening":
+                    await brain.mixer.duck(float(brain.settings.get("duck_level", 0.2)))
+                elif msg.get("state") in ("idle", "error", "waking", "sleeping"):
+                    await brain.mixer.restore()
             elif kind == "client_error":
                 log.warning("window error: %s", str(msg.get("message", ""))[:500])
             elif kind == "attach":
@@ -940,3 +965,4 @@ async def ws_endpoint(ws: WebSocket):
         hub.last_left = time.time()
         if not hub.clients:
             brain.deny_all_approvals()  # nobody left to see the card
+            await brain.mixer.restore()

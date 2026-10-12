@@ -157,6 +157,14 @@
       <p class="hint small">Funciona sin internet: nada de lo que escucha sale de tu PC hasta que la despiertas. Mientras esté activa,
         Windows muestra el ícono del micrófono; se pausa sola con la pantalla bloqueada. La primera vez descarga un modelo de 40 MB.</p>
       <label class="check"><input type="checkbox" name="barge_in"> Interrumpirla hablando mientras responde (mejor con audífonos)</label>
+      <label>Mientras hablamos, bajar las demás apps (música, videos)
+        <select name="duck_level">
+          <option value="0.1">al 10 %</option>
+          <option value="0.2">al 20 %</option>
+          <option value="0.35">al 35 %</option>
+          <option value="1">No bajarlas</option>
+        </select>
+      </label>
       <label class="check"><input type="checkbox" name="continuous"> Conversación continua</label>
       <label class="check"><input type="checkbox" name="pinned"> Siempre visible</label>
       <label class="check"><input type="checkbox" id="autostart"> Iniciar con Windows</label>

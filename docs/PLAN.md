@@ -180,6 +180,9 @@ backlog): requiere una decisión y un trámite de Diego.
   (sigue el idioma de la voz; en inglés Vosk la oye como « alyssa »). 0 errores en 68 grabaciones sintéticas
   (4 voces, señuelos y frases cotidianas).
 - Conectar las cuentas reales de Diego en Integraciones (GitHub con su token, Jira/Confluence con OAuth).
+- Detector de voz con modelo (Silero VAD) para cortar bien con música fuerte que Elissa no puede bajar (TV, otro
+  equipo); hoy el ducking resuelve la música del mismo PC y lo demás corta a los 20 s.
+- Bajar también Spotify cuando suena en otro dispositivo (Web API: `PUT /me/player/volume`).
 - Pruebas: el hilo `local-stt` avisa después de cerrar el loop en `test_server` (aviso de pytest, no afecta la app).
 - ~~Spotify~~ hecho en 1.2.0 (`elissa/spotify.py`, `media_session.py`, `tools/music.py`): Web API con PKCE y Client ID
   propio (Premium), controles multimedia de Windows (SMTC, `winrt`). Falta la prueba real de Diego con su cuenta.

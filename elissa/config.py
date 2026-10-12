@@ -75,7 +75,8 @@ DEFAULTS = {
     "mail_server": "",
     "mail_user": "",
     "agent_alerts_voice": False,
-    "spotify_client_id": "",  # the user's own app in the Spotify developer dashboard (PKCE, no secret)  # also say Claude Code / Codex alerts out loud
+    "spotify_client_id": "",
+    "duck_level": 0.2,  # other apps play at this fraction while Elissa listens and answers (1 = leave them)  # the user's own app in the Spotify developer dashboard (PKCE, no secret)  # also say Claude Code / Codex alerts out loud
 }
 
 

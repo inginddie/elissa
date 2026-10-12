@@ -158,8 +158,9 @@ def register(reg: ToolRegistry, actions: Actions) -> None:
             actions.open_path, {"path": {"type": "string"}}, ["path"])
     reg.add("mostrar_en_carpeta", "Abre el Explorador de archivos con el archivo seleccionado.",
             "Abriendo el Explorador…", actions.show_in_folder, {"path": {"type": "string"}}, ["path"])
-    reg.add("multimedia", "Controla la música o el video que esté sonando y el volumen del sistema.",
+    reg.add("multimedia", "Pausa, reanuda, pasa a la siguiente o vuelve a la anterior en la música o el video que "
+            "esté sonando (Spotify primero). Para el volumen usa la herramienta volumen.",
             "Ajustando la música…", actions.media,
-            {"action": {"type": "string", "enum": list(MEDIA_KEYS)},
-             "times": {"type": "integer", "description": "Repeticiones (p. ej. pasos de volumen, por defecto 1)"}},
+            {"action": {"type": "string", "enum": ["pausa", "reproducir", "siguiente", "anterior", "detener"]},
+             "times": {"type": "integer", "description": "Repeticiones (p. ej. saltar 3 canciones, por defecto 1)"}},
             ["action"])
