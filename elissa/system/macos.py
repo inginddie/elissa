@@ -2,7 +2,7 @@
 
 macOS has no per-app volume and no public "now playing" API, so music goes through the players' own AppleScript
 (Spotify and Music), only when they are already open, so Elissa never launches one by asking about it.
-On-PC speech recognition and computer use arrive later (F8.4).
+Using other windows goes through the Accessibility API (tools/desktop_mac.py).
 """
 import ctypes
 import os
@@ -11,7 +11,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-CAPS = {"apps", "media_session", "mixer", "offline_voice", "command", "agent_hooks"}
+CAPS = {"apps", "media_session", "mixer", "offline_voice", "command", "agent_hooks", "local_stt", "computer_use"}
 
 APP_DIRS = [Path("/Applications"), Path("/System/Applications"), Path("/System/Applications/Utilities"),
             Path.home() / "Applications"]
@@ -223,7 +223,7 @@ def launch_spotify() -> None:
 
 
 class ChildGuard:
-    """On-PC speech recognition isn't available on macOS yet (F8.4), so there are no children to tie."""
+    """On macOS whisper.cpp runs inside the engine (no child process), so there is nothing to tie."""
 
     def add(self, proc: subprocess.Popen) -> None:
         pass

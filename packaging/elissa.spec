@@ -28,7 +28,10 @@ if WINDOWS:
 hiddenimports += collect_submodules("mcp", filter=lambda name: not name.startswith(("mcp.cli", "mcp.server")))
 
 PACKAGES = ["ddgs", "primp", "edge_tts", "vosk", "sounddevice", "_sounddevice_data", "httpx2"]
-PACKAGES += ["uiautomation", "comtypes", "winrt", "pycaw"] if WINDOWS else ["secretstorage", "jeepney"]
+PACKAGES += (["uiautomation", "comtypes", "winrt", "pycaw"] if WINDOWS
+             else ["secretstorage", "jeepney", "pywhispercpp"])
+if sys.platform == "darwin":  # computer use: Accessibility API and Quartz events through pyobjc
+    PACKAGES += ["objc", "Foundation", "AppKit", "ApplicationServices", "HIServices", "Quartz", "CoreFoundation"]
 for pkg in PACKAGES:
     if importlib.util.find_spec(pkg) is None:  # e.g. _sounddevice_data on Linux (it uses the system's PortAudio)
         continue
@@ -43,7 +46,8 @@ a = Analysis(
     binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,
-    excludes=["tkinter", "matplotlib", "numpy", "pytest", "setuptools"],
+    # numpy is only needed by pywhispercpp (macOS, Linux)
+    excludes=["tkinter", "matplotlib", "pytest", "setuptools"] + (["numpy"] if WINDOWS else []),
     noarchive=False,
 )
 pyz = PYZ(a.pure)

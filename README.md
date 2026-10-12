@@ -121,9 +121,9 @@ PipeWire too) and `espeak-ng`: `sudo apt install pulseaudio-utils espeak-ng`.
 
 Talking with the shortcut or by voice through a cloud speech service, chat, files, web search, memory, reminders,
 Spotify, MCP integrations, opening apps, "what's playing?" and playback control (macOS: Spotify and Music; Linux: any
-MPRIS player), turning music down while you talk, system volume, offline voices, terminal commands in your projects
-and Claude Code / Codex alerts. Coming next: on-PC speech recognition and using other windows. On Linux under
-Wayland, the eyes don't follow the cursor outside the window.
+MPRIS player), turning music down while you talk, system volume, offline voices, on-PC speech recognition, terminal
+commands in your projects and Claude Code / Codex alerts. Using other windows (read, click, type) works on macOS;
+on Linux it's not available yet. On Linux under Wayland, the eyes don't follow the cursor outside the window.
 
 ### Everyday use
 

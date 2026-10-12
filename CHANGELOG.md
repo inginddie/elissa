@@ -2,6 +2,16 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [1.7.0] - sin publicar
+
+### Añadido
+- **macOS: uso del computador.** Listar y enfocar ventanas, leer la ventana que usas (« ¿qué es esto? »), hacer
+  clic, escribir y presionar teclas (⌘, ⌥, ⌃, ⇧), cada acción con su tarjeta de aprobación, como en Windows. Usa la
+  API de Accesibilidad: macOS pide el permiso la primera vez (y puede volver a pedirlo tras una actualización).
+  Nunca lee campos de contraseña.
+- **macOS y Linux: reconocimiento de voz en tu equipo** (Ajustes → Voz → « En tu PC »): whisper.cpp dentro de
+  Elissa, con los mismos modelos verificados que en Windows. Nada de lo que dices sale del equipo.
+
 ## [1.6.1] - 2026-10-12
 
 ### Corregido
