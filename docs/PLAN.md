@@ -247,6 +247,18 @@ sistema aparece explicado en Ajustes.
   después, en el mismo CI.
 - Linux: **`.deb`** (Ubuntu/Debian) y **AppImage** para el resto de distribuciones.
 
+## F9. Wiki pública (después de la F8)
+
+Decisión de Diego (2026-10-12): una wiki pública con todo lo de Elissa, hecha cuando termine la F8 (así cubre
+Windows, macOS y Linux desde el principio).
+
+- **GitHub Pages + MkDocs Material**, en el mismo repo (`docs/`), publicada por GitHub Actions en cada push a `main`:
+  `https://inginddie.github.io/elissa/`. Gratis, con HTTPS, buscador, modo oscuro y versionada con el código.
+- Secciones: Instalación (por sistema), Primeros pasos, Ajustes (General, Voz, Integraciones, Spotify, Avisos de
+  Claude Code y Codex), Comandos de voz, Privacidad, Seguridad, Preguntas frecuentes, Para desarrolladores.
+- En la portada, los enlaces « Code signing policy » y « Privacy policy » que pide SignPath.
+- Diego activa *Settings → Pages → Source: GitHub Actions* en el repo.
+
 ## Riesgos
 
 - Reconocimiento local lento en equipos sin GPU: la nube es la opción por defecto.
