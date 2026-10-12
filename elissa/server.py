@@ -45,7 +45,7 @@ from .tools.mail_send import register as register_mail_send
 from .tools.planner import Planner
 from .tools.planner import register as register_planner
 from .tools.web import register as register_web
-from . import mcp_client
+from . import agent_hooks, mcp_client
 from .local_stt import MODELS as LOCAL_MODELS
 from .local_stt import LocalWhisper, split_wav
 from .wake import WakeListener
@@ -371,6 +371,10 @@ async def lifespan(app: FastAPI):
     brain.loop = asyncio.get_running_loop()
     brain.mcp.sync(brain.settings.get("mcp_servers") or [])
     brain.wake.set_enabled(bool(brain.settings.get("wake_word")))
+    try:
+        agent_hooks.publish_endpoint(int(os.environ.get("ELISSA_PORT", "8740")))
+    except OSError:
+        log.exception("could not publish the agent hooks endpoint")
     if brain.settings.get("stt") == "local":
         prepare_local_stt(brain)  # warm up, so the first sentence isn't slow
     tasks = [asyncio.create_task(watchdog()), asyncio.create_task(brain.memory.recover()),
@@ -597,6 +601,44 @@ async def custom_sound(filename: str):
     if path.parent != SOUNDS_DIR.resolve() or path.suffix.lower() not in SOUND_EXT or not path.is_file():
         return JSONResponse({"error": "No existe"}, 404)
     return FileResponse(path, media_type=SOUND_EXT[path.suffix.lower()])
+
+
+# ----- alerts from coding agents (Claude Code, Codex) -----
+
+@app.post("/hooks/agent-event")
+async def agent_event(request: Request):
+    """Called by hooks/notify.ps1; outside /api/ because it carries the hook token instead of the session cookie."""
+    if not agent_hooks.authorized(request.headers.get("x-elissa-hook")):
+        return JSONResponse({"error": "No autorizado"}, 403)
+    body = await request.body()
+    if len(body) > 4096:
+        return JSONResponse({"error": "Demasiado grande"}, 413)
+    try:
+        data = json.loads(body)
+    except ValueError:
+        return JSONResponse({"error": "JSON no válido"}, 400)
+    alert = agent_hooks.parse_event(data) if isinstance(data, dict) else None
+    if alert:
+        log.info("agent alert: %s %s %s", alert["source"], alert["kind"], alert["project"])
+        await hub.broadcast({"type": "agent_alert", **alert})
+    return {"ok": True}
+
+
+@app.get("/api/agent-hooks")
+async def agent_hooks_status():
+    return agent_hooks.status()
+
+
+@app.post("/api/agent-hooks")
+async def agent_hooks_install(body: dict):
+    tool = body.get("tool")
+    if tool not in agent_hooks.SOURCES:
+        return JSONResponse({"error": "Herramienta desconocida"}, 400)
+    try:
+        agent_hooks.set_installed(tool, bool(body.get("on")))
+    except (OSError, ValueError) as e:
+        return JSONResponse({"error": f"No pude modificar la configuración: {e}"}, 400)
+    return agent_hooks.status()
 
 
 @app.post("/api/sounds/open-folder")

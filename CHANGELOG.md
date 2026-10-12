@@ -8,6 +8,9 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 - « Hey Elissa » (o « Hi Elissa », « Okay Elissa ») para despertarla cuando su voz está en inglés; con la voz en
   español sigue siendo « Hola Elissa ». Cambia sola al cambiar el idioma y descarga el modelo en inglés (40 MB) la
   primera vez.
+- Avisos de Claude Code y Codex: en Ajustes → Integraciones, un clic instala un hook para que Elissa te avise
+  cuando una sesión termina, se detiene por un error o necesita tu permiso, con el nombre del proyecto. Por defecto
+  muestra la notificación; decirlo en voz alta es opcional. No recibe lo que escribes ni las respuestas.
 
 ### Cambiado
 - Modelos sugeridos al día: OpenAI `gpt-6-luna`, Anthropic `claude-haiku-5-5`, Gemini `gemini-3.5-flash-lite`,

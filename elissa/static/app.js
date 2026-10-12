@@ -520,6 +520,9 @@ function handle(m) {
     case 'reminder':
       announceReminder(m);
       break;
+    case 'agent_alert':
+      announceAgent(m);
+      break;
     case 'attached':
       onAttached(m.paths || []);
       break;
@@ -1002,6 +1005,7 @@ function openPanel(id) {
       .catch(() => {});
     shell.info().then((info) => showUpdate(info?.update));
     loadMcp();
+    loadAgentHooks();
   }
 }
 
@@ -1235,6 +1239,51 @@ async function loadMcp() {
     ul.append(el('li', {}, on, el('span', { className: 'name', textContent: s.name }),
       el('span', { className: cls, textContent: s.status, title: s.status }), rm));
   }
+}
+
+async function loadAgentHooks() {
+  const { data } = await api('/api/agent-hooks');
+  const ul = $('#agents-list');
+  ul.innerHTML = '';
+  for (const [tool, s] of Object.entries(data)) {
+    if (!s.label) continue;
+    const btn = el('button', { type: 'button', textContent: s.installed ? t('Quitar') : t('Instalar') });
+    btn.onclick = async () => {
+      btn.disabled = true;
+      const r = await api('/api/agent-hooks', { tool, on: !s.installed });
+      const done = s.installed ? t('Quitado.') : tool === 'codex' ? t('Instalado. Al abrir Codex, apruébalo con /hooks.')
+        : t('Instalado. Funciona en las sesiones nuevas de {tool}.', { tool: s.label });
+      msg($('#agents-msg'), r.ok ? done : r.data.error || t('No se pudo.'), r.ok ? 'ok' : 'err');
+      loadAgentHooks();
+    };
+    const status = s.installed ? t('activo') : s.detected ? t('no instalado') : t('no detectado');
+    ul.append(el('li', {}, el('span', { className: 'name', textContent: s.label }),
+      el('span', { className: s.installed ? 'st ok' : 'st', textContent: status, title: s.path }), btn));
+  }
+}
+
+const AGENT_SAYS = {
+  done: '{tool} terminó{where}.',
+  permission: '{tool} necesita tu permiso{where}.',
+  waiting: '{tool} te está esperando{where}.',
+  error: '{tool} se detuvo por un error{where}.',
+};
+
+function announceAgent(m) {
+  const where = m.project ? t(' en {project}', { project: m.project }) : '';
+  const said = t(AGENT_SAYS[m.kind] || AGENT_SAYS.done, { tool: m.label, where });
+  shell.notify(m.label, said);
+  sfx.play(m.kind === 'error' ? 'error' : m.kind === 'done' ? 'done' : 'approval');
+  face.play(m.kind === 'error' ? 'error' : m.kind === 'done' ? 'happy' : 'surprised', 900);
+  const busy = ['listening', 'thinking', 'approval', 'speaking'].includes(state);
+  if (busy || !cfg.agent_alerts_voice) {
+    showCaption(undefined, said);
+    return;
+  }
+  showCaption('', said);
+  announcing = true;
+  turnDone = true;
+  enqueueSay(said);
 }
 
 function stripStatus(s) {

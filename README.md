@@ -61,6 +61,7 @@ Elissa is drawn in code, not stitched from images, so she blends smoothly from o
 | ⏰ **Timers, reminders, tasks** | "Remind me at 3 pm to call Ana", "5-minute timer", "add buy bread to my tasks". She speaks up and shows a Windows notification. |
 | ✉️ **Email** | Over IMAP/SMTP for Gmail, Outlook, Yahoo and iCloud: search, read, save attachments, and send if you allow it. |
 | 👩‍💻 **Code with you** | Understands a project, searches the code, checks git, edits with diffs and runs your tests or builds: "run the tests, find the bug and fix it". Every edit and command needs your click; commands that delete or discard work are never run. |
+| 🔔 **Claude Code & Codex alerts** | One click in Settings installs a hook so Elissa tells you when a session finishes or needs your permission, with the project's name. She never receives your prompts or the answers. |
 | 🔌 **Integrations (MCP)** | Connect MCP servers, local or remote. GitHub, Jira & Confluence and Google Calendar are one click away in Settings, and any other server works too. Read-only tools run freely; anything that changes data asks first. |
 | 🎵 **Music** | Play, pause, skip and change the volume of whatever is playing. |
 | 🌐 **Search the web** | Search and read pages, with no extra API key. |
@@ -122,6 +123,8 @@ Every release is built and self-tested by GitHub Actions from this repository's 
 - **Her engine is locked to her window.**
   - The local engine accepts only Elissa's own window, through a per-session token and an origin check.
   - A web page open in your browser cannot drive her.
+- **Coding-agent alerts are opt-in and minimal.** The hooks Elissa installs send only the kind of alert and the
+  project folder's name to her engine, with their own token; they always let the session continue.
 - **Microphone:** the microphone only opens while she listens, and she releases it a few seconds later.
 - **Nothing changes without your click.**
   - Sending, writing, moving, clicking and typing always show an approval card first.
@@ -139,7 +142,8 @@ Every release is built and self-tested by GitHub Actions from this repository's 
 | Coding assistant: understand projects, edit with diffs, run commands | F5 | ✅ |
 | Integrations through MCP: Jira, Confluence, GitHub, calendars | F6 | ✅ |
 | English UI, configurable shortcut, security policy, 1.0 | F7 | ✅ |
-| Signed installer, English wake phrase, Claude Code/Codex session alerts | next | |
+| English wake phrase, Claude Code/Codex session alerts, current models | 1.1 | ✅ |
+| Signed installer | next | |
 
 The detailed plan is in [`docs/PLAN.md`](docs/PLAN.md) (Spanish) and the release notes in [`CHANGELOG.md`](CHANGELOG.md).
 

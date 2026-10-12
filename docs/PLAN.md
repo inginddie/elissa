@@ -173,4 +173,8 @@ backlog): requiere una decisión y un trámite de Diego.
   (sigue el idioma de la voz; en inglés Vosk la oye como « alyssa »). 0 errores en 68 grabaciones sintéticas
   (4 voces, señuelos y frases cotidianas).
 - Conectar las cuentas reales de Diego en Integraciones (GitHub con su token, Jira/Confluence con OAuth).
-- Avisos de sesiones de Claude Code / Codex (hooks), como en Coucou.
+- ~~Avisos de sesiones de Claude Code / Codex~~ hecho en 1.1.0 (`elissa/agent_hooks.py`): Ajustes → Avisos instala un
+  hook (Claude Code: Stop, StopFailure, Notification; Codex: Stop, PermissionRequest) que corre `hooks
+otify.ps1`;
+  envía solo evento, tipo y carpeta con un token propio; siempre responde `{}` y sale con 0. Respaldo del archivo
+  original en `*.elissa-backup`. Probado de punta a punta con el script real; Codex sin probar en vivo (no instalado).
