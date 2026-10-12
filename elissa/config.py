@@ -77,6 +77,14 @@ DEFAULTS = {
 }
 
 
+# Chat models switched off (or with a shutdown date) and their replacement, applied to stored settings.
+RETIRED_MODELS = {
+    "gpt-5-mini": "gpt-6-luna",  # OpenAI, shutdown 2026-12-11
+    "openai/gpt-5-mini": "openai/gpt-6-luna",  # same model on OpenRouter
+    "llama-3.3-70b-versatile": "openai/gpt-oss-120b",  # Groq, off since 2026-08-16
+}
+
+
 def load_settings() -> dict:
     settings = dict(DEFAULTS)
     if SETTINGS_FILE.exists():
@@ -84,6 +92,7 @@ def load_settings() -> dict:
         settings.update({k: v for k, v in stored.items() if k in DEFAULTS})
     if settings["stt"] not in ("auto", "openai", "groq", "local", "endpoint"):  # v0.1 used Edge's recognizer
         settings["stt"] = "endpoint" if settings["stt_url"] else "auto"
+    settings["model"] = RETIRED_MODELS.get(settings["model"], settings["model"])
     return settings
 
 

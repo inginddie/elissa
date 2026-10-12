@@ -58,7 +58,7 @@ PARENT_PID = int(os.environ.get("ELISSA_PARENT_PID") or 0)
 # Browser (dev) mode only: exit when no window has been connected for this long.
 IDLE_SHUTDOWN_S = 60
 STT_SERVICES = {  # OpenAI-compatible transcription APIs usable with the user's own key
-    "openai": ("https://api.openai.com/v1/audio/transcriptions", "gpt-4o-mini-transcribe"),
+    "openai": ("https://api.openai.com/v1/audio/transcriptions", "gpt-transcribe"),
     "groq": ("https://api.groq.com/openai/v1/audio/transcriptions", "whisper-large-v3-turbo"),
 }
 MAIL_SECRET = "mail_password"

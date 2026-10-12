@@ -2,6 +2,16 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [1.1.0] - sin publicar
+
+### Cambiado
+- Modelos sugeridos al día: OpenAI `gpt-6-luna`, Anthropic `claude-haiku-5-5`, Gemini `gemini-3.5-flash-lite`,
+  Groq `openai/gpt-oss-20b` y Ollama `qwen3:4b` (sin razonamiento, para responder rápido). El reconocimiento de voz
+  con OpenAI usa `gpt-transcribe`.
+- Si tenías un modelo que su proveedor apagó o va a apagar (`gpt-5-mini`, `llama-3.3-70b-versatile` en Groq), Elissa
+  lo cambia sola por su reemplazo.
+- La ventana de actualización muestra las novedades de cada versión.
+
 ## [1.0.0] - 2026-10-12
 
 Primera versión completa del plan (F1–F7).

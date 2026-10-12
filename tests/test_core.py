@@ -159,3 +159,25 @@ def test_system_prompt_states_current_capabilities():
                   lambda: 1000)
     prompt = agent.system_prompt()
     assert "Correo: conectado (yo@gmail.com)" in prompt and "manda sobre cualquier recuerdo" in prompt
+
+
+def test_retired_models_are_replaced_on_load():
+    from elissa import config
+    config.SETTINGS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    config.SETTINGS_FILE.write_text('{"provider": "groq", "model": "llama-3.3-70b-versatile"}', "utf-8")
+    try:
+        assert config.load_settings()["model"] == "openai/gpt-oss-120b"
+        config.SETTINGS_FILE.write_text('{"provider": "openai", "model": "gpt-4.1"}', "utf-8")
+        assert config.load_settings()["model"] == "gpt-4.1"
+    finally:
+        config.SETTINGS_FILE.unlink()
+
+
+def test_reasoning_off_only_where_needed():
+    from elissa.llm.openai_provider import reasoning_params
+    off = {"reasoning_effort": "none"}
+    assert reasoning_params("gpt-6-luna") == off
+    assert reasoning_params("openai/gpt-6-luna") == off
+    assert reasoning_params("qwen3:4b") == off
+    assert reasoning_params("qwen2.5:3b") == {}
+    assert reasoning_params("openai/gpt-oss-20b") == {}

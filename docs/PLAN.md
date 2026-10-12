@@ -164,7 +164,8 @@ backlog): requiere una decisión y un trámite de Diego.
 ## Backlog
 
 - ~~CI: acciones con Node 20~~ hecho en 1.0.0 (checkout@v7, setup-node@v7, upload-artifact@v7, setup-uv@v10).
-- ~~Interfaz en inglés~~ hecho en 1.0.0. Pendiente: revisar los modelos sugeridos por proveedor.
+- ~~Interfaz en inglés~~ hecho en 1.0.0. ~~Modelos sugeridos por proveedor~~ al día en 1.1.0 (migra los retirados).
+- ~~Notas de versión en la actualización~~ hecho en 1.1.0 (`scripts/release_notes.py` lee el CHANGELOG).
 - Firma del instalador (quita el aviso de SmartScreen). Opciones: SignPath Foundation (gratis para proyectos de código
   abierto, hay que postular el repositorio) o Azure Artifact Signing (~10 USD/mes, con requisitos de identidad).
   Requiere que Diego elija y haga el trámite; luego se agrega el paso de firma en CI.

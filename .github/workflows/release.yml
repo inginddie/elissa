@@ -52,6 +52,17 @@ jobs:
         working-directory: desktop
         run: npm ci --no-audit --no-fund
 
+      - name: Release notes from CHANGELOG
+        id: notes
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          {
+            echo "body<<ELISSA_NOTES_EOF"
+            uv run python scripts/release_notes.py "${{ github.ref_name }}"
+            echo "ELISSA_NOTES_EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Build installer (and release on tags)
         uses: tauri-apps/tauri-action@v0
         env:
@@ -63,8 +74,8 @@ jobs:
           tauriScript: npx tauri
           tagName: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}
           releaseName: Elissa ${{ github.ref_name }}
+          releaseBody: ${{ steps.notes.outputs.body }}
           releaseDraft: true
-          includeUpdaterJson: true
 
       - uses: actions/upload-artifact@v7
         with:

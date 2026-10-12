@@ -3,7 +3,7 @@ import anthropic
 
 from .base import LLMError, Message, OnText, ToolCall, ToolSpec
 
-DEFAULT_MODEL = "claude-opus-5-5"
+DEFAULT_MODEL = "claude-haiku-5-5"
 # Models that support server-side refusal fallbacks with the "default" routing.
 FALLBACK_MODELS = {"claude-opus-5-5", "claude-opus-5", "claude-fable-5-1", "claude-sonnet-5-5"}
 

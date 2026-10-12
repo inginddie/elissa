@@ -5,6 +5,15 @@ import openai
 
 from .base import LLMError, Message, OnText, ToolCall, ToolSpec
 
+# Models whose reasoning must be off: gpt-6-luna only calls tools in Chat Completions with "none", and on Ollama
+# "none" means think=false (qwen3 thinks by default, too slow for a voice reply). Matched by prefix, after any
+# "vendor/" part, so OpenRouter's "openai/gpt-6-luna" counts too.
+NO_REASONING = ("gpt-6-luna", "qwen3:", "qwen3-")
+
+
+def reasoning_params(model: str) -> dict:
+    return {"reasoning_effort": "none"} if model.rsplit("/", 1)[-1].startswith(NO_REASONING) else {}
+
 
 def _errors(e: Exception, label: str) -> LLMError:
     if isinstance(e, openai.AuthenticationError):
@@ -46,7 +55,8 @@ class OpenAICompatProvider:
         return out
 
     async def stream(self, system: str, history: list[Message], tools: list[ToolSpec], on_text: OnText) -> Message:
-        params: dict = {"model": self.model, "messages": self._messages(system, history), "stream": True}
+        params: dict = {"model": self.model, "messages": self._messages(system, history), "stream": True,
+                        **reasoning_params(self.model)}
         if tools:
             params["tools"] = [{"type": "function", "function": {
                 "name": t.name, "description": t.description, "parameters": t.parameters}} for t in tools]
@@ -89,7 +99,8 @@ class OpenAICompatProvider:
         try:
             resp = await self.client.chat.completions.create(
                 model=self.model,
-                messages=[{"role": "system", "content": system}, {"role": "user", "content": prompt}])
+                messages=[{"role": "system", "content": system}, {"role": "user", "content": prompt}],
+                **reasoning_params(self.model))
         except openai.APIError as e:
             raise _errors(e, self.label) from e
         return resp.choices[0].message.content or ""
