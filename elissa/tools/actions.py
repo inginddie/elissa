@@ -13,6 +13,7 @@ import unicodedata
 import webbrowser
 from urllib.parse import urlparse
 
+from .. import media_session
 from . import ToolRegistry
 from .files import FileTools
 
@@ -33,6 +34,7 @@ APP_ALIASES = {
 MEDIA_KEYS = {"pausa": 0xB3, "reproducir": 0xB3, "siguiente": 0xB0, "anterior": 0xB1, "detener": 0xB2,
               "silencio": 0xAD, "bajar_volumen": 0xAE, "subir_volumen": 0xAF}
 KEYEVENTF_KEYUP = 0x0002
+SESSION_ACTIONS = {"pausa": "pause", "reproducir": "play", "siguiente": "next", "anterior": "previous"}
 
 
 def _norm(text: str) -> str:
@@ -124,11 +126,17 @@ class Actions:
 
     # ----- media -----
 
-    def media(self, action: str, times: int = 1) -> str:
+    async def media(self, action: str, times: int = 1) -> str:
         key = MEDIA_KEYS.get(action)
         if key is None:
             raise ValueError(f"Acción desconocida. Opciones: {', '.join(MEDIA_KEYS)}.")
         times = max(1, min(int(times or 1), 25))
+        session_action = SESSION_ACTIONS.get(action)
+        if session_action and times == 1:
+            # Windows' media controls aim at one player (Spotify first) instead of whichever grabs the keys
+            done = await media_session.control(session_action)
+            if done is not None:
+                return "Listo." if done else "El reproductor no aceptó la orden."
         for _ in range(times):
             ctypes.windll.user32.keybd_event(key, 0, 0, 0)
             ctypes.windll.user32.keybd_event(key, 0, KEYEVENTF_KEYUP, 0)

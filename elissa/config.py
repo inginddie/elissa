@@ -74,7 +74,8 @@ DEFAULTS = {
     "mail_send": False,        # sending is a separate opt-in; every message still needs approval
     "mail_server": "",
     "mail_user": "",
-    "agent_alerts_voice": False,  # also say Claude Code / Codex alerts out loud
+    "agent_alerts_voice": False,
+    "spotify_client_id": "",  # the user's own app in the Spotify developer dashboard (PKCE, no secret)  # also say Claude Code / Codex alerts out loud
 }
 
 

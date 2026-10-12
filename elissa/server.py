@@ -4,6 +4,7 @@ Only this launch's shell may talk to it: the shell opens `/?t=<token>`, which se
 API call and the WebSocket must carry (so a web page in a browser can't drive the assistant through localhost).
 """
 import asyncio
+import html
 import json
 import logging
 import os
@@ -11,13 +12,14 @@ import re
 import secrets
 import threading
 import time
+import webbrowser
 from pathlib import Path
 from contextlib import asynccontextmanager
 
 import edge_tts
 import httpx
-from fastapi import FastAPI, Request, UploadFile, WebSocket, WebSocketDisconnect
-from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
+from fastapi import FastAPI, Query, Request, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from . import __version__, edge_voice, windows_tts, winutil
@@ -44,8 +46,10 @@ from .tools.mail_send import MailSender
 from .tools.mail_send import register as register_mail_send
 from .tools.planner import Planner
 from .tools.planner import register as register_planner
+from .tools.music import register as register_music
 from .tools.web import register as register_web
 from . import agent_hooks, mcp_client
+from .spotify import Spotify, SpotifyError, desktop_installed as spotify_desktop_installed
 from .local_stt import MODELS as LOCAL_MODELS
 from .local_stt import LocalWhisper, split_wav
 from .wake import WakeListener
@@ -134,6 +138,8 @@ class Brain:
         self.wake = WakeListener(HOME / "models", self._on_wake, self._on_wake_status,
                                  self.settings.get("language", "es"))
         self.mcp = mcp_client.McpManager(self._mcp_changed)
+        self.spotify = Spotify(lambda: self.settings.get("spotify_client_id", ""),
+                               int(os.environ.get("ELISSA_PORT", "8740")))
         self.local_stt = LocalWhisper(HOME / "models",
                                       lambda status: self._from_thread({"type": "stt_local_status", "status": status}))
         self.rebuild_tools()
@@ -184,6 +190,7 @@ class Brain:
             register_desktop(reg, self.desktop)
         if hasattr(self, "mcp"):
             self.mcp.register(reg)
+        register_music(reg, getattr(self, "spotify", None))
         register_web(reg)
         register_memory(reg, self.memory)
         if self.settings.get("mail_enabled"):
@@ -601,6 +608,66 @@ async def custom_sound(filename: str):
     if path.parent != SOUNDS_DIR.resolve() or path.suffix.lower() not in SOUND_EXT or not path.is_file():
         return JSONResponse({"error": "No existe"}, 404)
     return FileResponse(path, media_type=SOUND_EXT[path.suffix.lower()])
+
+
+# ----- Spotify -----
+
+SPOTIFY_DASHBOARD_REDIRECT = "http://127.0.0.1/spotify/callback"  # what the user registers (no port: loopback rule)
+
+
+def spotify_status() -> dict:
+    brain: Brain = state["brain"]
+    return {"client_id": brain.settings.get("spotify_client_id", ""), "connected": brain.spotify.connected(),
+            "redirect_uri": SPOTIFY_DASHBOARD_REDIRECT, "desktop": spotify_desktop_installed()}
+
+
+@app.get("/api/spotify")
+async def spotify_get():
+    return spotify_status()
+
+
+@app.post("/api/spotify/connect")
+async def spotify_connect(body: dict):
+    brain: Brain = state["brain"]
+    client_id = str(body.get("client_id") or "").strip()
+    if not client_id.isalnum() or len(client_id) != 32:
+        return JSONResponse({"error": "El Client ID son 32 letras y números; cópialo del dashboard de Spotify."}, 400)
+    brain.settings["spotify_client_id"] = client_id
+    save_settings(brain.settings)
+    url = brain.spotify.login_url()
+    webbrowser.open(url)
+    return {"ok": True, "url": url}
+
+
+@app.post("/api/spotify/disconnect")
+async def spotify_disconnect():
+    brain: Brain = state["brain"]
+    brain.spotify.logout()
+    brain.rebuild_tools()
+    return spotify_status()
+
+
+@app.get("/spotify/callback")
+async def spotify_callback(code: str = "", state_: str = Query("", alias="state"), error: str = ""):
+    """Spotify sends the browser back here after the login (outside /api/: the state value is the check)."""
+    brain: Brain = state["brain"]
+    if error:
+        message, ok = ("Cancelaste la conexión con Spotify." if error == "access_denied"
+                       else f"Spotify respondió: {error}."), False
+    else:
+        try:
+            await brain.spotify.finish_login(code, state_)
+            message, ok = "Spotify quedó conectado. Ya puedes volver a Elissa y pedirle música.", True
+        except SpotifyError as e:
+            message, ok = str(e), False
+    if ok:
+        brain.rebuild_tools()
+    await hub.broadcast({"type": "spotify", **spotify_status()})
+    color = "#1db954" if ok else "#c0392b"
+    return HTMLResponse(f"""<!doctype html><meta charset="utf-8"><title>Elissa · Spotify</title>
+<body style="font-family:Segoe UI,sans-serif;display:grid;place-items:center;height:90vh;background:#111;color:#eee">
+<div style="text-align:center"><h2 style="color:{color}">{html.escape(message)}</h2>
+<p>Puedes cerrar esta pestaña.</p></div></body>""")
 
 
 # ----- alerts from coding agents (Claude Code, Codex) -----

@@ -523,6 +523,10 @@ function handle(m) {
     case 'agent_alert':
       announceAgent(m);
       break;
+    case 'spotify':
+      if (m.connected) msg($('#spotify-msg'), t('Spotify quedó conectado.'), 'ok');
+      if (!$('#panel-settings').hidden) loadSpotify();
+      break;
     case 'attached':
       onAttached(m.paths || []);
       break;
@@ -1006,6 +1010,7 @@ function openPanel(id) {
     shell.info().then((info) => showUpdate(info?.update));
     loadMcp();
     loadAgentHooks();
+    loadSpotify();
   }
 }
 
@@ -1240,6 +1245,30 @@ async function loadMcp() {
       el('span', { className: cls, textContent: s.status, title: s.status }), rm));
   }
 }
+
+async function loadSpotify() {
+  const { data: s } = await api('/api/spotify');
+  $('#spotify-redirect').textContent = s.redirect_uri;
+  if (s.client_id && !$('#spotify-client').value) $('#spotify-client').value = s.client_id;
+  $('#spotify-setup').hidden = s.connected;
+  $('#spotify-connect').hidden = s.connected;
+  $('#spotify-disconnect').hidden = !s.connected;
+  $('#spotify-state').textContent = s.connected
+    ? t('Conectado. Pídele «pon Soda Stereo» o «pon mi playlist de concentración».')
+    : t('Conéctalo para que Elissa ponga canciones, artistas, álbumes y tus playlists.');
+  $('#spotify-state').className = s.connected ? 'hint small ok' : 'hint small';
+}
+
+$('#spotify-connect').onclick = async () => {
+  const r = await api('/api/spotify/connect', { client_id: $('#spotify-client').value.trim() });
+  msg($('#spotify-msg'), r.ok ? t('Autoriza a Elissa en la página de Spotify que se abrió en tu navegador.') : r.data.error, r.ok ? '' : 'err');
+};
+
+$('#spotify-disconnect').onclick = async () => {
+  await api('/api/spotify/disconnect', {});
+  msg($('#spotify-msg'), t('Desconectado.'));
+  loadSpotify();
+};
 
 async function loadAgentHooks() {
   const { data } = await api('/api/agent-hooks');

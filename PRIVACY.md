@@ -13,6 +13,7 @@ service you chose. Each one can be turned off.
 | The text of her answers | Microsoft Edge's speech service | When she speaks with a natural voice | Pick a Windows voice in *Settings → Voice* |
 | Web searches and pages you ask about | DuckDuckGo and those websites | When you ask her to search or read the web | Don't ask for web searches |
 | Email | Your own mail server (IMAP/SMTP) | Only if you set up email | Leave email off (the default) |
+| Your searches and playback commands, with your Spotify account | Spotify | Only if you connect Spotify | Don't connect it (the default) |
 | Data of the integrations you connect | The MCP servers you add (for example GitHub or Atlassian) | Only if you add them | Don't add integrations |
 | A version check | GitHub (this repository's releases) | When the app starts | — |
 | Model downloads | alphacephei.com (wake phrase), GitHub and Hugging Face (on-PC speech recognition) | Once, when you turn those features on | Leave them off (the default) |

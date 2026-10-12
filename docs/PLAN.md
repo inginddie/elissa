@@ -180,6 +180,9 @@ backlog): requiere una decisión y un trámite de Diego.
   (sigue el idioma de la voz; en inglés Vosk la oye como « alyssa »). 0 errores en 68 grabaciones sintéticas
   (4 voces, señuelos y frases cotidianas).
 - Conectar las cuentas reales de Diego en Integraciones (GitHub con su token, Jira/Confluence con OAuth).
+- Pruebas: el hilo `local-stt` avisa después de cerrar el loop en `test_server` (aviso de pytest, no afecta la app).
+- ~~Spotify~~ hecho en 1.2.0 (`elissa/spotify.py`, `media_session.py`, `tools/music.py`): Web API con PKCE y Client ID
+  propio (Premium), controles multimedia de Windows (SMTC, `winrt`). Falta la prueba real de Diego con su cuenta.
 - ~~Avisos de sesiones de Claude Code / Codex~~ hecho en 1.1.0 (`elissa/agent_hooks.py`): Ajustes → Avisos instala un
   hook (Claude Code: Stop, StopFailure, Notification; Codex: Stop, PermissionRequest) que corre `hooks
 otify.ps1`;

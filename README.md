@@ -63,7 +63,7 @@ Elissa is drawn in code, not stitched from images, so she blends smoothly from o
 | 👩‍💻 **Code with you** | Understands a project, searches the code, checks git, edits with diffs and runs your tests or builds: "run the tests, find the bug and fix it". Every edit and command needs your click; commands that delete or discard work are never run. |
 | 🔔 **Claude Code & Codex alerts** | One click in Settings installs a hook so Elissa tells you when a session finishes or needs your permission, with the project's name. She never receives your prompts or the answers. |
 | 🔌 **Integrations (MCP)** | Connect MCP servers, local or remote. GitHub, Jira & Confluence and Google Calendar are one click away in Settings, and any other server works too. Read-only tools run freely; anything that changes data asks first. |
-| 🎵 **Music** | Play, pause, skip and change the volume of whatever is playing. |
+| 🎵 **Music & Spotify** | "Play Daft Punk", "play my focus playlist": connect Spotify (Premium) with your own free app key and she plays what you ask for, on any of your devices. Pause, skip, "what's playing?" and volume work with any player. |
 | 🌐 **Search the web** | Search and read pages, with no extra API key. |
 | 🧠 **Remember** | Each conversation is summarized into plain Markdown notes she can recall later: "what did we talk about yesterday?" |
 | 🔌 **Any model** | Switch providers in a guided setup that tests your key and lists the models your account can use. |

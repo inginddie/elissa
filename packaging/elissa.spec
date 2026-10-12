@@ -22,7 +22,7 @@ import uiautomation  # noqa: E402,F401
 hiddenimports += collect_submodules("mcp", filter=lambda name: not name.startswith(("mcp.cli", "mcp.server")))
 
 for pkg in ("ddgs", "primp", "edge_tts", "uiautomation", "comtypes", "vosk", "sounddevice", "_sounddevice_data",
-            "httpx2"):
+            "httpx2", "winrt"):
     d, b, h = collect_all(pkg)
     datas += d
     binaries += b

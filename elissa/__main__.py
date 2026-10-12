@@ -84,6 +84,11 @@ def selftest() -> int:
         from mcp.client.streamable_http import streamable_http_client  # noqa: F401
         return "cliente MCP"
 
+    def media():
+        import winrt.windows.foundation  # noqa: F401  (needed at runtime by the media controls)
+        from winrt.windows.media.control import GlobalSystemMediaTransportControlsSessionManager  # noqa: F401
+        return "controles multimedia de Windows"
+
     def windows():
         import uiautomation as auto
         return f"{len(auto.GetRootControl().GetChildren())} ventanas"
@@ -95,6 +100,7 @@ def selftest() -> int:
     check("ventanas", windows)
     check("microfono", microphone)
     check("integraciones", integrations)
+    check("multimedia", media)
     for name, result in checks.items():
         logging.info("selftest %s: %s", name, result)
     (LOG_DIR / "selftest.txt").write_text("\n".join(f"{k}: {v}" for k, v in checks.items()), "utf-8")

@@ -176,3 +176,19 @@ def test_settings_endpoint_cannot_touch_integrations(client):
     r = client.post("/api/settings", json={"mcp_servers": [{"id": "x", "transport": "http", "url": "http://evil"}],
                                             "name": "Elissa"})
     assert r.status_code == 200 and r.json()["mcp_servers"] == []
+
+
+def test_spotify_connect_and_callback(client, monkeypatch):
+    opened = []
+    monkeypatch.setattr(server.webbrowser, "open", opened.append)
+    client.get("/?t=test-token")
+    assert client.post("/api/spotify/connect", json={"client_id": "not-an-id"}).status_code == 400
+    r = client.post("/api/spotify/connect", json={"client_id": "b" * 32})
+    assert r.status_code == 200 and opened == [r.json()["url"]] and "accounts.spotify.com" in opened[0]
+    status = client.get("/api/spotify").json()
+    assert status["client_id"] == "b" * 32 and status["redirect_uri"] == "http://127.0.0.1/spotify/callback"
+    # the callback is outside /api/ (Spotify's redirect carries no cookie) and is checked by its state value
+    page = client.get("/spotify/callback", params={"code": "c", "state": "forged"})
+    assert page.status_code == 200 and "no es válido" in page.text
+    page = client.get("/spotify/callback", params={"error": "access_denied"})
+    assert "Cancelaste" in page.text

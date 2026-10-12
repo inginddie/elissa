@@ -8,7 +8,7 @@ To work, Elissa contacts only the services you choose, and only for the features
 - your speech-to-text service (your voice); choose "On your PC" to keep it local;
 - Microsoft Edge's speech service (the text of her answers); choose a Windows voice to avoid it;
 - DuckDuckGo and websites (only when you ask her to search the web);
-- your mail server and the integrations you add (only if you set them up);
+- your mail server, Spotify and the integrations you add (only if you set them up);
 - GitHub, to check for updates.
 The wake phrase is detected on your PC; nothing is sent until you wake her.
 Full privacy policy: https://github.com/inginddie/elissa/blob/main/PRIVACY.md

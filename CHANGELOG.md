@@ -2,6 +2,19 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [1.2.0] - 2026-10-12
+
+### Añadido
+- Spotify: « pon Soda Stereo », « pon la canción X », « pon mi playlist de concentración ». Se conecta en Ajustes →
+  Integraciones con tu propia app gratuita de Spotify (Client ID, sin contraseñas); reproducir necesita Premium. Si
+  Spotify no está abierto, Elissa abre la app de escritorio o el reproductor web y espera a que aparezca. Funciona en
+  cualquier dispositivo de tu cuenta, también el celular.
+- « ¿Qué suena? »: Elissa dice la canción, el artista y el reproductor.
+
+### Cambiado
+- Pausar, reanudar, siguiente y anterior usan los controles multimedia de Windows y se dirigen a Spotify aunque haya
+  otro reproductor abierto; si no hay ninguno, siguen funcionando las teclas multimedia.
+
 ## [1.1.0] - 2026-10-12
 
 ### Añadido

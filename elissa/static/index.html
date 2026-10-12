@@ -211,6 +211,24 @@
         <p class="hint" id="mcp-msg"></p>
       </div>
 
+      <h3>Spotify</h3>
+      <p class="hint small" id="spotify-state"></p>
+      <div id="spotify-setup" class="stack">
+        <ol class="hint small">
+          <li>Entra a <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener">developer.spotify.com/dashboard</a> y crea una app (gratis).</li>
+          <li>En <b>Redirect URIs</b> agrega <code id="spotify-redirect">http://127.0.0.1/spotify/callback</code> y marca <b>Web API</b>.</li>
+          <li>Copia el <b>Client ID</b> de la app, pégalo aquí y conecta. Se abrirá Spotify para que autorices.</li>
+        </ol>
+        <label>Client ID <input id="spotify-client" autocomplete="off" spellcheck="false" maxlength="32"></label>
+      </div>
+      <div class="row">
+        <button type="button" id="spotify-connect" class="primary">Conectar con Spotify</button>
+        <button type="button" id="spotify-disconnect" hidden>Desconectar</button>
+      </div>
+      <p class="hint small">Reproducir lo que pidas necesita Spotify Premium. Pausar, siguiente y «¿qué suena?» funcionan
+        sin conectar nada.</p>
+      <p class="hint" id="spotify-msg"></p>
+
       <h3>Avisos de Claude Code y Codex</h3>
       <p class="hint small">Elissa te avisa cuando una sesión termina o necesita tu permiso. Instala un hook en la
         configuración de cada herramienta (conserva lo que ya tengas y guarda una copia). Solo recibe el tipo de aviso y el
