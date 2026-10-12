@@ -33,12 +33,13 @@ def setup_logging() -> None:
 
 
 def selftest() -> int:
-    """`elissa-engine.exe --selftest`: checks that the bundle ships everything the tools need."""
+    """`elissa-engine --selftest`: checks that the bundle ships everything the tools need on this system."""
     import asyncio
     import tempfile
 
     import docx
 
+    from elissa import system
     from elissa.config import get_secret, set_secret
     from elissa.tools.files import extract_text
     from elissa.tools.web import web_search
@@ -57,6 +58,8 @@ def selftest() -> int:
         try:
             return f"Edge, {len(asyncio.run(edge_voice.synthesize('Hola', 'es-CO-SalomeNeural')))} bytes"
         except Exception as e:
+            if not system.has("offline_voice"):
+                raise
             wav = windows_tts.synthesize("Hola")
             return f"Edge no disponible ({str(e)[:60]}); voz de Windows, {len(wav)} bytes"
 
@@ -97,12 +100,18 @@ def selftest() -> int:
 
     check("busqueda_web", lambda: f"{web_search('Bogotá', 2).count(chr(10))} líneas")
     check("voz", synth)
-    check("keyring", roundtrip)
+    if os.getenv("ELISSA_SELFTEST_NO_KEYRING"):  # CI on Linux has no Secret Service running
+        checks["keyring"] = "ok (omitido: sin llavero en este entorno)"
+    else:
+        check("keyring", roundtrip)
     check("documentos", office)
-    check("ventanas", windows)
+    if system.has("computer_use"):
+        check("ventanas", windows)
     check("microfono", microphone)
     check("integraciones", integrations)
-    check("multimedia", media)
+    if system.has("mixer"):
+        check("multimedia", media)
+    checks["sistema"] = f"ok ({system.NAME}: {', '.join(sorted(system.CAPS)) or 'básico'})"
     for name, result in checks.items():
         logging.info("selftest %s: %s", name, result)
     (LOG_DIR / "selftest.txt").write_text("\n".join(f"{k}: {v}" for k, v in checks.items()), "utf-8")

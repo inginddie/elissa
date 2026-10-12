@@ -7,16 +7,19 @@ window shows, click its buttons, type and press keys. No screenshots, so it work
 - "The window" means the one the user was using before talking to Elissa (her window takes the focus).
 """
 import ctypes
+import sys
 import threading
 import time
 import unicodedata
-from ctypes import wintypes
 from typing import Callable
 
 from . import ToolRegistry
 
-user32 = ctypes.windll.user32
-kernel32 = ctypes.windll.kernel32
+if sys.platform == "win32":  # registered only on Windows (system capability "computer_use")
+    from ctypes import wintypes
+
+    user32 = ctypes.windll.user32
+    kernel32 = ctypes.windll.kernel32
 
 READ_BUDGET_S = 4.0
 MAX_NODES = 2500

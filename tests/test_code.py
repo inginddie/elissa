@@ -2,6 +2,7 @@
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 
 os.environ["ELISSA_HOME"] = tempfile.mkdtemp()  # must be set before importing elissa
@@ -68,6 +69,7 @@ def test_git_read_only(project):
         code.git(str(project), "push")
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="PowerShell commands: Windows only for now (F8)")
 def test_command_preview_and_run(project):
     code = CodeTools(FileTools(lambda: [str(project)]))
     card = code.run_preview("python src/app.py", str(project))

@@ -8,7 +8,6 @@ It pauses while Elissa herself is listening or speaking, and while the session i
 closed then). Each language's Vosk model (~40 MB) is downloaded once, verified with SHA-256.
 """
 import array
-import ctypes
 import hashlib
 import json
 import logging
@@ -23,6 +22,8 @@ from pathlib import Path
 from typing import Callable
 
 import httpx
+
+from . import system
 
 log = logging.getLogger(__name__)
 
@@ -82,15 +83,7 @@ def _rms(block: bytes) -> float:
 
 
 def session_locked() -> bool:
-    """True while the Windows session is locked (the input desktop can't be opened)."""
-    user32 = ctypes.windll.user32
-    desk = user32.OpenInputDesktop(0, False, 0x0100)  # DESKTOP_SWITCHDESKTOP
-    if not desk:
-        return True
-    try:
-        return not user32.SwitchDesktop(desk)
-    finally:
-        user32.CloseDesktop(desk)
+    return system.session_locked()
 
 
 class WakeListener:

@@ -1,4 +1,5 @@
-# Tests and builds on every push. On a tag like v0.2.0 it also publishes the installer and the signed update
+# Tests and builds on every push, on Windows, macOS (Apple Silicon) and Linux. On a tag like v1.4.0 it also creates a
+# draft release with the notes from CHANGELOG.md, and each system adds its installer and its entry in the signed update
 # manifest (latest.json) that installed copies check for updates.
 # Secrets for signed updates: TAURI_SIGNING_PRIVATE_KEY and TAURI_SIGNING_PRIVATE_KEY_PASSWORD.
 name: build
@@ -13,10 +14,60 @@ permissions:
   contents: write
 
 jobs:
-  windows:
-    runs-on: windows-latest
+  release:
+    # One draft release per tag, created before the builds so they all upload to the same one.
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-22.04
+    outputs:
+      id: ${{ steps.create.outputs.id }}
     steps:
       - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          python-version: "3.13"
+
+      - name: Create the draft release
+        id: create
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          uv run --no-project python scripts/release_notes.py "${{ github.ref_name }}" > notes.md
+          gh release create "${{ github.ref_name }}" --draft --title "Elissa ${{ github.ref_name }}" --notes-file notes.md
+          echo "id=$(gh api "repos/${{ github.repository }}/releases" --jq '.[] | select(.tag_name == "${{ github.ref_name }}") | .id')" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: release
+    # Also on plain pushes and pull requests, where the release job is skipped.
+    if: always() && (needs.release.result == 'success' || needs.release.result == 'skipped')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            bundles: nsis
+            artifact: Elissa-Windows
+            files: desktop/src-tauri/target/release/bundle/nsis/*.exe
+          - os: macos-14  # Apple Silicon
+            bundles: app,dmg
+            artifact: Elissa-macOS-arm64
+            files: desktop/src-tauri/target/release/bundle/dmg/*.dmg
+          - os: ubuntu-22.04
+            bundles: deb,appimage
+            artifact: Elissa-Linux
+            files: |
+              desktop/src-tauri/target/release/bundle/deb/*.deb
+              desktop/src-tauri/target/release/bundle/appimage/*.AppImage
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential file libxdo-dev libssl-dev \
+            libayatana-appindicator3-dev librsvg2-dev patchelf libfuse2 libportaudio2
 
       - uses: astral-sh/setup-uv@v10.3.0
         with:
@@ -40,7 +91,8 @@ jobs:
       - name: Build engine
         run: uv run pyinstaller packaging/elissa.spec --noconfirm --clean --distpath dist --workpath build
 
-      - name: Self-test the engine
+      - name: Self-test the engine (Windows)
+        if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $env:ELISSA_HOME = "$env:RUNNER_TEMP\elissa-home"
@@ -48,22 +100,21 @@ jobs:
           Get-Content "$env:ELISSA_HOME\logs\selftest.txt"
           if ($p.ExitCode -ne 0) { throw "selftest failed" }
 
+      - name: Self-test the engine (macOS, Linux)
+        if: runner.os != 'Windows'
+        run: |
+          export ELISSA_HOME="$RUNNER_TEMP/elissa-home"
+          if [ "$RUNNER_OS" = "Linux" ]; then export ELISSA_SELFTEST_NO_KEYRING=1; fi
+          status=0
+          dist/elissa-engine/elissa-engine --selftest || status=$?
+          cat "$ELISSA_HOME/logs/selftest.txt"
+          exit $status
+
       - name: Install desktop dependencies
         working-directory: desktop
         run: npm ci --no-audit --no-fund
 
-      - name: Release notes from CHANGELOG
-        id: notes
-        if: startsWith(github.ref, 'refs/tags/v')
-        shell: bash
-        run: |
-          {
-            echo "body<<ELISSA_NOTES_EOF"
-            uv run python scripts/release_notes.py "${{ github.ref_name }}"
-            echo "ELISSA_NOTES_EOF"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Build installer (and release on tags)
+      - name: Build installer (and add it to the release on tags)
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -72,12 +123,10 @@ jobs:
         with:
           projectPath: desktop
           tauriScript: npx tauri
-          tagName: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}
-          releaseName: Elissa ${{ github.ref_name }}
-          releaseBody: ${{ steps.notes.outputs.body }}
-          releaseDraft: true
+          args: --bundles ${{ matrix.bundles }}
+          releaseId: ${{ needs.release.outputs.id }}
 
       - uses: actions/upload-artifact@v7
         with:
-          name: Elissa-Setup
-          path: desktop/src-tauri/target/release/bundle/nsis/*.exe
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.files }}

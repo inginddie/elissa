@@ -186,8 +186,7 @@ def test_music_tools_need_a_connection(fake):
 def test_media_tool_prefers_windows_session_then_keys(monkeypatch):
     from elissa.tools import actions as act
     pressed = []
-    monkeypatch.setattr(act.ctypes, "windll", type("W", (), {"user32": type("U", (), {
-        "keybd_event": staticmethod(lambda key, *a: pressed.append(key))})()})())
+    monkeypatch.setattr(act.system, "press_media_key", lambda key: pressed.append(key) or True)
     sent = []
 
     async def session_ok(action, prefer="spotify"):
@@ -201,6 +200,6 @@ def test_media_tool_prefers_windows_session_then_keys(monkeypatch):
         return None
     monkeypatch.setattr(act.media_session, "control", no_session)
     run(tools.media("pausa"))
-    assert pressed == [0xB3, 0xB3]  # key down + key up
+    assert pressed == [0xB3]
     run(tools.media("subir_volumen", 2))  # volume always uses the keys
-    assert pressed[2:] == [0xAF] * 4
+    assert pressed[1:] == [0xAF] * 2

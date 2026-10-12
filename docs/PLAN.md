@@ -161,12 +161,16 @@ Objetivo: la misma Elissa en macOS (Apple Silicon e Intel) y Linux (Ubuntu 22.04
 instalador, actualizaciones automáticas y las mismas reglas de seguridad. Windows no puede perder nada en el camino.
 
 Estado (2026-10-12): planeado. Inventario hecho: 13 módulos de Python y 3 puntos del shell en Rust dependen de Windows.
+F8.1 en curso (rama `f8-platform`): `elissa/system/` (windows, macos, linux) con capacidades declaradas, rutas con
+`platformdirs`, dependencias de Windows marcadas `sys_platform == 'win32'`, spec de PyInstaller y shell de Rust para
+los tres sistemas (firma ad hoc en macOS, `Info.plist` con permiso de micrófono), CI en matriz con un release en
+borrador al que cada sistema suma su instalador.
 Decisiones de Diego (2026-10-12): **macOS primero**, **sin cuenta de Apple Developer**, pruebas en un Mac físico y en
 un Linux en máquina virtual.
 
 ### Estrategia
 
-- **Capa de plataforma.** Un paquete `elissa/platform/` con una interfaz por capacidad (abrir apps, multimedia,
+- **Capa de plataforma.** Un paquete `elissa/system/` con una interfaz por capacidad (abrir apps, multimedia,
   volumen y ducking, voz offline, sesión bloqueada, procesos hijos, uso del computador) y una implementación por
   sistema (`windows.py`, `macos.py`, `linux.py`). Las herramientas solo hablan con la interfaz. Lo que un sistema no
   pueda hacer no se registra como herramienta, en vez de fallar al usarla.

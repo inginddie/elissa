@@ -1,6 +1,7 @@
 """Alerts from Claude Code / Codex hooks: event parsing, installing without touching the rest, the endpoint."""
 import json
 import os
+import sys
 import tempfile
 
 os.environ["ELISSA_HOME"] = os.environ.get("ELISSA_HOME") or tempfile.mkdtemp()  # before importing elissa
@@ -70,6 +71,7 @@ def test_codex_install_from_scratch(homes):
     assert json.loads(agent_hooks.CODEX_HOOKS.read_text("utf-8")) == {}
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="hook script is PowerShell: Windows only for now (F8)")
 def test_endpoint_needs_the_hook_token():
     from fastapi.testclient import TestClient
 
