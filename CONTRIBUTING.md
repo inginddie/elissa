@@ -46,6 +46,18 @@ for trying a change end to end without clicking.
 
 ## Releasing (maintainers)
 
+### Which number goes up ([SemVer](https://semver.org))
+
+- **Patch (`1.5.0` → `1.5.1`, `1.5.2`…): fixes only.** A bug found in a version is fixed in the next patch of that
+  same line, so each version's history shows whether it had problems and how many.
+- **Minor (`1.5.x` → `1.6.0`): new features** (and the fixes that ship with them).
+- **Major (`1.x` → `2.0.0`): changes that break what users had** (settings, data, behavior they rely on).
+- **A published tag is never moved or reused.** If a release fails or ships broken, the fix is a new patch version.
+- One version for every system: a fix that touches only macOS still becomes the next patch for all, and its notes say
+  which system it affects.
+
+### Steps
+
 1. Bump the version in `elissa/__init__.py`, `pyproject.toml`, `desktop/src-tauri/Cargo.toml` and
    `desktop/src-tauri/tauri.conf.json`.
 2. Update `CHANGELOG.md`.
