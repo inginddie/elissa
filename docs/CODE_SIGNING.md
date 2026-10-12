@@ -7,8 +7,9 @@ Free code signing provided by [SignPath.io](https://about.signpath.io/), certifi
 
 Only binaries built from this repository's source code are signed: the Elissa installer (`Elissa_x.y.z_x64-setup.exe`)
 and the programs it installs. They are built by GitHub Actions on GitHub-hosted runners with the public workflow in
-[`.github/workflows/release.yml`](../.github/workflows/release.yml). Third-party components bundled with Elissa (for
-example the Python runtime and libraries, or downloaded models) are not signed with this certificate.
+[`.github/workflows/release.yml`](https://github.com/inginddie/elissa/blob/main/.github/workflows/release.yml).
+Third-party components bundled with Elissa (for example the Python runtime and libraries, or downloaded models) are
+not signed with this certificate.
 
 ## Team roles
 
@@ -27,5 +28,6 @@ The current list of people with write access is [the repository's collaborators]
 ## Privacy
 
 Elissa sends data only to the services you choose, and only for the features you use: your AI provider, your
-speech service and the voice service. The [privacy policy](../PRIVACY.md) lists each one and how to turn it off. The
-installer shows a summary before installing.
+speech service and the voice service. The
+[privacy policy](https://github.com/inginddie/elissa/blob/main/PRIVACY.md) lists each one and how to turn it off.
+The installer shows a summary before installing.

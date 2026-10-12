@@ -263,6 +263,14 @@ Windows, macOS y Linux desde el principio).
 - En la portada, los enlaces « Code signing policy » y « Privacy policy » que pide SignPath.
 - Diego activa *Settings → Pages → Source: GitHub Actions* en el repo.
 
+### Estado (2026-10-12)
+
+- Hecho en la rama `f9-wiki`: `mkdocs.yml`, grupo `docs` en `pyproject.toml` (MkDocs < 2: la 2.0 quita los plugins),
+  10 páginas en inglés (`page.md`) y español (`page.es.md`) con mkdocs-static-i18n, y `.github/workflows/docs.yml`
+  (build `--strict` en PRs, deploy a Pages en `main`). Privacidad, Seguridad y Firma de código en inglés incluyen
+  `PRIVACY.md`, `SECURITY.md` y `docs/CODE_SIGNING.md` (snippets), así no se duplican; ahora cubren los tres sistemas.
+- Falta: activar Pages, revisar la wiki publicada, y apuntar SignPath y las notas de cada release a la wiki.
+
 ## Riesgos
 
 - Reconocimiento local lento en equipos sin GPU: la nube es la opción por defecto.

@@ -1,7 +1,9 @@
 # Privacy policy
 
-Elissa runs on your PC. It has no account, no server of its own and no telemetry. Your settings, memory and logs stay
-in `%APPDATA%\Elissa` as readable Markdown and JSON, and your keys stay in the Windows Credential Manager.
+Elissa runs on your computer. It has no account, no server of its own and no telemetry. Your settings, memory and
+logs stay on your computer as readable Markdown and JSON (in `%APPDATA%\Elissa` on Windows,
+`~/Library/Application Support/Elissa` on macOS and `~/.local/share/Elissa` on Linux), and your keys stay in your
+system's keychain (Windows Credential Manager, macOS Keychain or Linux Secret Service).
 
 Some features only work by contacting a service. Elissa contacts a service only for a feature you use, and only the
 service you chose. Each one can be turned off.
@@ -9,8 +11,8 @@ service you chose. Each one can be turned off.
 | What leaves your PC | Where it goes | When | How to avoid it |
 |---|---|---|---|
 | What you say or type, the conversation, and what Elissa reads for you (files, pages, emails, windows) | The AI provider you picked (OpenAI, Anthropic, Google, Groq, OpenRouter, or your own server) | Each time you talk to her | Pick Ollama or LM Studio: the model runs on your PC |
-| Your voice recordings | The speech-to-text service you picked (Groq, OpenAI or your own server) | Each time you talk to her | *Settings → Voice → On your PC* (whisper.cpp) |
-| The text of her answers | Microsoft Edge's speech service | When she speaks with a natural voice | Pick a Windows voice in *Settings → Voice* |
+| Your voice recordings | The speech-to-text service you picked (Groq, OpenAI or your own server) | Each time you talk to her | *Settings → Voice → On your PC* (whisper.cpp, Windows) |
+| The text of her answers | Microsoft Edge's speech service | When she speaks with a natural voice | Pick an offline voice in *Settings → Voice* (Windows and macOS) |
 | Web searches and pages you ask about | DuckDuckGo and those websites | When you ask her to search or read the web | Don't ask for web searches |
 | Email | Your own mail server (IMAP/SMTP) | Only if you set up email | Leave email off (the default) |
 | Your searches and playback commands, with your Spotify account | Spotify | Only if you connect Spotify | Don't connect it (the default) |

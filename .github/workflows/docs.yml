@@ -1,0 +1,50 @@
+# The public wiki (mkdocs.yml): built on every pull request that touches it, and published to GitHub Pages on every
+# push to main. Needs Settings → Pages → Source: GitHub Actions.
+name: docs
+
+on:
+  push:
+    branches: [main]
+    paths: [docs/**, mkdocs.yml, PRIVACY.md, SECURITY.md, pyproject.toml, uv.lock, .github/workflows/docs.yml]
+  pull_request:
+    paths: [docs/**, mkdocs.yml, PRIVACY.md, SECURITY.md, pyproject.toml, uv.lock, .github/workflows/docs.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          python-version: "3.13"
+
+      # Only the docs group: the wiki doesn't need the engine's dependencies.
+      - name: Build the wiki
+        run: uv run --only-group docs mkdocs build --strict
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

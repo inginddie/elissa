@@ -1,0 +1,122 @@
+# The public wiki, published to GitHub Pages by .github/workflows/docs.yml.
+# Preview: uv run --group docs mkdocs serve
+# English pages are page.md and Spanish pages page.es.md (mkdocs-static-i18n, suffix structure).
+site_name: Elissa
+site_description: A voice assistant with a face for your desktop, with any AI model.
+site_url: https://inginddie.github.io/elissa/
+repo_url: https://github.com/inginddie/elissa
+repo_name: inginddie/elissa
+edit_uri: edit/main/docs/
+copyright: MIT © 2026 Diego Bustos
+
+# The roadmap is internal; the policies are pulled into their pages with snippets.
+exclude_docs: |
+  PLAN.md
+  CODE_SIGNING.md
+
+theme:
+  name: material
+  language: en
+  logo: media/icon.png
+  favicon: media/favicon.png
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.copy
+    - content.action.edit
+    - toc.follow
+
+extra_css:
+  - stylesheets/extra.css
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: suffix
+      reconfigure_material: true
+      reconfigure_search: true
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+        - locale: es
+          name: Español
+          build: true
+          site_description: Una asistente de voz con cara para tu escritorio, con cualquier modelo de IA.
+          nav_translations:
+            Home: Inicio
+            Get started: Empezar
+            Install: Instalación
+            First steps: Primeros pasos
+            Use: Uso
+            Settings: Ajustes
+            Voice commands: Comandos de voz
+            Trust: Confianza
+            Privacy: Privacidad
+            Security: Seguridad
+            Code signing: Firma de código
+            Help: Ayuda
+            FAQ: Preguntas frecuentes
+            Developers: Desarrolladores
+
+nav:
+  - Home: index.md
+  - Get started:
+      - Install: install.md
+      - First steps: first-steps.md
+  - Use:
+      - Settings: settings.md
+      - Voice commands: voice-commands.md
+  - Trust:
+      - Privacy: privacy.md
+      - Security: security.md
+      - Code signing: code-signing.md
+  - Help:
+      - FAQ: faq.md
+      - Developers: developers.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.keys
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true
+
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+  anchors: warn

@@ -1,0 +1,21 @@
+/* Elissa's colors: indigo body, coral face, cyan glow (see design/). */
+:root > * {
+  --md-primary-fg-color: #3b3480;
+  --md-primary-fg-color--light: #5a52b0;
+  --md-primary-fg-color--dark: #2a2560;
+  --md-accent-fg-color: #f26d5b;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #2a2560;
+  --md-accent-fg-color: #7fe6ea;
+  --md-default-bg-color: #14122b;
+}
+
+.md-header__button.md-logo img {
+  height: 1.8rem;
+}
+
+.hero img {
+  border-radius: 0.6rem;
+}

@@ -25,3 +25,6 @@ desktop/src-tauri/gen/
 
 # Design scratch output
 design/out/
+
+# Wiki build output (mkdocs)
+site/
