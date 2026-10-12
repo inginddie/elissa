@@ -104,7 +104,16 @@ def selftest() -> int:
         import uiautomation as auto
         return f"{len(auto.GetRootControl().GetChildren())} ventanas"
 
-    check("busqueda_web", lambda: f"{web_search('Bogotá', 2).count(chr(10))} líneas")
+    def search():
+        """The bundle must carry the search engine; a network that doesn't answer (CI runners) is only a warning."""
+        try:
+            return f"{web_search('Bogotá', 2).count(chr(10))} líneas"
+        except Exception as e:
+            if "timeout" in type(e).__name__.lower() or "timed out" in str(e).lower():
+                return f"aviso: los buscadores no respondieron a tiempo ({type(e).__name__})"
+            raise
+
+    check("busqueda_web", search)
     check("voz", synth)
     if os.getenv("ELISSA_SELFTEST_NO_KEYRING"):  # CI on Linux has no Secret Service running
         checks["keyring"] = "ok (omitido: sin llavero en este entorno)"

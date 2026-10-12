@@ -2,6 +2,13 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [1.6.1] - 2026-10-12
+
+### Corregido
+- Publicación: el build de macOS de la 1.6.0 falló porque el autodiagnóstico del motor no logró conectarse a los
+  buscadores (red del servidor de compilación, no un error de Elissa) y hubo que repetirlo. Ahora una falta de
+  respuesta de la red queda como aviso. Sin cambios para quien usa Elissa.
+
 ## [1.6.0] - 2026-10-12
 
 ### Añadido (Linux)
