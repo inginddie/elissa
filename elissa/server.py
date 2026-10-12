@@ -131,7 +131,8 @@ class Brain:
         self.handed_over: set[str] = set()  # files dropped on Elissa during this conversation
         self.desktop = Desktop(lambda: {os.getpid(), PARENT_PID})
         self.loop: asyncio.AbstractEventLoop | None = None
-        self.wake = WakeListener(HOME / "models", self._on_wake, self._on_wake_status)
+        self.wake = WakeListener(HOME / "models", self._on_wake, self._on_wake_status,
+                                 self.settings.get("language", "es"))
         self.mcp = mcp_client.McpManager(self._mcp_changed)
         self.local_stt = LocalWhisper(HOME / "models",
                                       lambda status: self._from_thread({"type": "stt_local_status", "status": status}))
@@ -622,6 +623,8 @@ async def set_settings(changes: dict):
     save_settings(brain.settings)
     if {"allowed_folders", "mail_enabled", "mail_send", "computer_use"} & changes.keys():
         brain.rebuild_tools()
+    if "language" in changes:
+        brain.wake.set_language(brain.settings["language"])
     if "wake_word" in changes:
         brain.wake.set_enabled(bool(brain.settings["wake_word"]))
     if brain.settings.get("stt") == "local" and {"stt", "stt_local_model"} & changes.keys():

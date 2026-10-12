@@ -107,7 +107,13 @@ const EN = {
     'Uses whisper.cpp on your computer: what you say never leaves your PC. Downloaded once.',
   'Estado: {status}': 'Status: {status}',
   'URL de transcripción': 'Transcription URL',
-  'Despertarla diciendo «Hola Elissa» u «Oye Elissa»': 'Wake her by saying «Hola Elissa» or «Oye Elissa» (Spanish)',
+  'Despertarla diciendo «Hola Elissa» u «Oye Elissa» (con la voz en inglés: «Hey Elissa»)':
+    'Wake her by saying «Hey Elissa», «Hi Elissa» or «Okay Elissa» (with her voice in Spanish: «Hola Elissa»)',
+  'escuchando «Hola Elissa»': 'listening for «Hola Elissa»',
+  'escuchando «Hey Elissa»': 'listening for «Hey Elissa»',
+  'descargando {pct}%': 'downloading {pct}%',
+  'en pausa (pantalla bloqueada)': 'paused (screen locked)',
+  'sin micrófono, reintentando…': 'no microphone, retrying…',
   'Funciona sin internet: nada de lo que escucha sale de tu PC hasta que la despiertas. Mientras esté activa, Windows muestra el ícono del micrófono; se pausa sola con la pantalla bloqueada. La primera vez descarga un modelo de 40 MB.':
     'Works offline: nothing she hears leaves your PC until you wake her. While it is on, Windows shows the microphone icon; it pauses when the screen is locked. It downloads a 40 MB model the first time.',
   'Interrumpirla hablando mientras responde (mejor con audífonos)': 'Interrupt her by talking while she answers (best with headphones)',

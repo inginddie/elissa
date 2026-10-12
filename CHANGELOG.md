@@ -4,6 +4,11 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [1.1.0] - sin publicar
 
+### Añadido
+- « Hey Elissa » (o « Hi Elissa », « Okay Elissa ») para despertarla cuando su voz está en inglés; con la voz en
+  español sigue siendo « Hola Elissa ». Cambia sola al cambiar el idioma y descarga el modelo en inglés (40 MB) la
+  primera vez.
+
 ### Cambiado
 - Modelos sugeridos al día: OpenAI `gpt-6-luna`, Anthropic `claude-haiku-5-5`, Gemini `gemini-3.5-flash-lite`,
   Groq `openai/gpt-oss-20b` y Ollama `qwen3:4b` (sin razonamiento, para responder rápido). El reconocimiento de voz

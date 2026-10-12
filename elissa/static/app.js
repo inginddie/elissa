@@ -537,7 +537,7 @@ function handle(m) {
       if (m.status === 'listo') refreshStt();
       break;
     case 'wake_status':
-      $('#wake-status').textContent = m.status && m.status !== 'apagado' ? t('Estado: {status}', { status: m.status }) : '';
+      $('#wake-status').textContent = m.status && m.status !== 'apagado' ? t('Estado: {status}', { status: wakeStatus(m.status) }) : '';
       break;
     case 'error':
       if (m.turn !== undefined && m.turn !== currentTurn) break;
@@ -819,6 +819,12 @@ function applySettings(s) {
 }
 
 const STT_LABEL = { groq: 'Groq', openai: 'OpenAI', endpoint: 'tu servidor', local: 'tu PC (whisper.cpp)' };
+
+/** The wake listener reports its status in Spanish; translate it for the English interface. */
+function wakeStatus(status) {
+  const pct = status.match(/^descargando (\d+)%$/);
+  return pct ? t('descargando {pct}%', { pct: pct[1] }) : t(status);
+}
 
 function showLocalStatus(status) {
   $('#stt-local-status').textContent = status ? t('Estado: {status}', { status }) : '';

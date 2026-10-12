@@ -169,6 +169,8 @@ backlog): requiere una decisión y un trámite de Diego.
 - Firma del instalador (quita el aviso de SmartScreen). Opciones: SignPath Foundation (gratis para proyectos de código
   abierto, hay que postular el repositorio) o Azure Artifact Signing (~10 USD/mes, con requisitos de identidad).
   Requiere que Diego elija y haga el trámite; luego se agrega el paso de firma en CI.
-- « Hola Elissa » en inglés (modelo Vosk en inglés y frases señuelo propias).
+- ~~« Hola Elissa » en inglés~~ hecho en 1.1.0: « Hey / Hi / Okay Elissa » con el modelo Vosk pequeño en inglés
+  (sigue el idioma de la voz; en inglés Vosk la oye como « alyssa »). 0 errores en 68 grabaciones sintéticas
+  (4 voces, señuelos y frases cotidianas).
 - Conectar las cuentas reales de Diego en Integraciones (GitHub con su token, Jira/Confluence con OAuth).
 - Avisos de sesiones de Claude Code / Codex (hooks), como en Coucou.
