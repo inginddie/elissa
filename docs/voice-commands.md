@@ -1,100 +1,100 @@
 # Voice commands
 
-You don't need exact phrases: talk to Elissa naturally, in Spanish or English, and she picks the right tool. These
-examples show what she can do. Actions marked **:material-hand-back-right: approval** show a card and wait for your
-click.
+No exact phrases needed: talk naturally, in Spanish or English. ✋ means she shows you a card first.
 
-## Conversation
+<div class="grid cards" markdown>
 
-| Say | What happens |
-|---|---|
-| "Thanks, that's all", "bye", "I'm done", "listo, gracias", "chao" | Ends the conversation |
-| "Hide", "go away", "minimízate", "escóndete" | Hides her window |
-| "Hey Elissa, …" | Wakes her (if the [wake phrase](settings.md#voice) is on) |
+-   :material-chat-outline: **Conversation**
 
-The short phrases above work on their own, without the AI, as long as they're the whole sentence.
+    ---
 
-## Music and volume
+    "Thanks, that's all" · "bye" · "hide"
 
-| Say | Notes |
-|---|---|
-| "Play Daft Punk", "play my focus playlist", "pon Soda Stereo" | Needs [Spotify connected](settings.md#spotify) (Premium). Plays songs, artists, albums or your playlists, on any of your devices |
-| "Pause", "next song", "skip 3 songs", "go back" | Windows: any player. macOS: Spotify and Music. Linux: Spotify connected |
-| "What's playing?" | Same as above |
-| "Turn the volume down to 30", "a little louder", "mute" | System volume. Windows and macOS |
+-   :material-music: **Music and volume**
 
-## Apps, sites and files
+    ---
 
-| Say | Notes |
-|---|---|
-| "Open Excel", "open Spotify", "open the calculator" | Installed apps. Windows and macOS |
-| "Open github.com" | Opens the site in your browser |
-| "Open my Downloads folder", "show me that file in its folder" | Never opens programs or scripts |
-| "Read the PDF I just downloaded", "what does this spreadsheet say?" | PDF, Word, Excel, CSV, text and code in your allowed folders |
-| "Find the files about the budget", "search for 'invoice' in my documents" | Searches names and contents |
-| "Write a summary to notes.md", "rename that file", "move it to Documents" | :material-hand-back-right: approval, with a diff. Nothing is ever deleted |
+    "Play Daft Punk" · "pause" · "skip 3 songs" · "what's playing?" · "volume to 30"
 
-Drop a file on her window to ask about it.
+-   :material-application-outline: **Apps and sites**
 
-## Timers, reminders and tasks
+    ---
 
-| Say | Notes |
-|---|---|
-| "5-minute timer" | Up to 24 hours |
-| "Remind me at 3 pm to call Ana", "remind me in 20 minutes to stretch" | A reminder missed while she was closed arrives when she opens, with a note |
-| "What reminders do I have?", "cancel the 3 pm reminder" | |
-| "Add buy bread to my tasks", "what are my tasks?", "mark buy bread as done" | Saved in `tareas.md` in your data folder |
+    "Open Excel" · "open github.com" · "open my Downloads folder"
 
-Reminders and timers show a system notification, and she says them out loud if she isn't busy.
+-   :material-file-document-outline: **Files**
 
-## Web
+    ---
 
-| Say | Notes |
-|---|---|
-| "Search the web for…", "what's the latest on…" | DuckDuckGo, no extra key |
-| "Read this page: …", "summarize this online PDF" | |
+    "Read the PDF I just downloaded" · "find the budget files" · "write a summary to notes.md" ✋
 
-## Email
+-   :material-alarm: **Timers, reminders, tasks**
 
-*Needs [Email](settings.md#email) turned on.*
+    ---
 
-| Say | Notes |
-|---|---|
-| "Do I have emails from Ana?", "read the last email from the bank" | Read-only |
-| "Save the attachments from that email" | To `Downloads/Elissa adjuntos` |
-| "Reply to Ana that I'll be there at 5" | :material-hand-back-right: approval, showing the full email. Needs *Let her send email* |
+    "5-minute timer" · "remind me at 3 pm to call Ana" · "add buy bread to my tasks"
 
-## Code
+-   :material-web: **Web**
 
-| Say | Notes |
-|---|---|
-| "What is this project?", "where is the login handled?" | Reads the project and searches the code |
-| "What changed?", "show me the git log" | git status, diff, log and branches (read-only) |
-| "Run the tests, find the bug and fix it" | Edits are :material-hand-back-right: approval with a diff; commands are :material-hand-back-right: approval. Windows (PowerShell) and macOS (zsh) |
+    ---
 
-Commands that delete or discard work (`rm`, `del`, hard resets, force pushes, deleting branches…) are refused, even
-if you ask.
+    "Search the web for…" · "read this page" · "summarize this PDF"
 
-## Your computer
+-   :material-email-outline: **Email**
 
-*Windows, with [Using the computer](settings.md#using-the-computer) on.*
+    ---
 
-| Say | Notes |
-|---|---|
-| "What is this?", "what does this window say?" | Reads the window you're working in |
-| "Switch to Excel", "what windows are open?" | |
-| "Click Save", "type my address", "press Ctrl+S" | :material-hand-back-right: approval |
+    "Do I have emails from Ana?" · "save the attachments" · "reply that I'll be there at 5" ✋
 
-Password fields are never read.
+-   :material-code-braces: **Code**
 
-## Memory
+    ---
 
-| Say | Notes |
-|---|---|
-| "Remember that I prefer meetings in the morning" | Saved as a note |
-| "What did we talk about yesterday?", "what did I tell you about the trip?" | Searches past conversations |
+    "What is this project?" · "what changed?" · "run the tests and fix the bug" ✋
 
-## Integrations
+-   :material-monitor: **Your computer** (Windows)
 
-With [MCP servers](settings.md#integrations-mcp) connected, just ask: "what are my open GitHub issues?", "create a
-Jira ticket for…", "what's on my calendar tomorrow?". Reading runs freely; anything that changes data shows a card.
+    ---
+
+    "What is this?" · "switch to Excel" · "click Save" ✋ · "press Ctrl+S" ✋
+
+-   :material-head-lightbulb-outline: **Memory**
+
+    ---
+
+    "Remember that I prefer morning meetings" · "what did we talk about yesterday?"
+
+-   :material-puzzle-outline: **Integrations**
+
+    ---
+
+    "My open GitHub issues?" · "create a Jira ticket for…" ✋ · "what's on my calendar tomorrow?"
+
+</div>
+
+## What the ✋ cards look like
+
+<div class="shots" markdown>
+<figure markdown>
+![Approval card for editing a file, showing the diff](media/screens/en/approval-diff.png)
+<figcaption>Editing a file: the exact diff</figcaption>
+</figure>
+<figure markdown>
+![Approval card for sending an email, showing recipient, subject and body](media/screens/en/approval-email.png)
+<figcaption>Sending an email: the whole message</figcaption>
+</figure>
+<figure markdown>
+![Approval card for running a command, showing the folder and the command](media/screens/en/approval-command.png)
+<figcaption>Running a command: exactly as it will run</figcaption>
+</figure>
+</div>
+
+## Good to know
+
+- **Music:** playing what you ask for needs [Spotify connected](settings.md#spotify). Pause and skip work with any
+  player on Windows, with Spotify and Music on macOS.
+- **Apps, volume and commands:** Windows and macOS. **Your computer:** Windows.
+- **Email** needs [Email](settings.md#email) turned on.
+- **Never:** she doesn't delete files or email, open programs or scripts, or read password fields. Commands that
+  delete or discard work are refused, even if you ask.
+- Reminders show a notification, and she says them out loud.

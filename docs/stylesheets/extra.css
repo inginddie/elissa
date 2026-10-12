@@ -4,12 +4,20 @@
   --md-primary-fg-color--light: #5a52b0;
   --md-primary-fg-color--dark: #2a2560;
   --md-accent-fg-color: #f26d5b;
+  --md-typeset-a-color: #4a42a8;
 }
 
 [data-md-color-scheme="slate"] {
   --md-primary-fg-color: #2a2560;
   --md-accent-fg-color: #7fe6ea;
   --md-default-bg-color: #14122b;
+  --md-typeset-a-color: #7fe6ea;
+}
+
+/* The outlined button takes the link color, readable on both backgrounds. */
+.md-typeset .md-button:not(.md-button--primary) {
+  color: var(--md-typeset-a-color);
+  border-color: var(--md-typeset-a-color);
 }
 
 .md-header__button.md-logo img {
@@ -19,3 +27,37 @@
 .hero img {
   border-radius: 0.6rem;
 }
+
+/* Screenshots of Elissa's window: next to the text on wide screens, full width on phones. */
+.md-typeset figure.shot {
+  float: right;
+  width: 280px;
+  margin: 0 0 1rem 1.5rem;
+}
+.md-typeset .shot img, .md-typeset .shots img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.md-typeset figure.shot + * { margin-top: 0; }
+.md-typeset h2 { clear: both; }
+@media (max-width: 600px) {
+  .md-typeset figure.shot { float: none; width: 100%; max-width: 320px; margin: 0 auto 1rem; }
+}
+
+/* Several screenshots side by side. */
+.md-typeset .shots {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  align-items: start;
+  margin: 1rem 0;
+}
+.md-typeset .shots figcaption, .md-typeset .shot figcaption {
+  font-size: 0.7rem;
+  color: var(--md-default-fg-color--light);
+  text-align: center;
+}
+.md-typeset .shots figure { margin: 0; width: auto; }
+
+.md-typeset figure.shot.small { width: 120px; }

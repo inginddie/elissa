@@ -65,7 +65,14 @@ La wiki vive en `docs/`: las páginas en inglés son `pagina.md` y las de españ
 uv run --group docs mkdocs serve
 ```
 
-Cada push a `main` la publica en GitHub Pages. También puedes usar el botón :material-file-edit-outline: arriba de
+Las capturas de la ventana de Elissa (`docs/media/screens/`) salen de la app real, en los dos idiomas, con una
+carpeta de datos desechable. Después de cambiar la interfaz, regéneralas (necesita Microsoft Edge):
+
+```bash
+uv run --with playwright==1.63.0 python scripts/wiki_screenshots.py
+```
+
+Cada push a `main` publica la wiki en GitHub Pages. También puedes usar el botón :material-file-edit-outline: arriba de
 cada página.
 
 ## Versiones

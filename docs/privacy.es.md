@@ -1,5 +1,21 @@
 # Política de privacidad
 
+```mermaid
+flowchart LR
+  subgraph PC["💻 Tu computador"]
+    E["Elissa"]
+    W["Frase de activación"]
+    M["Memoria y ajustes"]
+    K["Claves (llavero)"]
+  end
+  E -- lo que dices --> AI["Tu proveedor de IA"]
+  E -- tu voz --> STT["Tu servicio de voz"]
+  E -- sus respuestas --> TTS["Voces de Edge"]
+  E -. solo si los usas .-> X["Web · Correo · Spotify · Integraciones"]
+```
+
+<small>Cada flecha va solo al servicio que elegiste, y cada una se puede evitar: mira la tabla.</small>
+
 Elissa corre en tu computador. No tiene cuenta, ni servidor propio, ni telemetría. Tus ajustes, memoria y registros se
 quedan en tu computador como Markdown y JSON legibles (en `%APPDATA%\Elissa` en Windows,
 `~/Library/Application Support/Elissa` en macOS y `~/.local/share/Elissa` en Linux), y tus claves se quedan en el

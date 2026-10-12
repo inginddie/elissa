@@ -55,6 +55,15 @@ versión para todos los sistemas, y las copias instaladas se actualizan solas.
 
     Para agregar carpetas desde *Ajustes → Carpetas que puede usar*, instala `zenity`.
 
+## Después de instalar
+
+<figure class="shot small" markdown>
+![Elissa descansando como un pequeño personaje en la esquina de la pantalla](media/screens/es/compact.png)
+</figure>
+
+Elissa aparece como un pequeño personaje en la esquina inferior derecha, y su ícono queda en la bandeja. Arrástrala a
+donde quieras. Sigue con los [primeros pasos](first-steps.md).
+
 ## Qué funciona en cada sistema
 
 Windows tiene todo. macOS y Linux son vistas previas: lo que no está disponible ahí se oculta o se explica en Ajustes.

@@ -6,65 +6,67 @@ hide:
 # Elissa
 
 <div class="hero" markdown>
-![Elissa, a small indigo character with a coral face and big eyes, glowing on a dark desktop](media/hero.png)
+![Elissa, a small indigo character with a coral face and big eyes, glowing on a dark desktop](media/hero.png){ .skip-lightbox }
 </div>
 
-**A voice assistant with a face, living on your desktop. It works with any AI model, in the cloud or on your own
-computer.**
-
-Say **"Hey Elissa"** (or "Hola Elissa" in Spanish), or press ++ctrl+alt+space++ from any app, and talk. Elissa
-listens, thinks and answers out loud. She can read your documents, search the web, handle your email, set reminders,
-play your music, use your apps and remember what you talked about. Anything that changes something waits for your
-click.
+**A voice assistant with a face, living on your desktop.** Say "Hey Elissa" or press ++ctrl+alt+space++, and talk.
+She answers out loud, with any AI model, and nothing changes without your click.
 
 [Install Elissa](install.md){ .md-button .md-button--primary }
 [First steps](first-steps.md){ .md-button }
 
+## How it works
+
+<figure class="shot" markdown>
+![Elissa answering a question out loud, with the question and her answer written below her](media/screens/en/reply.png)
+</figure>
+
+```mermaid
+flowchart TB
+  A["🗣️ You talk"] --> B["👂 She understands<br>(speech to text)"]
+  B --> C["🧠 Your AI thinks"]
+  C --> D{"Changes<br>something?"}
+  D -- no --> E["🔊 She answers"]
+  D -- yes --> F["✋ Approval card"]
+  F -- your click --> E
+```
+
+Reading, searching and answering happen on their own. Writing, sending, clicking or running anything shows you a
+card first, and only your click approves it.
+
 ## What she can do
 
-| | |
-|---|---|
-| :material-account-voice: **Talk** | Wake her by voice (detected on your computer, offline) or with the shortcut. Natural voices, interrupt her by talking, or keep the conversation going hands-free. |
-| :material-brain: **Any model** | OpenAI, Claude, Gemini, OpenRouter, Groq, or a free local model with Ollama or LM Studio. |
-| :material-hand-back-right: **Act, with your OK** | Every action that changes something shows an approval card with exactly what will happen. Only your click approves it. |
-| :material-file-document: **Files** | Find and read PDF, Word, Excel, CSV, text and code in the folders you allow; create, edit (with a diff), move and rename. Nothing is ever deleted. |
-| :material-monitor: **Use your computer** | Open apps, sites, files and folders. On Windows she can also read the window you're in, click, type and press keys there. |
-| :material-alarm: **Timers, reminders, tasks** | "Remind me at 3 pm to call Ana", "5-minute timer", "add buy bread to my tasks". |
-| :material-email: **Email** | Gmail, Outlook, Yahoo, iCloud and any IMAP/SMTP account: search, read, save attachments, and send if you allow it. |
-| :material-code-braces: **Code with you** | Understands a project, searches the code, checks git, edits with diffs and runs your tests. |
-| :material-bell: **Claude Code & Codex alerts** | She tells you when a coding-agent session finishes or needs your permission. |
-| :material-puzzle: **Integrations (MCP)** | GitHub, Jira & Confluence, Google Calendar, or any MCP server. |
-| :material-spotify: **Music** | "Play Daft Punk" with Spotify; pause, skip, "what's playing?" and volume. |
-| :material-head-lightbulb: **Memory** | Each conversation becomes plain Markdown notes she can recall: "what did we talk about yesterday?" |
+<div class="grid cards" markdown>
 
-See every phrase in [Voice commands](voice-commands.md) and every option in [Settings](settings.md).
+- :material-account-voice: **Talk**, hands-free, and interrupt her any time
+- :material-brain: **Any AI**: OpenAI, Claude, Gemini, OpenRouter, Groq, or free and local with Ollama
+- :material-file-document: **Your files**: read PDF, Word, Excel; write with a diff; never delete
+- :material-monitor: **Your computer**: open apps and sites; on Windows, use other windows
+- :material-alarm: **Timers, reminders and tasks**
+- :material-email: **Email**: search, read, and send with your OK
+- :material-code-braces: **Code**: understand a project, edit, run your tests
+- :material-spotify: **Music**: Spotify, pause, skip, volume
+- :material-puzzle: **Integrations**: GitHub, Jira, Confluence, Google Calendar
+- :material-bell: **Claude Code and Codex alerts**
+- :material-head-lightbulb: **Memory**: "what did we talk about yesterday?"
+- :material-shield-check: **Private**: no account, no telemetry
+
+</div>
+
+[Everything you can ask her](voice-commands.md){ .md-button }
 
 ## Meet Elissa
 
 ![Fourteen expressions: idle, listening, thinking, working, speaking, happy, needs you, oops, sleeping, poked, dizzy, love, surprised and waking up](media/expressions.png)
 
-Elissa is drawn in code, so she blends smoothly from one expression to the next. She follows your cursor and blinks,
-perks up her ears when she listens, shows a gear while she works and a question mark when she needs you. Poke her
-(right click) and she gets annoyed; rest the pointer on her and she sends hearts. After five quiet minutes she falls
-asleep.
+She follows your cursor, perks up her ears when she listens and shows a gear while she works. Poke her (right click)
+and she gets annoyed; rest the pointer on her and she sends hearts.
 
 ## Systems
 
-| System | Status |
-|---|---|
-| :fontawesome-brands-windows: Windows 10 (1809+) and 11, 64-bit | Full |
-| :fontawesome-brands-apple: macOS 11+ on Apple Silicon | Preview |
-| :fontawesome-brands-linux: Linux (`.deb` and AppImage) | Preview |
+| | Windows 10 / 11 | macOS 11+ (Apple Silicon) | Linux |
+|---|:-:|:-:|:-:|
+| Status | Full | Preview | Preview |
 
-[What works on each system](install.md#what-works-on-each-system)
-
-## Trust
-
-Elissa has no account, no server of her own and no telemetry. Your keys stay in your system's keychain and your data
-stays in a folder on your computer.
-
-- [Privacy policy](privacy.md)
-- [Security](security.md)
-- [Code signing policy](code-signing.md)
-
-Elissa is open source under the [MIT license](https://github.com/inginddie/elissa/blob/main/LICENSE).
+[What works on each system](install.md#what-works-on-each-system) ·
+[Privacy policy](privacy.md) · [Security](security.md) · [Code signing policy](code-signing.md)

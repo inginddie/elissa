@@ -51,6 +51,9 @@ extra_css:
 
 plugins:
   - search
+  # Click an image to see it full size (except the hero banner, marked skip-lightbox).
+  - glightbox:
+      skip_classes: [skip-lightbox]
   - i18n:
       docs_structure: suffix
       reconfigure_material: true
@@ -105,7 +108,11 @@ markdown_extensions:
       permalink: true
   - pymdownx.details
   - pymdownx.keys
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.emoji:

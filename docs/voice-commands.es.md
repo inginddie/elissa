@@ -1,101 +1,101 @@
 # Comandos de voz
 
-No necesitas frases exactas: háblale a Elissa con naturalidad, en español o en inglés, y ella elige la herramienta
-correcta. Estos ejemplos muestran lo que puede hacer. Las acciones marcadas con
-**:material-hand-back-right: aprobación** muestran una tarjeta y esperan tu clic.
+No hacen falta frases exactas: habla con naturalidad, en español o en inglés. ✋ significa que antes te muestra una
+tarjeta.
 
-## Conversación
+<div class="grid cards" markdown>
 
-| Di | Qué pasa |
-|---|---|
-| «Listo, gracias», «eso es todo», «chao», «adiós», «ya está» | Termina la conversación |
-| «Minimízate», «escóndete», «vete», «desaparece» | Esconde su ventana |
-| «Hola Elissa, …» | La despierta (si la [frase de activación](settings.md#voz) está activa) |
+-   :material-chat-outline: **Conversación**
 
-Las frases cortas de arriba funcionan solas, sin la IA, siempre que sean la frase completa.
+    ---
 
-## Música y volumen
+    «Listo, gracias» · «chao» · «escóndete»
 
-| Di | Notas |
-|---|---|
-| «Pon Soda Stereo», «pon mi playlist de concentración» | Necesita [Spotify conectado](settings.md#spotify) (Premium). Pone canciones, artistas, álbumes o tus playlists, en cualquiera de tus dispositivos |
-| «Pausa», «siguiente canción», «salta 3 canciones», «la anterior» | Windows: cualquier reproductor. macOS: Spotify y Música. Linux: Spotify conectado |
-| «¿Qué suena?» | Igual que arriba |
-| «Baja el volumen al 30», «súbele un poco», «silencia» | Volumen del sistema. Windows y macOS |
+-   :material-music: **Música y volumen**
 
-## Apps, sitios y archivos
+    ---
 
-| Di | Notas |
-|---|---|
-| «Abre Excel», «abre Spotify», «abre la calculadora» | Apps instaladas. Windows y macOS |
-| «Abre github.com» | Abre el sitio en tu navegador |
-| «Abre mi carpeta de Descargas», «muéstrame ese archivo en su carpeta» | Nunca abre programas ni scripts |
-| «Lee el PDF que acabo de descargar», «¿qué dice esta hoja de cálculo?» | PDF, Word, Excel, CSV, texto y código en tus carpetas permitidas |
-| «Busca los archivos del presupuesto», «busca "factura" en mis documentos» | Busca en nombres y contenidos |
-| «Escribe un resumen en notas.md», «renombra ese archivo», «muévelo a Documentos» | :material-hand-back-right: aprobación, con un diff. Nunca borra nada |
+    «Pon Soda Stereo» · «pausa» · «salta 3 canciones» · «¿qué suena?» · «volumen al 30»
 
-Suelta un archivo sobre su ventana para preguntarle por él.
+-   :material-application-outline: **Apps y sitios**
 
-## Temporizadores, recordatorios y tareas
+    ---
 
-| Di | Notas |
-|---|---|
-| «Temporizador de 5 minutos» | Hasta 24 horas |
-| «Recuérdame a las 3 llamar a Ana», «recuérdame en 20 minutos estirarme» | Un recordatorio que se pasó mientras estaba cerrada llega cuando abre, con una nota |
-| «¿Qué recordatorios tengo?», «cancela el recordatorio de las 3» | |
-| «Agrega comprar pan a mis tareas», «¿cuáles son mis tareas?», «marca comprar pan como hecha» | Se guardan en `tareas.md` en tu carpeta de datos |
+    «Abre Excel» · «abre github.com» · «abre mi carpeta de Descargas»
 
-Los recordatorios y temporizadores muestran una notificación del sistema, y los dice en voz alta si no está ocupada.
+-   :material-file-document-outline: **Archivos**
 
-## Web
+    ---
 
-| Di | Notas |
-|---|---|
-| «Busca en internet…», «¿qué hay de nuevo sobre…?» | DuckDuckGo, sin clave extra |
-| «Lee esta página: …», «resume este PDF en línea» | |
+    «Lee el PDF que acabo de descargar» · «busca los archivos del presupuesto» · «escribe un resumen en notas.md» ✋
 
-## Correo
+-   :material-alarm: **Temporizadores, recordatorios, tareas**
 
-*Necesita [Correo](settings.md#correo) activo.*
+    ---
 
-| Di | Notas |
-|---|---|
-| «¿Tengo correos de Ana?», «lee el último correo del banco» | Solo lectura |
-| «Guarda los adjuntos de ese correo» | En `Descargas/Elissa adjuntos` |
-| «Respóndele a Ana que llego a las 5» | :material-hand-back-right: aprobación, con el correo completo. Necesita *Permitir que envíe correos* |
+    «Temporizador de 5 minutos» · «recuérdame a las 3 llamar a Ana» · «agrega comprar pan a mis tareas»
 
-## Código
+-   :material-web: **Web**
 
-| Di | Notas |
-|---|---|
-| «¿Qué es este proyecto?», «¿dónde se maneja el login?» | Lee el proyecto y busca en el código |
-| «¿Qué cambió?», «muéstrame el log de git» | git status, diff, log y ramas (solo lectura) |
-| «Corre las pruebas, encuentra el error y arréglalo» | Las ediciones son :material-hand-back-right: aprobación con un diff; los comandos también. Windows (PowerShell) y macOS (zsh) |
+    ---
 
-Los comandos que borran o descartan trabajo (`rm`, `del`, resets duros, force push, borrar ramas…) se rechazan, aunque
-se lo pidas.
+    «Busca en internet…» · «lee esta página» · «resume este PDF»
 
-## Tu computador
+-   :material-email-outline: **Correo**
 
-*Windows, con [Uso del computador](settings.md#uso-del-computador) activo.*
+    ---
 
-| Di | Notas |
-|---|---|
-| «¿Qué es esto?», «¿qué dice esta ventana?» | Lee la ventana en la que estás trabajando |
-| «Cambia a Excel», «¿qué ventanas hay abiertas?» | |
-| «Haz clic en Guardar», «escribe mi dirección», «presiona Ctrl+S» | :material-hand-back-right: aprobación |
+    «¿Tengo correos de Ana?» · «guarda los adjuntos» · «respóndele que llego a las 5» ✋
 
-Nunca lee campos de contraseña.
+-   :material-code-braces: **Código**
 
-## Memoria
+    ---
 
-| Di | Notas |
-|---|---|
-| «Recuerda que prefiero las reuniones en la mañana» | Se guarda como nota |
-| «¿De qué hablamos ayer?», «¿qué te dije del viaje?» | Busca en conversaciones pasadas |
+    «¿Qué es este proyecto?» · «¿qué cambió?» · «corre las pruebas y arregla el error» ✋
 
-## Integraciones
+-   :material-monitor: **Tu computador** (Windows)
 
-Con [servidores MCP](settings.md#integraciones-mcp) conectados, solo pide: «¿cuáles son mis issues abiertos en
-GitHub?», «crea un ticket en Jira para…», «¿qué tengo mañana en el calendario?». Leer corre libre; todo lo que cambia
-datos muestra una tarjeta.
+    ---
+
+    «¿Qué es esto?» · «cambia a Excel» · «haz clic en Guardar» ✋ · «presiona Ctrl+S» ✋
+
+-   :material-head-lightbulb-outline: **Memoria**
+
+    ---
+
+    «Recuerda que prefiero las reuniones en la mañana» · «¿de qué hablamos ayer?»
+
+-   :material-puzzle-outline: **Integraciones**
+
+    ---
+
+    «¿Mis issues abiertos en GitHub?» · «crea un ticket en Jira para…» ✋ · «¿qué tengo mañana en el calendario?»
+
+</div>
+
+## Cómo se ven las tarjetas ✋
+
+<div class="shots" markdown>
+<figure markdown>
+![Tarjeta de aprobación para editar un archivo, con el diff](media/screens/es/approval-diff.png)
+<figcaption>Editar un archivo: el diff exacto</figcaption>
+</figure>
+<figure markdown>
+![Tarjeta de aprobación para enviar un correo, con destinatario, asunto y cuerpo](media/screens/es/approval-email.png)
+<figcaption>Enviar un correo: el mensaje completo</figcaption>
+</figure>
+<figure markdown>
+![Tarjeta de aprobación para ejecutar un comando, con la carpeta y el comando](media/screens/es/approval-command.png)
+<figcaption>Ejecutar un comando: tal como se va a ejecutar</figcaption>
+</figure>
+</div>
+
+## Bueno saber
+
+- **Música:** poner lo que pidas necesita [Spotify conectado](settings.md#spotify). Pausar y siguiente funcionan con
+  cualquier reproductor en Windows, con Spotify y Música en macOS.
+- **Apps, volumen y comandos:** Windows y macOS. **Tu computador:** Windows.
+- **Correo** necesita [Correo](settings.md#correo) activo.
+- **Nunca:** no borra archivos ni correos, no abre programas ni scripts, y no lee campos de contraseña. Los comandos
+  que borran o descartan trabajo se rechazan, aunque se lo pidas.
+- Los recordatorios muestran una notificación, y te los dice en voz alta.

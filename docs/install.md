@@ -54,6 +54,15 @@ published for every system, and installed copies update themselves.
 
     To add folders from *Settings → Folders she can use*, install `zenity`.
 
+## After installing
+
+<figure class="shot small" markdown>
+![Elissa resting as a small character in the corner of the screen](media/screens/en/compact.png)
+</figure>
+
+Elissa appears as a small character in the bottom-right corner, and her icon sits in the tray. Drag her anywhere.
+Continue with the [first steps](first-steps.md).
+
 ## What works on each system
 
 Windows has everything. macOS and Linux are previews: what isn't available there is hidden or explained in Settings.
