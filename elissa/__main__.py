@@ -94,11 +94,21 @@ def selftest() -> int:
         from pycaw.pycaw import AudioUtilities  # noqa: F401  (volume and ducking)
         return "controles multimedia y volumen de Windows"
 
+    def local_stt():
+        from pywhispercpp.model import Model  # noqa: F401  (whisper.cpp inside the engine)
+        return "whisper.cpp en el motor"
+
     def offline():
         from elissa import offline_voice
         voices = offline_voice.list_voices("es") + offline_voice.list_voices("en")
         wav = offline_voice.synthesize("Hola", voices[0]["id"] if voices else "", 1.0)
         return f"{len(voices)} voces, {len(wav)} bytes"
+
+    def accessibility():
+        import AppKit  # noqa: F401
+        import ApplicationServices  # noqa: F401
+        import Quartz  # noqa: F401
+        return "API de Accesibilidad y eventos de Quartz"
 
     def windows():
         import uiautomation as auto
@@ -121,13 +131,15 @@ def selftest() -> int:
         check("keyring", roundtrip)
     check("documentos", office)
     if system.has("computer_use"):
-        check("ventanas", windows)
+        check("ventanas", accessibility if system.IS_MAC else windows)
     check("microfono", microphone)
     check("integraciones", integrations)
     if system.has("mixer") and system.IS_WINDOWS:
         check("multimedia", media)
     if system.has("offline_voice"):
         check("voz_sin_conexion", offline)
+    if system.has("local_stt") and not system.IS_WINDOWS:
+        check("reconocimiento_local", local_stt)
     checks["sistema"] = f"ok ({system.NAME}: {', '.join(sorted(system.CAPS)) or 'básico'})"
     for name, result in checks.items():
         logging.info("selftest %s: %s", name, result)

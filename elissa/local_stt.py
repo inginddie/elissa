@@ -1,8 +1,9 @@
 """Speech recognition on the user's PC with whisper.cpp: no internet, no API key.
 
-whisper.cpp's Windows build (whisper-server.exe) and a quantized Whisper model are downloaded on demand from pinned
-URLs and verified with SHA-256, so the installer stays small. The server runs on a free local port while Elissa
-runs; a Windows job object makes sure it never outlives the engine.
+A quantized Whisper model is downloaded on demand from a pinned URL and verified with SHA-256, so the installer stays
+small. On Windows, whisper.cpp's official build (whisper-server.exe) is downloaded the same way and runs on a free
+local port while Elissa runs; a job object makes sure it never outlives the engine. On macOS and Linux, whisper.cpp
+runs inside the engine (pywhispercpp, bundled), with the same model files.
 """
 import array
 import hashlib
@@ -94,6 +95,16 @@ def _download(url: str, dest: Path, sha256: str, progress: Callable[[int], None]
     tmp.replace(dest)
 
 
+def _silence_wav(seconds: float) -> bytes:
+    buf = io.BytesIO()
+    with wave.open(buf, "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(16000)
+        w.writeframes(b"\0\0" * int(16000 * seconds))
+    return buf.getvalue()
+
+
 def _free_port() -> int:
     with socket.socket() as s:
         s.bind(("127.0.0.1", 0))
@@ -122,14 +133,14 @@ class LocalWhisper:
         return self.dir / MODELS[key][0]
 
     def installed(self, key: str) -> bool:
-        return bool(self.server_exe()) and self.model_file(key).exists()
+        return (bool(self.server_exe()) or not system.IS_WINDOWS) and self.model_file(key).exists()
 
     def ensure(self, key: str) -> None:
         """Downloads whatever is missing (server and model), verifying each file."""
         if key not in MODELS:
             raise ValueError(f"Modelo desconocido: {key}")
         self.dir.mkdir(parents=True, exist_ok=True)
-        if not self.server_exe():
+        if system.IS_WINDOWS and not self.server_exe():
             zip_path = self.dir / "whisper-bin-x64.zip"
             _download(SERVER_URL, zip_path, SERVER_SHA256, lambda p: self._set(f"descargando el motor {p}%"))
             target = self.dir / "bin"
@@ -184,6 +195,34 @@ class LocalWhisper:
             self._set("listo")
             log.info("whisper-server (%s) on port %d", key, self.port)
             return f"http://127.0.0.1:{self.port}/inference"
+
+    # ----- in the engine (macOS, Linux) -----
+
+    def transcribe(self, key: str, wav: bytes, language: str) -> str:
+        """16 kHz mono 16-bit WAV -> text, with whisper.cpp loaded in this process (one model kept loaded)."""
+        import numpy as np
+        from pywhispercpp.model import Model
+        with self._lock:
+            if self.model_key != key or getattr(self, "_model", None) is None:
+                if not self.installed(key):
+                    self.ensure(key)
+                self._set("iniciando")
+                self._model = Model(str(self.model_file(key)), redirect_whispercpp_logs_to=None,
+                                    n_threads=max(2, min(8, os.cpu_count() or 4)), audio_ctx=AUDIO_CTX)
+                self.model_key = key
+                self._set("listo")
+            with wave.open(io.BytesIO(wav)) as w:
+                samples = np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16)
+            audio = samples.astype(np.float32) / 32768.0
+            segments = self._model.transcribe(audio, language=language)
+        return " ".join(s.text.strip() for s in segments).strip()
+
+    def prepare(self, key: str) -> None:
+        """Gets everything ready ahead of the first sentence: the server on Windows, the model elsewhere."""
+        if system.IS_WINDOWS:
+            self.url(key)
+        else:
+            self.transcribe(key, _silence_wav(0.5), "es")
 
     def stop(self) -> None:
         if self.proc and self.proc.poll() is None:

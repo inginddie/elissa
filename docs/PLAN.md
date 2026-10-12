@@ -172,6 +172,10 @@ capacidades (`/api/system`, `data-cap`, `data-os`). STT local y uso del computad
 F8.2 publicada en 1.5.0. F8.3 en la rama `f8-linux` (1.6.0): MPRIS por D-Bus (jeepney), volumen y ducking por
 app con `pactl` (PulseAudio/PipeWire), espeak-ng, apps `.desktop` (XDG, Flatpak, Snap), logind `LockedHint`, cursor
 X11 (x11rb), micrófono en WebKitGTK (`enable-media-stream` + permiso solo al motor). Capacidades según lo instalado.
+F8.3 publicada en 1.6.0 (1.6.1: autodiagnóstico tolerante a la red). F8.4 en la rama `f8-local-mac` (1.7.0):
+reconocimiento local en macOS y Linux con pywhispercpp dentro del motor (mismos modelos y SHA-256), y uso del
+computador en macOS con la API de Accesibilidad (`tools/desktop_mac.py`, pyobjc). Uso del computador en Linux X11
+(AT-SPI) queda pendiente; en Wayland no es posible.
 Decisiones de Diego (2026-10-12): **macOS primero**, **sin cuenta de Apple Developer**, pruebas en un Mac físico y en
 un Linux en máquina virtual.
 

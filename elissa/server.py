@@ -135,7 +135,7 @@ class Brain:
         self.approvals: dict[str, asyncio.Future] = {}
         self.planner = Planner(HOME)
         self.handed_over: set[str] = set()  # files dropped on Elissa during this conversation
-        self.desktop = Desktop(lambda: {os.getpid(), PARENT_PID})
+        self.desktop = self._desktop() if system.has("computer_use") else None
         self.loop: asyncio.AbstractEventLoop | None = None
         self.wake = WakeListener(HOME / "models", self._on_wake, self._on_wake_status,
                                  self.settings.get("language", "es"))
@@ -179,6 +179,13 @@ class Brain:
         preset = PROVIDERS.get(self.settings.get("provider"), {}).get("budget", 20000)
         return min(int(self.settings.get("context_budget") or preset), preset)
 
+    @staticmethod
+    def _desktop():
+        if system.IS_MAC:
+            from .tools.desktop_mac import DesktopMac
+            return DesktopMac(own_pids)
+        return Desktop(lambda: {os.getpid(), PARENT_PID})
+
     def rebuild_tools(self) -> None:
         reg = self.tools
         reg.clear()  # same registry object: the agent keeps its reference
@@ -189,7 +196,7 @@ class Brain:
         register_file_edit(reg, FileEditor(files))
         register_code(reg, CodeTools(files))
         register_planner(reg, self.planner)
-        if self.settings.get("computer_use", True) and system.has("computer_use"):
+        if self.settings.get("computer_use", True) and self.desktop is not None:
             register_desktop(reg, self.desktop)
         if hasattr(self, "mcp"):
             self.mcp.register(reg)
@@ -503,15 +510,20 @@ async def transcribe_locally(audio: bytes, s: dict):
     if not audio.startswith(b"RIFF"):
         return JSONResponse({"error": "No pude procesar el audio; intenta de nuevo."}, 422)
     brain: Brain = state["brain"]
+    key, language = s.get("stt_local_model", "base"), s.get("language", "es")[:2]
     try:
-        url = await asyncio.to_thread(brain.local_stt.url, s.get("stt_local_model", "base"))
         texts = []
-        async with httpx.AsyncClient(timeout=120) as client:
+        if not system.IS_WINDOWS:  # whisper.cpp inside the engine
             for piece in await asyncio.to_thread(split_wav, audio):
-                r = await client.post(url, data={"response_format": "json", "language": s.get("language", "es")[:2]},
-                                      files={"file": ("audio.wav", piece, "audio/wav")})
-                r.raise_for_status()
-                texts.append(r.json().get("text", "").strip())
+                texts.append(await asyncio.to_thread(brain.local_stt.transcribe, key, piece, language))
+        else:
+            url = await asyncio.to_thread(brain.local_stt.url, key)
+            async with httpx.AsyncClient(timeout=120) as client:
+                for piece in await asyncio.to_thread(split_wav, audio):
+                    r = await client.post(url, data={"response_format": "json", "language": language},
+                                          files={"file": ("audio.wav", piece, "audio/wav")})
+                    r.raise_for_status()
+                    texts.append(r.json().get("text", "").strip())
     except Exception as e:
         log.warning("local stt failed: %s", e)
         return JSONResponse({"error": f"El reconocimiento local falló: {e}"}, 502)
@@ -555,7 +567,7 @@ def prepare_local_stt(brain: "Brain") -> None:
 
     def work():
         try:
-            brain.local_stt.url(key)
+            brain.local_stt.prepare(key)
         except Exception as e:
             log.warning("local speech recognition unavailable: %s", e)
             brain._from_thread({"type": "stt_local_status", "status": f"error: {e}"})

@@ -24,11 +24,14 @@ dependencies = [
     "uiautomation>=2.0.29; sys_platform == 'win32'",
     "uvicorn[standard]>=0.54.0",
     "vosk>=0.3.45; sys_platform != 'darwin'",
-    "vosk==0.3.44; sys_platform == 'darwin'",  # 0.3.45 has no macOS wheel
+    "vosk==0.3.44; sys_platform == 'darwin'", # 0.3.45 has no macOS wheel
     "websockets>=17.2",
     "winrt-windows-foundation==3.2.1; sys_platform == 'win32'",
     "winrt-windows-foundation-collections==3.2.1; sys_platform == 'win32'",
     "winrt-windows-media-control==3.2.1; sys_platform == 'win32'",
+    "pywhispercpp==1.5.1 ; sys_platform != 'win32'",
+    "pyobjc-framework-applicationservices>=12.2.2 ; sys_platform == 'darwin'",
+    "pyobjc-framework-cocoa>=12.2.2 ; sys_platform == 'darwin'",
 ]
 
 [dependency-groups]

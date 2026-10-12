@@ -27,7 +27,7 @@ def _has_session_bus() -> bool:
 
 
 def _caps() -> set[str]:
-    caps = {"apps", "command"}
+    caps = {"apps", "command", "local_stt"}
     if _has_session_bus():
         caps.add("media_session")
     if shutil.which("pactl"):
