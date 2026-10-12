@@ -44,6 +44,8 @@ STATIC = BUNDLE / "elissa" / "static"
 DEFAULTS = {
     "name": "Elissa",
     "user_name": "",
+    "ui_language": "auto",     # auto (from Windows) | es | en
+    "language_autosynced": False,  # speech language already matched to Windows' once (never forced again)
     # LLM
     "provider": "",            # empty until the first-run wizard is completed
     "model": "",
@@ -58,6 +60,7 @@ DEFAULTS = {
     "language": "es-CO",
     # behaviour
     "continuous": True,
+    "hotkey": "ctrl+alt+space",  # global shortcut to talk
     "wake_word": False,
     "barge_in": False,         # talking over Elissa interrupts her (best with headphones)        # « Hola Elissa »: local wake phrase (keeps the microphone open)
     "pinned": True,

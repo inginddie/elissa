@@ -23,6 +23,7 @@
     "allow-open-url",
     "allow-install-update",
     "allow-notify",
-    "allow-show-window-cmd"
+    "allow-show-window-cmd",
+    "allow-set-hotkey"
   ]
 }

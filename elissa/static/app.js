@@ -1,6 +1,7 @@
 import { Character } from './character.js';
 import { native, shell } from './shell.js';
 import { Sounds } from './sounds.js';
+import { currentLang, resolveLang, setLang, t, translateDom } from './i18n.js';
 
 const $ = (s) => document.querySelector(s);
 const face = new Character($('#face'));
@@ -63,7 +64,7 @@ function setState(s, statusText) {
   face.setState(s === 'transcribing' ? 'thinking' : s);
   activity();
   if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'ui_state', state: s }));
-  $('#status').textContent = statusText ?? STATUS[s];
+  $('#status').textContent = statusText ?? t(STATUS[s]);
   if (wasBusy && !BUSY.has(s)) keepOpen(REPLY_LINGER_MS); // leave the answer readable for a moment
   updateMode();
 }
@@ -227,7 +228,7 @@ async function startListening() {
     }
     await ensureAudio();
   } catch (e) {
-    setState('error', 'No tengo acceso al micrófono');
+    setState('error', t('No tengo acceso al micrófono'));
     return;
   } finally {
     starting = false;
@@ -270,7 +271,7 @@ function stopListening(send, manual = false) {
   r.onstop = async () => {
     const hasSpeech = v.speech || (manual && v.voicedMs > 80);
     if (!send || !hasSpeech) {
-      toIdle(cfg.continuous && !manual ? 'No escuché nada · toca para hablar' : undefined);
+      toIdle(cfg.continuous && !manual ? t('No escuché nada · toca para hablar') : undefined);
       return;
     }
     sfx.play('stop');
@@ -282,18 +283,18 @@ function stopListening(send, manual = false) {
       const res = await fetch('/api/stt', { method: 'POST', body: fd });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setState('error', data.error || 'Falló el reconocimiento de voz');
+        setState('error', data.error || t('Falló el reconocimiento de voz'));
         setTimeout(() => state === 'error' && toIdle(), 7000);
         return;
       }
       const { text } = data;
       if (!text) {
-        toIdle('No te entendí, intenta de nuevo');
+        toIdle(t('No te entendí, intenta de nuevo'));
         return;
       }
       sendText(text);
     } catch {
-      setState('error', 'Falló el reconocimiento de voz');
+      setState('error', t('Falló el reconocimiento de voz'));
       setTimeout(() => state === 'error' && toIdle(), 7000);
     }
   };
@@ -404,7 +405,7 @@ function finishTurn() {
 
 function sendText(text) {
   if (!ws || ws.readyState !== WebSocket.OPEN) {
-    setState('error', 'Sin conexión con el servidor');
+    setState('error', t('Sin conexión con el servidor'));
     return;
   }
   if (attached.length) {
@@ -413,7 +414,7 @@ function sendText(text) {
     attached = [];
     addHistory('user', text);
     showCaption(text, '');
-    setState('thinking', ready ? undefined : 'Configura tu IA en Ajustes');
+    setState('thinking', ready ? undefined : t('Configura tu IA en Ajustes'));
     turnStarted = performance.now();
     turnDone = false;
     return;
@@ -421,7 +422,7 @@ function sendText(text) {
   ensureAudio(false).catch(() => {});
   addHistory('user', text);
   showCaption(text, '');
-  setState('thinking', ready ? undefined : 'Configura tu IA en Ajustes');
+  setState('thinking', ready ? undefined : t('Configura tu IA en Ajustes'));
   turnStarted = performance.now();
   turnDone = false;
   ws.send(JSON.stringify({ type: 'text', text }));
@@ -471,7 +472,7 @@ function handle(m) {
     case 'status':
       ready = m.configured;
       if (!ready) {
-        setState('idle', 'Primero configura tu IA ⚙');
+        setState('idle', t('Primero configura tu IA ⚙'));
         if (!setupShownOnce) {
           setupShownOnce = true;
           openSetup();
@@ -536,7 +537,7 @@ function handle(m) {
       if (m.status === 'listo') refreshStt();
       break;
     case 'wake_status':
-      $('#wake-status').textContent = m.status && m.status !== 'apagado' ? `Estado: ${m.status}` : '';
+      $('#wake-status').textContent = m.status && m.status !== 'apagado' ? t('Estado: {status}', { status: m.status }) : '';
       break;
     case 'error':
       if (m.turn !== undefined && m.turn !== currentTurn) break;
@@ -554,7 +555,7 @@ function connect() {
   ws.onmessage = (e) => handle(JSON.parse(e.data));
   ws.onclose = () => {
     ready = false;
-    setState('waking', 'Reconectando…');
+    setState('waking', t('Reconectando…'));
     setTimeout(connect, 1000);
   };
 }
@@ -598,7 +599,7 @@ function renderApprovalBody(m) {
 
 function showApproval(m) {
   approval = m;
-  $('#ap-title').textContent = m.title || 'Aprobar acción';
+  $('#ap-title').textContent = m.title || t('Aprobar acción');
   $('#ap-sub').textContent = m.subtitle || '';
   $('#ap-sub').hidden = !m.subtitle;
   $('#ap-warn').textContent = m.warning || '';
@@ -658,7 +659,7 @@ function onAttached(paths) {
   face.play('happy', 1000);
   sfx.play('happy');
   shell.show();
-  showCaption('', `Recibí ${names}. ¿Qué hago con ${paths.length > 1 ? 'ellos' : 'él'}?`);
+  showCaption('', t('Recibí {names}. ¿Qué hago con {them}?', { names, them: t(paths.length > 1 ? 'ellos' : 'él') }));
   if (ready && (state === 'idle' || state === 'waking')) startListening();
 }
 
@@ -668,9 +669,9 @@ let announcing = false;
 
 function announceReminder(m) {
   const who = cfg.user_name ? `${cfg.user_name}, ` : '';
-  const late = m.late ? ' (llegó tarde porque estaba cerrada)' : '';
-  const said = m.kind === 'timer' ? `${who}se acabó el tiempo. ${m.text}` : `${who}te recuerdo: ${m.text}`;
-  shell.notify(m.kind === 'timer' ? 'Temporizador' : 'Recordatorio', m.text + late);
+  const late = m.late ? t(' (llegó tarde porque estaba cerrada)') : '';
+  const said = t(m.kind === 'timer' ? '{who}se acabó el tiempo. {text}' : '{who}te recuerdo: {text}', { who, text: m.text });
+  shell.notify(t(m.kind === 'timer' ? 'Temporizador' : 'Recordatorio'), m.text + late);
   sfx.play('done');
   face.play('surprised', 600);
   if (state === 'listening' || state === 'thinking' || state === 'approval' || state === 'speaking') {
@@ -695,7 +696,7 @@ function renderHistory() {
   const log = $('#log');
   log.innerHTML = '';
   if (!history.length) {
-    log.innerHTML = '<p class="empty">Aún no hemos hablado.</p>';
+    log.replaceChildren(el('p', { className: 'empty', textContent: t('Aún no hemos hablado.') }));
     return;
   }
   for (const { role, text } of history) {
@@ -705,6 +706,70 @@ function renderHistory() {
     log.append(d);
   }
   log.scrollTop = log.scrollHeight;
+}
+
+/* ---------- global shortcut ---------- */
+
+const KEY_NAMES = { ' ': 'space', ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
+let hotkeyApplied = '';
+
+const prettyHotkey = (combo) => combo.split('+').map((k) => (k === 'space' ? t('Espacio') : k.length === 1 ? k.toUpperCase()
+  : k[0].toUpperCase() + k.slice(1))).join('+');
+
+async function applyHotkey(combo) {
+  combo = combo || 'ctrl+alt+space';
+  if (document.activeElement !== $('#hotkey')) $('#hotkey').value = prettyHotkey(combo);
+  $('#btn-main').title = `${t('Hablar')} (${prettyHotkey(combo)})`;
+  if (combo === hotkeyApplied || !native) return;
+  try {
+    await shell.setHotkey(combo);
+    hotkeyApplied = combo;
+  } catch {
+    $('#hotkey-msg').textContent = t('No pude registrar ese atajo; puede que otra app lo use.');
+  }
+}
+
+$('#hotkey').addEventListener('keydown', async (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  const key = KEY_NAMES[e.key] || e.key;
+  if (['Control', 'Alt', 'Shift', 'Meta'].includes(key)) return; // wait for the main key
+  const mods = [e.ctrlKey && 'ctrl', e.altKey && 'alt', e.shiftKey && 'shift', e.metaKey && 'super'].filter(Boolean);
+  if (!mods.length || (mods.length === 1 && mods[0] === 'shift')) return; // a bare key would steal normal typing
+  const main = /^F\d{1,2}$/.test(key) ? key.toLowerCase() : key.length === 1 ? key.toLowerCase() : key.toLowerCase();
+  const combo = [...mods, main].join('+');
+  try {
+    if (native) await shell.setHotkey(combo);
+    hotkeyApplied = combo;
+    await saveSettings({ hotkey: combo });
+    $('#hotkey').value = prettyHotkey(combo);
+    $('#hotkey-msg').textContent = t('Atajo guardado: {combo}', { combo: prettyHotkey(combo) });
+  } catch {
+    $('#hotkey-msg').textContent = t('No pude registrar ese atajo; puede que otra app lo use.');
+  }
+});
+
+/* ---------- language ---------- */
+
+let languageSynced = false;
+
+function applyLanguage(setting) {
+  const lang = resolveLang(setting);
+  // First run on an English Windows: speech follows the interface unless the user chose otherwise.
+  if (setting === 'auto' && !cfg.language_autosynced && !languageSynced) {
+    languageSynced = true;
+    const changes = { language_autosynced: true };
+    if (cfg.language && !cfg.language.startsWith(lang)) {
+      Object.assign(changes, { language: lang === 'en' ? 'en-US' : 'es-CO',
+        voice: lang === 'en' ? 'en-US-AvaNeural' : 'es-CO-SalomeNeural' });
+    }
+    saveSettings(changes);
+  }
+  if (lang === currentLang() && document.body.dataset.lang === lang) return;
+  setLang(lang);
+  document.body.dataset.lang = lang;
+  translateDom();
+  if (state) $('#status').textContent = t(STATUS[state] || '');
 }
 
 /* ---------- settings & setup wizard ---------- */
@@ -727,7 +792,8 @@ function msg(el, text, kind = '') {
 
 function applySettings(s) {
   cfg = s;
-  document.title = `${s.name} · asistente de voz`;
+  document.title = `${s.name} · ${t('Elissa · asistente de voz').split(' · ')[1]}`;
+  applyLanguage(s.ui_language);
   $('#btn-continuous').classList.toggle('on', !!s.continuous);
   $('#btn-pin').classList.toggle('on', !!s.pinned);
   for (const el of $('#settings').elements) {
@@ -740,6 +806,7 @@ function applySettings(s) {
   sfx.enabled = s.sounds !== false;
   sfx.volume = Number(s.sound_volume ?? 0.6);
   shell.setPinned(!!s.pinned);
+  applyHotkey(s.hotkey);
   refreshStt();
   $('#mail-enabled').checked = !!s.mail_enabled;
   if (document.activeElement !== $('#mail-user')) $('#mail-user').value = s.mail_user || '';
@@ -747,14 +814,14 @@ function applySettings(s) {
   renderFolders(s.allowed_folders || []);
   const p = providers.find((x) => x.id === s.provider);
   $('#ai-current').textContent = s.provider
-    ? `Usando ${p ? p.label : s.provider} · ${s.model || 'modelo por defecto'}`
-    : 'Sin configurar';
+    ? t('Usando {provider} · {model}', { provider: p ? p.label : s.provider, model: s.model || t('modelo por defecto') })
+    : t('Sin configurar');
 }
 
 const STT_LABEL = { groq: 'Groq', openai: 'OpenAI', endpoint: 'tu servidor', local: 'tu PC (whisper.cpp)' };
 
 function showLocalStatus(status) {
-  $('#stt-local-status').textContent = status ? `Estado: ${status}` : '';
+  $('#stt-local-status').textContent = status ? t('Estado: {status}', { status }) : '';
 }
 const STT_KEY_URL = { groq: 'https://console.groq.com/keys', openai: 'https://platform.openai.com/api-keys' };
 
@@ -769,15 +836,15 @@ async function refreshStt() {
   const wanted = cfg.stt === 'auto' ? 'groq' : cfg.stt; // auto without any key: suggest Groq
   const needsKey = (cfg.stt === 'groq' || cfg.stt === 'openai') || (cfg.stt === 'auto' && !service);
   if (cfg.stt === 'local') {
-    $('#stt-status').textContent = 'Lo que dices se transcribe en tu PC; nada sale a internet.';
+    $('#stt-status').textContent = t('Lo que dices se transcribe en tu PC; nada sale a internet.');
     $('#stt-key-row').hidden = true;
     return;
   }
   $('#stt-status').textContent = service
-    ? `Usando ${STT_LABEL[service]} para entender tu voz.`
-    : 'Falta configurar cómo entender tu voz: pega una API key de Groq (gratis para empezar) u OpenAI.';
+    ? t('Usando {service} para entender tu voz.', { service: t(STT_LABEL[service]) })
+    : t('Falta configurar cómo entender tu voz: pega una API key de Groq (gratis para empezar) u OpenAI.');
   $('#stt-key-row').hidden = !needsKey;
-  $('#stt-key-label').textContent = `API key de ${STT_LABEL[wanted] || 'Groq'} para la voz`;
+  $('#stt-key-label').textContent = t('API key de {name} para la voz', { name: STT_LABEL[wanted] || 'Groq' });
   $('#stt-key-link').href = STT_KEY_URL[wanted] || STT_KEY_URL.groq;
 }
 
@@ -792,7 +859,7 @@ $('#stt-key-save').onclick = async () => {
 
 async function saveSettings(changes) {
   const { ok, data } = await api('/api/settings', changes);
-  if (!ok) $('#status').textContent = data.error || 'No se pudo guardar';
+  if (!ok) $('#status').textContent = data.error || t('No se pudo guardar');
 }
 
 function renderFolders(folders) {
@@ -813,7 +880,8 @@ function renderFolders(folders) {
 
 async function loadVoices() {
   const sel = $('#voice-select');
-  if (sel.options.length) return;
+  if (sel.options.length > 1) return;
+  sel.innerHTML = '';
   try {
     const voices = await (await fetch('/api/voices')).json();
     for (const v of voices) sel.add(new Option(v.label, v.id));
@@ -828,7 +896,7 @@ async function loadProviders() {
   providers = data.providers || [];
   const sel = $('#setup-provider');
   sel.innerHTML = '';
-  for (const p of providers) sel.add(new Option(p.label + (p.needs_key ? '' : ' · sin API key'), p.id));
+  for (const p of providers) sel.add(new Option(p.label + (p.needs_key ? '' : t(' · sin API key')), p.id));
   sel.value = data.current?.provider || 'openai';
   onProviderChange(false);
   $('#setup-url').value = data.current?.base_url || '';
@@ -841,11 +909,11 @@ function onProviderChange(clearModel = true) {
   $('#setup-key-row').hidden = !p.needs_key;
   $('#setup-url-row').hidden = p.id !== 'custom';
   $('#setup-key').value = '';
-  $('#setup-key').placeholder = p.has_key ? 'Ya hay una clave guardada (deja vacío para usarla)' : 'Pega aquí tu clave';
+  $('#setup-key').placeholder = t(p.has_key ? 'Ya hay una clave guardada (deja vacío para usarla)' : 'Pega aquí tu clave');
   const link = $('#setup-key-link');
   link.href = p.key_url || '#';
   link.hidden = !p.key_url;
-  link.textContent = p.needs_key ? '¿Dónde consigo la clave?' : `Instalar ${p.label}`;
+  link.textContent = p.needs_key ? t('¿Dónde consigo la clave?') : t('Instalar {name}', { name: p.label });
   if (clearModel) $('#setup-model').value = p.suggested || '';
   $('#setup-model-row').hidden = clearModel;
   $('#setup-save').hidden = clearModel;
@@ -869,9 +937,9 @@ async function openSetup() {
 $('#setup-provider').onchange = () => onProviderChange(true);
 
 $('#setup-test').onclick = async () => {
-  msg($('#setup-msg'), 'Conectando…');
+  msg($('#setup-msg'), t('Conectando…'));
   const { ok, data } = await api('/api/providers/test', setupBody());
-  if (!ok) return msg($('#setup-msg'), data.error || 'No pude conectar', 'err');
+  if (!ok) return msg($('#setup-msg'), data.error || t('No pude conectar'), 'err');
   const list = $('#setup-models');
   list.innerHTML = '';
   for (const m of data.models) list.append(new Option(m, m));
@@ -881,19 +949,19 @@ $('#setup-test').onclick = async () => {
   }
   $('#setup-model-row').hidden = false;
   $('#setup-save').hidden = false;
-  msg($('#setup-msg'), `Conectado: ${data.models.length} modelos disponibles. Elige uno y guarda.`, 'ok');
+  msg($('#setup-msg'), t('Conectado: {n} modelos disponibles. Elige uno y guarda.', { n: data.models.length }), 'ok');
 };
 
 $('#setup-save').onclick = async () => {
-  msg($('#setup-msg'), 'Guardando y probando el modelo…');
+  msg($('#setup-msg'), t('Guardando y probando el modelo…'));
   const { ok, data } = await api('/api/providers/save', setupBody());
-  if (!ok) return msg($('#setup-msg'), data.error || 'El modelo no respondió', 'err');
-  msg($('#setup-msg'), `¡Listo! El modelo respondió: «${data.reply}»`, 'ok');
+  if (!ok) return msg($('#setup-msg'), data.error || t('El modelo no respondió'), 'err');
+  msg($('#setup-msg'), t('¡Listo! El modelo respondió: «{reply}»', { reply: data.reply }), 'ok');
   setTimeout(() => openPanel(null), 1200);
 };
 
 $('#mail-save').onclick = async () => {
-  msg($('#mail-msg'), 'Conectando con tu correo…');
+  msg($('#mail-msg'), t('Conectando con tu correo…'));
   const { ok, data } = await api('/api/mail/save', {
     enabled: $('#mail-enabled').checked,
     user: $('#mail-user').value,
@@ -901,8 +969,8 @@ $('#mail-save').onclick = async () => {
     server: $('#mail-server').value,
   });
   $('#mail-pass').value = '';
-  if (!ok) return msg($('#mail-msg'), data.error || 'No pude conectar', 'err');
-  msg($('#mail-msg'), data.server ? `Conectado a ${data.server} (${data.status})` : data.status, 'ok');
+  if (!ok) return msg($('#mail-msg'), data.error || t('No pude conectar'), 'err');
+  msg($('#mail-msg'), data.server ? t('Conectado a {server} ({status})', { server: data.server, status: data.status }) : data.status, 'ok');
 };
 
 function openPanel(id) {
@@ -1059,17 +1127,17 @@ document.addEventListener('click', (e) => {
 
 function showUpdate(version) {
   $('#update-row').hidden = !version;
-  if (version) $('#update-msg').textContent = `Hay una versión nueva: ${version}.`;
+  if (version) $('#update-msg').textContent = t('Hay una versión nueva: {version}.', { version });
 }
 
 $('#update-btn').onclick = async () => {
   $('#update-btn').disabled = true;
-  $('#update-msg').textContent = 'Descargando la actualización… Elissa se reiniciará sola.';
+  $('#update-msg').textContent = t('Descargando la actualización… Elissa se reiniciará sola.');
   try {
     await shell.installUpdate();
   } catch (e) {
     $('#update-btn').disabled = false;
-    $('#update-msg').textContent = `No se pudo actualizar: ${e}`;
+    $('#update-msg').textContent = t('No se pudo actualizar: {error}', { error: e });
   }
 };
 
@@ -1078,7 +1146,7 @@ shell.on('update-none', () => {
   openPanel('panel-settings');
   $('#update-row').hidden = false;
   $('#update-btn').hidden = true;
-  $('#update-msg').textContent = 'Elissa está al día.';
+  $('#update-msg').textContent = t('Elissa está al día.');
   setTimeout(() => { $('#update-row').hidden = true; $('#update-btn').hidden = false; }, 6000);
 });
 
@@ -1113,6 +1181,15 @@ settingsForm.addEventListener('change', (e) => {
   if (!el.name) return;
   const value = el.type === 'checkbox' ? el.checked : el.type === 'range' ? Number(el.value) : el.value.trim();
   if (el.name === 'name' && !value) return;
+  if (el.name === 'ui_language') {
+    // speech follows the interface language: recognition language and a matching default voice
+    const lang = resolveLang(value);
+    const voice = lang === 'en' ? 'en-US-AvaNeural' : 'es-CO-SalomeNeural';
+    $('#voice-select').innerHTML = '';
+    saveSettings({ ui_language: value, language: lang === 'en' ? 'en-US' : 'es-CO', voice, language_autosynced: true })
+      .then(loadVoices);
+    return;
+  }
   saveSettings({ [el.name]: value });
 });
 settingsForm.elements.speed.oninput = (e) => ($('#speed-val').textContent = `${Number(e.target.value).toFixed(2)}×`);
@@ -1134,16 +1211,16 @@ async function loadMcp() {
   mcpPresets = data.presets || [];
   const sel = $('#mcp-preset');
   if (!sel.options.length) {
-    sel.add(new Option('Elige un servicio…', ''));
+    sel.add(new Option(t('Elige un servicio…'), ''));
     for (const p of mcpPresets) sel.add(new Option(p.name, p.preset));
-    sel.add(new Option('Otro servidor MCP…', 'custom'));
+    sel.add(new Option(t('Otro servidor MCP…'), 'custom'));
   }
   const ul = $('#mcp-list');
   ul.innerHTML = '';
   for (const s of data.servers || []) {
-    const on = el('input', { type: 'checkbox', checked: s.enabled !== false, title: 'Activado' });
+    const on = el('input', { type: 'checkbox', checked: s.enabled !== false, title: t('Activado') });
     on.onchange = () => saveMcp({ server: { ...stripStatus(s), enabled: on.checked } });
-    const rm = el('button', { type: 'button', textContent: '×', title: 'Quitar' });
+    const rm = el('button', { type: 'button', textContent: '×', title: t('Quitar') });
     rm.onclick = async () => {
       await api('/api/mcp/remove', { id: s.id });
       loadMcp();
@@ -1161,7 +1238,7 @@ function stripStatus(s) {
 
 async function saveMcp(body) {
   const { ok, data } = await api('/api/mcp/save', body);
-  if (!ok) msg($('#mcp-msg'), data.error || 'No se pudo guardar', 'err');
+  if (!ok) msg($('#mcp-msg'), data.error || t('No se pudo guardar'), 'err');
   loadMcp();
   return ok;
 }
@@ -1171,13 +1248,13 @@ $('#mcp-preset').onchange = () => {
   const p = mcpPresets.find((x) => x.preset === key);
   const custom = key === 'custom';
   $('#mcp-form').hidden = !key;
-  $('#mcp-note').textContent = p?.note || (custom ? 'Usa solo servidores en los que confíes: pueden ejecutar programas en tu PC.' : '');
+  $('#mcp-note').textContent = p?.note || (custom ? t('Usa solo servidores en los que confíes: pueden ejecutar programas en tu PC.') : '');
   for (const row of ['#mcp-name-row', '#mcp-transport-row']) $(row).hidden = !custom;
   const transport = custom ? $('#mcp-transport').value : p?.transport;
   $('#mcp-url-row').hidden = !custom || transport !== 'http';
   $('#mcp-command-row').hidden = !custom || transport !== 'stdio';
   $('#mcp-secret-row').hidden = !(custom || p?.secret);
-  $('#mcp-secret-label').textContent = p?.secret?.label || 'Token (opcional, se envía como «Authorization: Bearer …»)';
+  $('#mcp-secret-label').textContent = p?.secret?.label || t('Token (opcional, se envía como «Authorization: Bearer …»)');
   $('#mcp-help').hidden = !p?.secret?.help;
   if (p?.secret?.help) $('#mcp-help').href = p.secret.help;
   msg($('#mcp-msg'), '');
@@ -1191,16 +1268,18 @@ $('#mcp-add').onclick = async () => {
   let server;
   const secrets = {};
   if (p) {
-    server = { name: p.name, transport: p.transport, url: p.url, command: p.command, args: p.args, preset: p.preset };
+    server = { name: p.name, transport: p.transport, url: p.url, command: p.command, args: p.args, preset: p.preset,
+      trust_reads: !!p.trust_reads };
     if (p.secret && secret) secrets[p.secret.key] = (p.secret.prefix || '') + secret;
-    if (p.secret && !secret) return msg($('#mcp-msg'), `Falta: ${p.secret.label}`, 'err');
+    if (p.secret && !secret) return msg($('#mcp-msg'), t('Falta: {what}', { what: p.secret.label }), 'err');
   } else {
     const transport = $('#mcp-transport').value;
     const [command, ...args] = $('#mcp-command').value.trim().split(/\s+/);
-    server = { name: $('#mcp-name').value.trim(), transport, url: $('#mcp-url').value.trim(), command, args };
+    server = { name: $('#mcp-name').value.trim(), transport, url: $('#mcp-url').value.trim(), command, args,
+      trust_reads: false };
     if (secret) secrets.Authorization = secret.startsWith('Bearer ') ? secret : `Bearer ${secret}`;
   }
-  msg($('#mcp-msg'), 'Conectando…');
+  msg($('#mcp-msg'), t('Conectando…'));
   if (await saveMcp({ server, secrets })) {
     $('#mcp-secret').value = '';
     $('#mcp-preset').value = '';

@@ -15,6 +15,7 @@ export const shell = {
   setAutostart: (on) => invoke('set_autostart', { on }),
   info: () => invoke('shell_info').catch(() => null),
   installUpdate: () => invoke('install_update'),
+  setHotkey: (combo) => invoke('set_hotkey', { combo }),
   openUrl: (url) => (T ? invoke('open_url', { url }) : Promise.resolve(window.open(url, '_blank', 'noopener'))),
   startDragging: () => T?.window.getCurrentWindow().startDragging().catch(() => {}),
   on: (event, fn) => T?.event.listen(event, (e) => fn(e.payload)),

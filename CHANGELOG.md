@@ -2,6 +2,20 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [1.0.0] - 2026-10-12
+
+Primera versión completa del plan (F1–F7).
+
+### Añadido
+- Interfaz en inglés: Ajustes → General → Idioma (automático según Windows). Las respuestas, la voz y el
+  reconocimiento siguen el idioma elegido.
+- Atajo para hablar configurable (Ajustes → Voz); si otra app ya usa la combinación, Elissa lo avisa y conserva la
+  anterior.
+- Política de seguridad (SECURITY.md) con reporte privado de vulnerabilidades, y guía para contribuir.
+
+### Cambiado
+- Integración continua con las acciones de GitHub basadas en Node 24.
+
 ## [0.6.0] - 2026-10-12
 
 ### Añadido

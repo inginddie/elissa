@@ -23,11 +23,21 @@ MARKERS = {"pyproject.toml": "Python", "requirements.txt": "Python", "package.js
            "build.gradle.kts": "Kotlin (Gradle)", "*.csproj": ".NET", "*.sln": ".NET", "Gemfile": "Ruby",
            "composer.json": "PHP", "Dockerfile": "Docker", ".git": "repositorio git"}
 
-# Commands Elissa never runs: they delete files or throw work away. The user can still run them themselves.
+# Commands Elissa never runs: they delete files, throw work away, or hide what they really do (the approval card must
+# show the user the real command). A blocklist can't be complete, which is why every command also needs a click.
 FORBIDDEN = [
-    (r"\b(remove-item|rm|rmdir|rd|del|erase|ri)\b", "borra archivos o carpetas"),
-    (r"\bgit\s+(clean|reset\s+--hard|checkout\s+--\s|restore\b|stash\s+(drop|clear))", "descarta cambios de git"),
-    (r"\bgit\s+push\b.*(--force|-f\b|--mirror|--delete|\s:)", "reescribe o borra ramas remotas"),
+    (r"\b(remove-item|rm|rmdir|rd|del|erase|ri|deltree|sdelete|shred)\b", "borra archivos o carpetas"),
+    (r"rmtree|\bos\.(remove|unlink|rmdir)|\.unlink\(|(\.|::)delete\(|rimraf|clear-content|clear-item|\bdel-?tree",
+     "borra archivos o carpetas"),
+    (r"\bgit\s+(clean|reset\b.*--hard|checkout\s+(\.|(.*\s)?--\s)|restore\b|stash\s+(drop|clear))",
+     "descarta cambios de git"),
+    (r"\bgit\s+switch\b.*(-f\b|--force|--discard-changes)", "descarta cambios de git"),
+    (r"\bgit\s+push\b.*(--force|-f\b|--mirror|--delete|\s:|\s\+\S)", "reescribe o borra ramas remotas"),
+    (r"\s-(e|ec|enc|encodedcommand)\s+[a-z0-9+/=]{16,}|frombase64string", "oculta el comando real (codificado)"),
+    (r"\[scriptblock\]|invoke-command|start-process|&\s*\(|\b(powershell|pwsh|cmd)(\.exe)?\b",
+     "oculta el comando real (lo ejecuta de forma indirecta)"),
+    (r"\b(python3?|py|node|ruby|perl|deno|bun)(\.exe)?\s+(-c|-e|--eval|-p)\b",
+     "ejecuta código en línea que no se ve completo en la tarjeta"),
     (r"\bgit\s+branch\s+(-d|--delete)\b", "borra una rama"),
     (r"\b(format|diskpart|bcdedit|vssadmin|cipher\s+/w|shutdown|restart-computer|stop-computer)\b",
      "toca el sistema o los discos"),

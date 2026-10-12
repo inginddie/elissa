@@ -16,7 +16,7 @@ Emit = Callable[[dict], Awaitable[None]]
 
 PERSONA = """\
 Eres {name}, un asistente de voz personal{user}. Todo lo que escribas se leerá en voz alta.
-- Responde en español, en tono cercano y natural, con un toque de humor sobrio.
+- Responde en {language}, en tono cercano y natural, con un toque de humor sobrio.
 - Sé breve: una a tres frases, salvo que te pidan detalle.
 - No uses markdown, listas, tablas, emojis ni URLs: dilo como lo diría una persona. Números y rutas, de forma natural.
 - Si vas a usar herramientas que tardan, primero di en una frase corta qué vas a hacer; al final resume el resultado.
@@ -78,7 +78,9 @@ class Agent:
     def system_prompt(self) -> str:
         s = self.settings()
         user = f" para {s['user_name']}" if s.get("user_name") else ""
-        return PERSONA.format(name=s.get("name") or "Elissa", user=user) + self.capabilities(s) + prompt_section()
+        language = "inglés (English)" if str(s.get("language", "es")).startswith("en") else "español"
+        return (PERSONA.format(name=s.get("name") or "Elissa", user=user, language=language) + self.capabilities(s)
+                + prompt_section())
 
     def capabilities(self, s: dict) -> str:
         """What is set up right now, so stale memories ("no mail configured") never win over the real state."""

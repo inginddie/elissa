@@ -440,11 +440,13 @@ async def tts(text: str):
 @app.get("/api/voices")
 async def voices():
     lang = state["brain"].settings.get("language", "es-CO")[:2]
+    english = lang == "en"
+    female, male, offline = ("female", "male", "Windows, offline") if english else ("mujer", "hombre", "Windows, sin conexión")
     out = []
     try:
         found = await asyncio.wait_for(edge_tts.list_voices(), EDGE_TIMEOUT_S)
         out = sorted(({"id": v["ShortName"], "label": f"{v['ShortName'].split('-')[-1].replace('Neural', '')} "
-                       f"({v['Locale']}, {'mujer' if v['Gender'] == 'Female' else 'hombre'})"}
+                       f"({v['Locale']}, {female if v['Gender'] == 'Female' else male})"}
                       for v in found if v["Locale"].startswith(lang)), key=lambda v: v["id"])
     except Exception as e:
         log.warning("could not list Edge voices: %s", e)
@@ -453,7 +455,7 @@ async def voices():
             spanish = v["lang"].upper() in windows_tts.SPANISH
             if spanish or lang != "es":
                 short = v["name"].replace("Microsoft ", "").replace(" Desktop", "")
-                out.append({"id": WINDOWS_VOICE + v["name"], "label": f"{short} · Windows, sin conexión"})
+                out.append({"id": WINDOWS_VOICE + v["name"], "label": f"{short} · {offline}"})
     except Exception as e:
         log.warning("could not list Windows voices: %s", e)
     return out
@@ -613,7 +615,9 @@ async def get_settings():
 @app.post("/api/settings")
 async def set_settings(changes: dict):
     brain: Brain = state["brain"]
-    changes = {k: v for k, v in changes.items() if k in DEFAULTS and k not in ("provider", "model", "base_url")}
+    # provider/model go through the setup wizard, integrations through /api/mcp (validated, connected right away)
+    changes = {k: v for k, v in changes.items()
+               if k in DEFAULTS and k not in ("provider", "model", "base_url", "mcp_servers")}
     brain.settings.update(changes)
     save_settings(brain.settings)
     if {"allowed_folders", "mail_enabled", "mail_send", "computer_use"} & changes.keys():
@@ -712,7 +716,7 @@ async def mcp_save(body: dict):
     cfg = {k: v for k, v in (body.get("server") or {}).items()
            if k in ("id", "name", "transport", "url", "command", "args", "enabled", "trust_reads", "preset")}
     cfg.setdefault("enabled", True)
-    cfg.setdefault("trust_reads", True)
+    cfg["trust_reads"] = bool(cfg.get("trust_reads", False))
     if isinstance(cfg.get("args"), str):
         cfg["args"] = cfg["args"].split()
     error = _valid_server(cfg)

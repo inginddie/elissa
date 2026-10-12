@@ -149,6 +149,11 @@ conecte sus cuentas reales (requieren su token u OAuth).
 - Firma del instalador (evaluar Azure Artifact Signing) y nota sobre falsos positivos de Defender.
 - Publicación 1.0 en GitHub.
 
+Estado (2026-10-12): hecho (1.0.0). Interfaz en inglés (`i18n.js`, selector de idioma; respuestas, voz y
+reconocimiento siguen el idioma), atajo configurable (comando `set_hotkey` en el shell), acciones de CI con Node 24,
+SECURITY.md con reporte privado activado en GitHub, CONTRIBUTING.md. La firma del instalador queda pendiente (ver
+backlog): requiere una decisión y un trámite de Diego.
+
 ## Riesgos
 
 - Reconocimiento local lento en equipos sin GPU: la nube es la opción por defecto.
@@ -158,8 +163,11 @@ conecte sus cuentas reales (requieren su token u OAuth).
 
 ## Backlog
 
-- CI: actualizar las acciones que aún usan Node 20 (`actions/checkout@v4`, `actions/setup-node@v4`,
-  `actions/upload-artifact@v4`, `astral-sh/setup-uv@v6`) a versiones con Node 24 antes de que GitHub retire Node 20
-  (aviso visto en la primera compilación, 2026-10-11).
-- Interfaz en inglés (F7) y revisar los modelos sugeridos por proveedor.
+- ~~CI: acciones con Node 20~~ hecho en 1.0.0 (checkout@v7, setup-node@v7, upload-artifact@v7, setup-uv@v10).
+- ~~Interfaz en inglés~~ hecho en 1.0.0. Pendiente: revisar los modelos sugeridos por proveedor.
+- Firma del instalador (quita el aviso de SmartScreen). Opciones: SignPath Foundation (gratis para proyectos de código
+  abierto, hay que postular el repositorio) o Azure Artifact Signing (~10 USD/mes, con requisitos de identidad).
+  Requiere que Diego elija y haga el trámite; luego se agrega el paso de firma en CI.
+- « Hola Elissa » en inglés (modelo Vosk en inglés y frases señuelo propias).
+- Conectar las cuentas reales de Diego en Integraciones (GitHub con su token, Jira/Confluence con OAuth).
 - Avisos de sesiones de Claude Code / Codex (hooks), como en Coucou.

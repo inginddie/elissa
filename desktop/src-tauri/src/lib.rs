@@ -18,10 +18,14 @@ use tauri::{
 };
 use tauri::webview::{PermissionKind, PermissionResponse};
 use tauri_plugin_autostart::ManagerExt;
-use tauri_plugin_global_shortcut::{Code, Modifiers, ShortcutState};
+use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 use tauri_plugin_updater::{Update, UpdaterExt};
 
 const PREFERRED_PORT: u16 = 8740;
+const DEFAULT_HOTKEY: &str = "ctrl+alt+space";
+
+/// The global shortcut currently registered (configurable in Settings).
+struct Hotkey(Mutex<Option<Shortcut>>);
 const MARGIN: f64 = 16.0;
 const ENGINE_START_TIMEOUT: Duration = Duration::from_secs(90);
 /// Before an update the engine gets this long to save the conversation; then it is stopped.
@@ -384,6 +388,25 @@ fn notify(app: AppHandle, title: String, body: String) -> Result<(), String> {
     app.notification().builder().title(title).body(body).show().map_err(|e| e.to_string())
 }
 
+/// Changes the global shortcut. The new one is registered before the old one is released, so a combination another
+/// app already owns leaves the current shortcut working.
+#[tauri::command]
+fn set_hotkey(app: AppHandle, combo: String) -> Result<String, String> {
+    let new: Shortcut = combo.to_lowercase().parse().map_err(|e| format!("{e}"))?;
+    let state = app.state::<Hotkey>();
+    let mut current = state.0.lock().unwrap();
+    if current.as_ref() == Some(&new) {
+        return Ok(combo);
+    }
+    let shortcuts = app.global_shortcut();
+    shortcuts.register(new).map_err(|e| e.to_string())?;
+    if let Some(old) = current.take() {
+        let _ = shortcuts.unregister(old);
+    }
+    *current = Some(new);
+    Ok(combo)
+}
+
 #[tauri::command]
 fn open_url(url: String) -> Result<(), String> {
     let parsed = Url::parse(&url).map_err(|e| e.to_string())?;
@@ -492,12 +515,11 @@ pub fn run() {
         .plugin(tauri_plugin_notification::init())
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
-                .with_shortcuts(["ctrl+alt+space"])
+                .with_shortcuts([DEFAULT_HOTKEY])
                 .expect("shortcut")
-                .with_handler(|app, shortcut, event| {
-                    if event.state == ShortcutState::Pressed
-                        && shortcut.matches(Modifiers::CONTROL | Modifiers::ALT, Code::Space)
-                    {
+                // Only Elissa's own shortcut is ever registered, so any press is "talk".
+                .with_handler(|app, _shortcut, event| {
+                    if event.state == ShortcutState::Pressed {
                         show_window(app);
                         let _ = app.emit("hotkey", ());
                     }
@@ -507,6 +529,7 @@ pub fn run() {
         .manage(Engine { child: Mutex::new(None), port, token: token.clone() })
         .manage(Layout { anchor: Mutex::new(None), ignore_moves_until: Mutex::new(Instant::now()) })
         .manage(Updates { pending: Mutex::new(None), tray_item: Mutex::new(None) })
+        .manage(Hotkey(Mutex::new(DEFAULT_HOTKEY.parse().ok())))
         .manage(Geometry {
             x: AtomicI32::new(0),
             y: AtomicI32::new(0),
@@ -524,7 +547,8 @@ pub fn run() {
             shell_info,
             install_update,
             open_url,
-            notify
+            notify,
+            set_hotkey
         ])
         .setup(move |app| {
             let handle = app.handle().clone();

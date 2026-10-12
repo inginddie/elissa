@@ -105,6 +105,13 @@
     <header><h2>Ajustes</h2><button class="close" data-close>×</button></header>
     <form id="settings" class="scroll" autocomplete="off">
       <h3>General</h3>
+      <label>Idioma
+        <select name="ui_language">
+          <option value="auto">Automático (según Windows)</option>
+          <option value="es">Español</option>
+          <option value="en">English</option>
+        </select>
+      </label>
       <label>Nombre del asistente <input name="name" maxlength="20"></label>
       <label>Tu nombre <input name="user_name" maxlength="30" placeholder="Para que te llame por tu nombre"></label>
 
@@ -153,6 +160,10 @@
       <label class="check"><input type="checkbox" name="continuous"> Conversación continua</label>
       <label class="check"><input type="checkbox" name="pinned"> Siempre visible</label>
       <label class="check"><input type="checkbox" id="autostart"> Iniciar con Windows</label>
+      <label>Atajo para hablar
+        <input id="hotkey" readonly placeholder="Haz clic y presiona la combinación…">
+      </label>
+      <p class="hint small" id="hotkey-msg"></p>
 
       <h3>Sonidos</h3>
       <label class="check"><input type="checkbox" name="sounds"> Sonidos de Elissa</label>

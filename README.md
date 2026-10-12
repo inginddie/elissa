@@ -25,7 +25,7 @@ talked about. Anything that changes something waits for your click.
 You choose the brain: OpenAI, Claude, Gemini, OpenRouter, Groq, or a free local model with Ollama.
 When you are not talking to her, she rests as a small character in the corner of your screen.
 
-> **Status:** early preview (0.2). The interface speaks Spanish for now; English is on the [roadmap](#roadmap).
+> **Status:** 1.0. The interface is available in Spanish and English (*Settings → General → Language*).
 
 ## Meet Elissa
 
@@ -90,6 +90,9 @@ Elissa is drawn in code, not stitched from images, so she blends smoothly from o
    too.
 
 The installer is not code-signed yet, so Windows SmartScreen may warn you the first time. Choose *More info → Run anyway*.
+If Microsoft Defender flags it, that's a false positive common with unsigned apps built with PyInstaller: update
+Defender (`Update-MpSignature` in PowerShell) and try again, or [report it](https://www.microsoft.com/wdsi/filesubmission).
+Every release is built and self-tested by GitHub Actions from this repository's code, and its updates are signed.
 
 **Requirements:** Windows 10 (1809+) or Windows 11, 64-bit, with WebView2 (built into Windows 11), a microphone and speakers.
 
@@ -97,7 +100,7 @@ The installer is not code-signed yet, so Windows SmartScreen may warn you the fi
 
 | Action | How |
 |---|---|
-| Talk | <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Space</kbd> anywhere, or click Elissa |
+| Talk | Say "Hola Elissa", press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Space</kbd> anywhere (configurable), or click Elissa |
 | Interrupt | The same shortcut while she thinks or speaks |
 | Stop talking | <kbd>Esc</kbd> in her window |
 | Type instead | Chat button |
@@ -135,7 +138,8 @@ The installer is not code-signed yet, so Windows SmartScreen may warn you the fi
 | Voice: "Hola Elissa" wake word, local speech recognition | F3 | ✅ |
 | Coding assistant: understand projects, edit with diffs, run commands | F5 | ✅ |
 | Integrations through MCP: Jira, Confluence, GitHub, calendars | F6 | ✅ |
-| English UI, signed installer, 1.0 | F7 | 🔜 |
+| English UI, configurable shortcut, security policy, 1.0 | F7 | ✅ |
+| Signed installer, English wake phrase, Claude Code/Codex session alerts | next | |
 
 The detailed plan is in [`docs/PLAN.md`](docs/PLAN.md) (Spanish) and the release notes in [`CHANGELOG.md`](CHANGELOG.md).
 
@@ -168,10 +172,8 @@ powershell -File packaging\build.ps1      # engine (PyInstaller) + installer (Ta
 
 ## Contributing
 
-Issues and pull requests are welcome. Please run `uv run pytest -q` before sending changes, and keep the security rules:
-- Secrets only in the Credential Manager.
-- No telemetry.
-- Every action that changes something waits for an explicit click.
+Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md). To report a security problem privately,
+see [SECURITY.md](SECURITY.md).
 
 ## License
 

@@ -169,3 +169,10 @@ def test_local_stt_route(client, monkeypatch):
     client.post("/api/settings", json={"stt": "local"})
     r = client.post("/api/stt", files={"file": ("audio.wav", b"RIFF" + b"0" * 3000, "audio/wav")})
     assert r.json() == {"text": "hola"} and seen == [b"RIFF"]
+
+
+def test_settings_endpoint_cannot_touch_integrations(client):
+    client.get("/?t=test-token")
+    r = client.post("/api/settings", json={"mcp_servers": [{"id": "x", "transport": "http", "url": "http://evil"}],
+                                            "name": "Elissa"})
+    assert r.status_code == 200 and r.json()["mcp_servers"] == []
