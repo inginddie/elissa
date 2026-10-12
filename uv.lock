@@ -570,18 +570,20 @@ dependencies = [
     { name = "mcp" },
     { name = "openai" },
     { name = "openpyxl" },
-    { name = "pycaw" },
+    { name = "platformdirs" },
+    { name = "psutil" },
+    { name = "pycaw", marker = "sys_platform == 'win32'" },
     { name = "pypdf" },
     { name = "python-docx" },
     { name = "python-multipart" },
     { name = "sounddevice" },
-    { name = "uiautomation" },
+    { name = "uiautomation", marker = "sys_platform == 'win32'" },
     { name = "uvicorn", extra = ["standard"] },
     { name = "vosk" },
     { name = "websockets" },
-    { name = "winrt-windows-foundation" },
-    { name = "winrt-windows-foundation-collections" },
-    { name = "winrt-windows-media-control" },
+    { name = "winrt-windows-foundation", marker = "sys_platform == 'win32'" },
+    { name = "winrt-windows-foundation-collections", marker = "sys_platform == 'win32'" },
+    { name = "winrt-windows-media-control", marker = "sys_platform == 'win32'" },
 ]
 
 [package.dev-dependencies]
@@ -602,18 +604,20 @@ requires-dist = [
     { name = "mcp", specifier = ">=2.3.0" },
     { name = "openai", specifier = ">=3.28.0" },
     { name = "openpyxl", specifier = ">=3.1.5" },
-    { name = "pycaw", specifier = ">=20260927" },
+    { name = "platformdirs", specifier = ">=4.13.0" },
+    { name = "psutil", specifier = ">=7.2.2" },
+    { name = "pycaw", marker = "sys_platform == 'win32'", specifier = ">=20260927" },
     { name = "pypdf", specifier = ">=6.20.0" },
     { name = "python-docx", specifier = ">=1.2.0" },
     { name = "python-multipart", specifier = ">=0.0.32" },
     { name = "sounddevice", specifier = ">=0.5.6" },
-    { name = "uiautomation", specifier = ">=2.0.29" },
+    { name = "uiautomation", marker = "sys_platform == 'win32'", specifier = ">=2.0.29" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.54.0" },
     { name = "vosk", specifier = ">=0.3.45" },
     { name = "websockets", specifier = ">=17.2" },
-    { name = "winrt-windows-foundation", specifier = "==3.2.1" },
-    { name = "winrt-windows-foundation-collections", specifier = "==3.2.1" },
-    { name = "winrt-windows-media-control", specifier = "==3.2.1" },
+    { name = "winrt-windows-foundation", marker = "sys_platform == 'win32'", specifier = "==3.2.1" },
+    { name = "winrt-windows-foundation-collections", marker = "sys_platform == 'win32'", specifier = "==3.2.1" },
+    { name = "winrt-windows-media-control", marker = "sys_platform == 'win32'", specifier = "==3.2.1" },
 ]
 
 [package.metadata.requires-dev]
@@ -1376,6 +1380,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/03/4f/2750f7f6f025a1507cd3b7218691671eecfd0bbebebe8b39aa0fe1d360b8/pefile-2024.8.26.tar.gz", hash = "sha256:3ff6c5d8b43e8c37bb6e6dd5085658d658a7a0bdcd20b6a07b1fcfc1c4e9d632", size = 76008, upload-time = "2024-08-26T20:58:38.155Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/54/16/12b82f791c7f50ddec566873d5bdd245baa1491bac11d15ffb98aecc8f8b/pefile-2024.8.26-py3-none-any.whl", hash = "sha256:76f8b485dcd3b1bb8166f1128d395fa3d87af26360c2358fb75b80019b957c6f", size = 74766, upload-time = "2024-08-26T21:01:02.632Z" },
+]
+
+[[package]]
+name = "platformdirs"
+version = "4.13.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/80/a8/66d45abadff219e36e2a824181b8f6a67e7ed4572934d6252c71c29d5731/platformdirs-4.13.0.tar.gz", hash = "sha256:1aa0b0d3f224c1f07c295121e312a5a24a180d6ae5a8425ea1784b3e3863e9c0", size = 61094, upload-time = "2026-10-11T02:05:24.109Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8d/15/1633010b26e88e872c93b67c0b6c5e174fb74cb6fb5c1472b4d51d4a8f22/platformdirs-4.13.0-py3-none-any.whl", hash = "sha256:3dbcf4cd708f21cf876c4eaa90e58412bc4f033d87143f41b1493ff77c25b7e1", size = 32724, upload-time = "2026-10-11T02:05:22.776Z" },
 ]
 
 [[package]]

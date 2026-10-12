@@ -23,6 +23,7 @@
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
+      "icons/icon.icns",
       "icons/icon.ico"
     ],
     "windows": {
@@ -41,7 +42,18 @@
     "publisher": "Elissa",
     "shortDescription": "Asistente de escritorio con voz, compatible con cualquier proveedor de IA",
     "copyright": "Copyright (c) 2026 Diego Bustos",
-    "createUpdaterArtifacts": true
+    "createUpdaterArtifacts": true,
+    "macOS": {
+      "signingIdentity": "-",
+      "minimumSystemVersion": "11.0"
+    },
+    "linux": {
+      "deb": {
+        "depends": [
+          "libportaudio2"
+        ]
+      }
+    }
   },
   "plugins": {
     "updater": {

@@ -5,7 +5,6 @@ URLs and verified with SHA-256, so the installer stays small. The server runs on
 runs; a Windows job object makes sure it never outlives the engine.
 """
 import array
-import ctypes
 import hashlib
 import io
 import logging
@@ -17,7 +16,6 @@ import threading
 import time
 import wave
 import zipfile
-from ctypes import wintypes
 from pathlib import Path
 from typing import Callable
 
@@ -100,36 +98,6 @@ def _free_port() -> int:
         return s.getsockname()[1]
 
 
-class _Job:
-    """A Windows job object that kills its processes when the engine exits (even if it crashes)."""
-
-    def __init__(self):
-        k = ctypes.windll.kernel32
-        self.handle = k.CreateJobObjectW(None, None)
-
-        class LIMITS(ctypes.Structure):
-            _fields_ = [("PerProcessUserTimeLimit", ctypes.c_int64), ("PerJobUserTimeLimit", ctypes.c_int64),
-                        ("LimitFlags", wintypes.DWORD), ("MinimumWorkingSetSize", ctypes.c_size_t),
-                        ("MaximumWorkingSetSize", ctypes.c_size_t), ("ActiveProcessLimit", wintypes.DWORD),
-                        ("Affinity", ctypes.c_size_t), ("PriorityClass", wintypes.DWORD),
-                        ("SchedulingClass", wintypes.DWORD)]
-
-        class IO(ctypes.Structure):
-            _fields_ = [(n, ctypes.c_uint64) for n in ("r", "w", "o", "rb", "wb", "ob")]
-
-        class EXTENDED(ctypes.Structure):
-            _fields_ = [("Basic", LIMITS), ("Io", IO), ("ProcessMemoryLimit", ctypes.c_size_t),
-                        ("JobMemoryLimit", ctypes.c_size_t), ("PeakProcessMemoryUsed", ctypes.c_size_t),
-                        ("PeakJobMemoryUsed", ctypes.c_size_t)]
-
-        info = EXTENDED()
-        info.Basic.LimitFlags = 0x2000  # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
-        k.SetInformationJobObject(self.handle, 9, ctypes.byref(info), ctypes.sizeof(info))
-
-    def add(self, proc: subprocess.Popen) -> None:
-        ctypes.windll.kernel32.AssignProcessToJobObject(self.handle, int(proc._handle))
-
-
 class LocalWhisper:
     def __init__(self, models_dir: Path, on_status: Callable[[str], None]):
         self.dir = models_dir / "whisper"
@@ -139,7 +107,7 @@ class LocalWhisper:
         self.port = 0
         self.model_key = ""
         self._lock = threading.Lock()
-        self._job: _Job | None = None
+        self._job: system.ChildGuard | None = None
 
     def _set(self, status: str) -> None:
         self.status = status
@@ -194,7 +162,7 @@ class LocalWhisper:
                 cwd=str(exe.parent), stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                 creationflags=subprocess.CREATE_NO_WINDOW)
             try:
-                self._job = self._job or _Job()
+                self._job = self._job or system.ChildGuard()
                 self._job.add(self.proc)
             except Exception:
                 log.warning("could not attach whisper-server to a job object")

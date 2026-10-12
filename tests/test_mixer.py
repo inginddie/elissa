@@ -1,12 +1,17 @@
 """Ducking and volume with fake Windows audio sessions: who gets lowered, and that the volume always comes back."""
 import asyncio
 import os
+import sys
 import tempfile
 
 os.environ["ELISSA_HOME"] = os.environ.get("ELISSA_HOME") or tempfile.mkdtemp()  # before importing elissa
 
+import pytest
+
 from elissa import audio_mixer
 from elissa.audio_mixer import Mixer
+
+windows_only = pytest.mark.skipif(sys.platform != "win32", reason="Windows capability for now (F8)")
 
 
 class Vol:
@@ -31,6 +36,7 @@ def make(sessions, own=(1,)):
     return m
 
 
+@windows_only
 def test_ducks_only_other_playing_apps_and_restores():
     spotify, chrome, elissa, idle = Session(10, 0.8), Session(11, 1.0), Session(1), Session(12, 1.0, active=False)
     m = make([spotify, chrome, elissa, idle])
@@ -43,6 +49,7 @@ def test_ducks_only_other_playing_apps_and_restores():
     assert spotify.SimpleAudioVolume.v == 0.8 and chrome.SimpleAudioVolume.v == 1.0
 
 
+@windows_only
 def test_a_volume_the_user_changed_is_left_alone():
     s = Session(10)
     m = make([s])
@@ -52,6 +59,7 @@ def test_a_volume_the_user_changed_is_left_alone():
     assert s.SimpleAudioVolume.v == 0.6
 
 
+@windows_only
 def test_off_and_watchdog(monkeypatch):
     s = Session(10)
     m = make([s])
@@ -64,6 +72,7 @@ def test_off_and_watchdog(monkeypatch):
     assert s.SimpleAudioVolume.v == 1.0
 
 
+@windows_only
 def test_restore_now_for_exit_paths():
     s = Session(10)
     m = make([s])
@@ -72,6 +81,7 @@ def test_restore_now_for_exit_paths():
     assert s.SimpleAudioVolume.v == 1.0
 
 
+@windows_only
 def test_session_tools():
     from elissa.tools import ToolRegistry
     from elissa.tools.session import register

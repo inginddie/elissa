@@ -9,6 +9,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from .. import system
 from . import ToolRegistry
 from .files import SKIP_DIRS, FileTools
 
@@ -243,6 +244,8 @@ def register(reg: ToolRegistry, code: CodeTools) -> None:
             {"path": {"type": "string"}, "action": {"type": "string",
                                                     "enum": ["status", "diff", "staged", "log", "branches"]}},
             ["path"])
+    if not system.has("command"):
+        return
     reg.add("ejecutar_comando", "Ejecuta un comando de PowerShell en la carpeta de un proyecto (tests, build, lint, "
             "git commit…) y devuelve la salida. El usuario ve el comando exacto y debe aprobarlo. Nunca borra "
             "archivos ni descarta trabajo.", "Preparando el comando…", code.run,

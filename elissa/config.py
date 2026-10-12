@@ -1,8 +1,10 @@
 """Paths, settings and secrets.
 
-Everything the app writes lives in %APPDATA%\\Elissa (override with ELISSA_HOME for tests), apart from the
-program itself, which the installer puts in %LOCALAPPDATA%\\Elissa: uninstalling never touches the user's memory.
-API keys and the mail password never touch disk: they go to the Windows Credential Manager via keyring.
+Everything the app writes lives in the user's data folder (override with ELISSA_HOME for tests):
+%APPDATA%\\Elissa on Windows, ~/Library/Application Support/Elissa on macOS, ~/.local/share/Elissa on Linux. The
+program itself lives elsewhere (on Windows %LOCALAPPDATA%\\Elissa): uninstalling never touches the user's memory.
+API keys and the mail password never touch disk: they go to the system's keychain via keyring (Credential Manager,
+macOS Keychain, Secret Service).
 """
 import json
 import os
@@ -11,11 +13,12 @@ import sys
 from pathlib import Path
 
 import keyring
+from platformdirs import user_data_dir
 
 APP_NAME = "Elissa"
 KEYRING_SERVICE = "Elissa"
 
-HOME = Path(os.getenv("ELISSA_HOME") or Path(os.getenv("APPDATA", Path.home())) / APP_NAME)
+HOME = Path(os.getenv("ELISSA_HOME") or user_data_dir(APP_NAME, appauthor=False, roaming=True))
 # v0.1 kept its data where the program is installed now.
 LEGACY_HOME = Path(os.getenv("LOCALAPPDATA", Path.home())) / APP_NAME
 

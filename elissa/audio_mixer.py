@@ -14,6 +14,8 @@ import os
 import time
 from concurrent.futures import ThreadPoolExecutor
 
+from . import system
+
 log = logging.getLogger(__name__)
 
 MAX_DUCK_S = 180
@@ -22,7 +24,10 @@ TOLERANCE = 0.02
 
 
 def _init_com() -> None:
-    import comtypes
+    try:
+        import comtypes
+    except ImportError:  # not Windows: nothing to initialize (and no mixer capability)
+        return
     comtypes.CoInitialize()
 
 
@@ -106,7 +111,7 @@ class Mixer:
         return count
 
     async def duck(self, level: float) -> None:
-        if not 0 <= level < 1:
+        if not 0 <= level < 1 or not system.has("mixer"):
             return
         try:
             n = await self._run(self._duck, level)

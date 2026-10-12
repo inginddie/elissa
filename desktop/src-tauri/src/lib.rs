@@ -97,7 +97,8 @@ fn engine_command(app: &AppHandle) -> Command {
         cmd
     } else {
         let dir = app.path().resource_dir().expect("resource dir").join("engine");
-        let mut cmd = Command::new(dir.join("elissa-engine.exe"));
+        let exe = if cfg!(windows) { "elissa-engine.exe" } else { "elissa-engine" };
+        let mut cmd = Command::new(dir.join(exe));
         cmd.current_dir(dir);
         cmd
     }
@@ -426,7 +427,12 @@ fn open_in_browser(url: &str) -> Result<(), String> {
         .map_err(|e| e.to_string())
 }
 
-#[cfg(not(windows))]
+#[cfg(target_os = "macos")]
+fn open_in_browser(url: &str) -> Result<(), String> {
+    Command::new("open").arg(url).spawn().map(|_| ()).map_err(|e| e.to_string())
+}
+
+#[cfg(all(unix, not(target_os = "macos")))]
 fn open_in_browser(url: &str) -> Result<(), String> {
     Command::new("xdg-open").arg(url).spawn().map(|_| ()).map_err(|e| e.to_string())
 }
@@ -437,7 +443,14 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
     let show = MenuItemBuilder::with_id("toggle", "Mostrar u ocultar").build(app)?;
     let settings = MenuItemBuilder::with_id("settings", "Ajustes").build(app)?;
     let reset = MenuItemBuilder::with_id("reset", "Nueva conversación").build(app)?;
-    let autostart = CheckMenuItemBuilder::with_id("autostart", "Iniciar con Windows")
+    let autostart_label = if cfg!(windows) {
+        "Iniciar con Windows"
+    } else if cfg!(target_os = "macos") {
+        "Abrir al iniciar sesión"
+    } else {
+        "Iniciar con la sesión"
+    };
+    let autostart = CheckMenuItemBuilder::with_id("autostart", autostart_label)
         .checked(app.autolaunch().is_enabled().unwrap_or(false))
         .build(app)?;
     let update = MenuItemBuilder::with_id("update", "Buscar actualizaciones").build(app)?;

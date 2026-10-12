@@ -22,7 +22,7 @@ from fastapi import FastAPI, Query, Request, UploadFile, WebSocket, WebSocketDis
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from . import __version__, edge_voice, windows_tts, winutil
+from . import __version__, edge_voice, system, windows_tts
 from .agent import Agent
 from .config import (DEFAULTS, HOME, SOUNDS_DIR, STATIC, api_key_name, get_secret, load_settings, save_settings,
                      set_secret)
@@ -189,7 +189,7 @@ class Brain:
         register_file_edit(reg, FileEditor(files))
         register_code(reg, CodeTools(files))
         register_planner(reg, self.planner)
-        if self.settings.get("computer_use", True):
+        if self.settings.get("computer_use", True) and system.has("computer_use"):
             register_desktop(reg, self.desktop)
         if hasattr(self, "mcp"):
             self.mcp.register(reg)
@@ -360,7 +360,7 @@ def own_pids() -> set[int]:
 def watch_parent(loop: asyncio.AbstractEventLoop) -> None:
     """The engine lives as long as the desktop shell that started it, even if the shell crashes."""
     def wait():
-        winutil.wait_for_exit(PARENT_PID)
+        system.wait_for_exit(PARENT_PID)
         asyncio.run_coroutine_threadsafe(stop_engine("desktop shell exited"), loop)
     threading.Thread(target=wait, daemon=True).start()
 
@@ -399,7 +399,8 @@ async def lifespan(app: FastAPI):
     brain.mcp.sync(brain.settings.get("mcp_servers") or [])
     brain.wake.set_enabled(bool(brain.settings.get("wake_word")))
     try:
-        agent_hooks.publish_endpoint(int(os.environ.get("ELISSA_PORT", "8740")))
+        if system.has("agent_hooks"):
+            agent_hooks.publish_endpoint(int(os.environ.get("ELISSA_PORT", "8740")))
     except OSError:
         log.exception("could not publish the agent hooks endpoint")
     if brain.settings.get("stt") == "local":
@@ -483,7 +484,7 @@ async def voices():
     except Exception as e:
         log.warning("could not list Edge voices: %s", e)
     try:
-        for v in await asyncio.to_thread(windows_tts.list_voices):
+        for v in (await asyncio.to_thread(windows_tts.list_voices) if system.has("offline_voice") else []):
             spanish = v["lang"].upper() in windows_tts.SPANISH
             if spanish or lang != "es":
                 short = v["name"].replace("Microsoft ", "").replace(" Desktop", "")
@@ -541,7 +542,7 @@ def stt_service(s: dict) -> str | None:
     if s.get("stt_url"):
         return "endpoint"
     brain = state.get("brain")
-    if brain and brain.local_stt.installed(s.get("stt_local_model", "base")):
+    if brain and system.has("local_stt") and brain.local_stt.installed(s.get("stt_local_model", "base")):
         return "local"
     return None
 
@@ -549,6 +550,9 @@ def stt_service(s: dict) -> str | None:
 def prepare_local_stt(brain: "Brain") -> None:
     """Downloads (if needed) and starts local recognition in the background, reporting progress to the window."""
     key = brain.settings.get("stt_local_model", "base")
+    if not system.has("local_stt"):
+        brain._from_thread({"type": "stt_local_status", "status": "error: aún no disponible en este sistema"})
+        return
 
     def work():
         try:
@@ -564,7 +568,8 @@ async def stt_status():
     brain: Brain = state["brain"]
     key = brain.settings.get("stt_local_model", "base")
     return {"service": stt_service(brain.settings),
-            "local": {"installed": brain.local_stt.installed(key), "status": brain.local_stt.status,
+            "local": {"available": system.has("local_stt"), "installed": brain.local_stt.installed(key),
+                      "status": brain.local_stt.status,
                       "models": {k: v[2] for k, v in LOCAL_MODELS.items()}}}
 
 
@@ -641,6 +646,12 @@ def spotify_status() -> dict:
             "redirect_uri": SPOTIFY_DASHBOARD_REDIRECT, "desktop": spotify_desktop_installed()}
 
 
+@app.get("/api/system")
+async def system_info():
+    """Which system Elissa runs on and what it can do there (the window hides what doesn't apply)."""
+    return {"name": system.NAME, "caps": sorted(system.CAPS)}
+
+
 @app.get("/api/spotify")
 async def spotify_get():
     return spotify_status()
@@ -713,12 +724,14 @@ async def agent_event(request: Request):
 
 @app.get("/api/agent-hooks")
 async def agent_hooks_status():
-    return agent_hooks.status()
+    return agent_hooks.status() if system.has("agent_hooks") else {}
 
 
 @app.post("/api/agent-hooks")
 async def agent_hooks_install(body: dict):
     tool = body.get("tool")
+    if not system.has("agent_hooks"):
+        return JSONResponse({"error": "Aún no disponible en este sistema."}, 400)
     if tool not in agent_hooks.SOURCES:
         return JSONResponse({"error": "Herramienta desconocida"}, 400)
     try:
@@ -731,7 +744,7 @@ async def agent_hooks_install(body: dict):
 @app.post("/api/sounds/open-folder")
 async def open_sounds_folder():
     SOUNDS_DIR.mkdir(parents=True, exist_ok=True)
-    os.startfile(SOUNDS_DIR)
+    system.open_path(str(SOUNDS_DIR))
     return {"ok": True, "path": str(SOUNDS_DIR)}
 
 
@@ -899,7 +912,7 @@ async def save_mail(body: dict):
 
 @app.post("/api/pick-folder")
 async def pick_folder():
-    return {"path": await asyncio.to_thread(winutil.pick_folder, os.path.expanduser("~"))}
+    return {"path": await asyncio.to_thread(system.pick_folder, os.path.expanduser("~"))}
 
 
 @app.post("/api/quit")

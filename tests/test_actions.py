@@ -112,7 +112,7 @@ def test_tasks(tmp_path):
 
 def test_open_refuses_executables_and_outside_folders(tmp_path, monkeypatch):
     opened = []
-    monkeypatch.setattr(os, "startfile", lambda p, *a: opened.append(p), raising=False)
+    monkeypatch.setattr("elissa.system.open_path", lambda p: opened.append(p))
     (tmp_path / "notas.txt").write_text("hola")
     (tmp_path / "setup.exe").write_bytes(b"MZ")
     actions = Actions(FileTools(lambda: [str(tmp_path)]))

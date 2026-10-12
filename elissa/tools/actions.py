@@ -3,22 +3,21 @@
 Nothing here runs arbitrary programs: apps come from the Start menu (Get-StartApps), files must be inside the
 allowed folders and executables/scripts are never opened.
 """
-import ctypes
 import difflib
-import json
-import os
-import subprocess
 import time
 import unicodedata
 import webbrowser
 from urllib.parse import urlparse
 
-from .. import media_session
+from .. import media_session, system
 from . import ToolRegistry
 from .files import FileTools
 
 BLOCKED_EXT = {".exe", ".bat", ".cmd", ".com", ".ps1", ".psm1", ".vbs", ".vbe", ".js", ".jse", ".wsf", ".wsh",
-               ".msi", ".msp", ".scr", ".pif", ".lnk", ".url", ".jar", ".reg", ".hta", ".cpl", ".inf", ".appref-ms"}
+               ".msi", ".msp", ".scr", ".pif", ".lnk", ".url", ".jar", ".reg", ".hta", ".cpl", ".inf", ".appref-ms",
+               # macOS and Linux
+               ".app", ".command", ".sh", ".bash", ".zsh", ".pkg", ".dmg", ".appimage", ".desktop", ".run", ".deb",
+               ".rpm", ".py", ".pl", ".rb"}
 APPS_TTL_S = 600
 # Common names people say that differ from the Start menu entry (Spanish Windows names first).
 APP_ALIASES = {
@@ -33,7 +32,6 @@ APP_ALIASES = {
 # Virtual-key codes for the media keys every Windows player listens to.
 MEDIA_KEYS = {"pausa": 0xB3, "reproducir": 0xB3, "siguiente": 0xB0, "anterior": 0xB1, "detener": 0xB2,
               "silencio": 0xAD, "bajar_volumen": 0xAE, "subir_volumen": 0xAF}
-KEYEVENTF_KEYUP = 0x0002
 SESSION_ACTIONS = {"pausa": "pause", "reproducir": "play", "siguiente": "next", "anterior": "previous"}
 
 
@@ -63,22 +61,16 @@ class Actions:
     # ----- apps -----
 
     def start_apps(self) -> list[dict]:
-        """Name and AppID of every app in the Start menu (desktop and Store apps alike), cached for a while."""
+        """Name and id of every installed app (Start menu, Applications folder…), cached for a while."""
         if not self._apps or time.time() - self._apps_at > APPS_TTL_S:
-            out = subprocess.run(
-                ["powershell", "-NoProfile", "-Command",
-                 "[Console]::OutputEncoding=[Text.Encoding]::UTF8; Get-StartApps | ConvertTo-Json -Compress"],
-                capture_output=True, text=True, encoding="utf-8", timeout=30,
-                creationflags=subprocess.CREATE_NO_WINDOW)
-            data = json.loads(out.stdout or "[]")
-            self._apps = [data] if isinstance(data, dict) else data
+            self._apps = system.list_apps()
             self._apps_at = time.time()
         return self._apps
 
     def find_app(self, name: str) -> dict | None:
         apps = self.start_apps()
         wanted = _norm(name)
-        by_name = {_norm(a["Name"]): a for a in apps}
+        by_name = {_norm(a["name"]): a for a in apps}
         if wanted in by_name:
             return by_name[wanted]
         for alias in APP_ALIASES.get(wanted, []):
@@ -86,22 +78,22 @@ class Actions:
                 return by_name[alias]
         starts = [a for n, a in by_name.items() if n.startswith(wanted)]
         if starts:
-            return min(starts, key=lambda a: len(a["Name"]))
+            return min(starts, key=lambda a: len(a["name"]))
         contains = [a for n, a in by_name.items() if wanted in n]
         if contains:
-            return min(contains, key=lambda a: len(a["Name"]))
+            return min(contains, key=lambda a: len(a["name"]))
         close = difflib.get_close_matches(wanted, list(by_name), n=1, cutoff=0.6)
         return by_name[close[0]] if close else None
 
     def open_app(self, name: str) -> str:
         app = self.find_app(name)
         if not app:
-            raise LookupError(f"No encontré una aplicación llamada {name!r} en el menú Inicio.")
-        os.startfile(f"shell:AppsFolder\\{app['AppID']}")
-        return f"Abrí {app['Name']}."
+            raise LookupError(f"No encontré una aplicación instalada llamada {name!r}.")
+        system.launch_app(app)
+        return f"Abrí {app['name']}."
 
     def list_apps(self, filter: str = "") -> str:
-        names = sorted({a["Name"] for a in self.start_apps()}, key=str.lower)
+        names = sorted({a["name"] for a in self.start_apps()}, key=str.lower)
         if filter:
             names = [n for n in names if _norm(filter) in _norm(n)]
         return "\n".join(names[:150]) or "No hay aplicaciones que coincidan."
@@ -114,14 +106,14 @@ class Actions:
             raise FileNotFoundError(f"No existe {p}.")
         if p.is_file() and p.suffix.lower() in BLOCKED_EXT:
             raise PermissionError("Por seguridad no abro programas, scripts ni accesos directos.")
-        os.startfile(str(p))
+        system.open_path(str(p))
         return f"Abrí {p.name or p}."
 
     def show_in_folder(self, path: str) -> str:
         p = self.files.resolve(path)
         if not p.exists():
             raise FileNotFoundError(f"No existe {p}.")
-        subprocess.Popen(["explorer", "/select,", str(p)])
+        system.reveal(str(p))
         return f"Te muestro {p.name} en su carpeta."
 
     # ----- media -----
@@ -138,8 +130,8 @@ class Actions:
             if done is not None:
                 return "Listo." if done else "El reproductor no aceptó la orden."
         for _ in range(times):
-            ctypes.windll.user32.keybd_event(key, 0, 0, 0)
-            ctypes.windll.user32.keybd_event(key, 0, KEYEVENTF_KEYUP, 0)
+            if not system.press_media_key(key):
+                return "No hay ningún reproductor que controlar ahora."
         return "Listo."
 
 
@@ -148,11 +140,12 @@ def register(reg: ToolRegistry, actions: Actions) -> None:
             "buscar_web; usa esta cuando el usuario quiera VER la página.", "Abriendo la página…",
             actions.open_web, {"url": {"type": "string", "description": "Dirección, p. ej. https://github.com"}},
             ["url"])
-    reg.add("abrir_app", "Abre una aplicación instalada por su nombre (como aparece en el menú Inicio: Excel, "
-            "Spotify, Calculadora, Configuración, Visual Studio Code…).", "Abriendo la aplicación…",
-            actions.open_app, {"name": {"type": "string"}}, ["name"])
-    reg.add("listar_apps", "Lista las aplicaciones instaladas (menú Inicio), opcionalmente filtradas por texto.",
-            "Revisando tus aplicaciones…", actions.list_apps, {"filter": {"type": "string"}})
+    if system.has("apps"):
+        reg.add("abrir_app", "Abre una aplicación instalada por su nombre (Excel, Spotify, Calculadora, Configuración, "
+                "Visual Studio Code…).", "Abriendo la aplicación…", actions.open_app, {"name": {"type": "string"}},
+                ["name"])
+        reg.add("listar_apps", "Lista las aplicaciones instaladas, opcionalmente filtradas por texto.",
+                "Revisando tus aplicaciones…", actions.list_apps, {"filter": {"type": "string"}})
     reg.add("abrir_archivo", "Abre un archivo o carpeta con su programa predeterminado (documentos, imágenes, "
             "PDF, carpetas). Acepta alias como 'Descargas'. No abre programas ni scripts.", "Abriendo…",
             actions.open_path, {"path": {"type": "string"}}, ["path"])

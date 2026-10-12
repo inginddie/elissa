@@ -18,12 +18,12 @@ import secrets
 import time
 import unicodedata
 import webbrowser
-import winreg
 from difflib import SequenceMatcher
 from urllib.parse import urlencode
 
 import httpx
 
+from . import system
 from .config import get_secret, set_secret
 
 log = logging.getLogger(__name__)
@@ -60,16 +60,12 @@ def pkce_pair() -> tuple[str, str]:
 
 
 def desktop_installed() -> bool:
-    try:
-        winreg.CloseKey(winreg.OpenKey(winreg.HKEY_CLASSES_ROOT, "spotify"))
-        return True
-    except OSError:
-        return False
+    return system.spotify_installed()
 
 
 class Spotify:
     def __init__(self, client_id, port: int, transport: httpx.AsyncBaseTransport | None = None,
-                 opener=webbrowser.open, launcher=os.startfile):
+                 opener=webbrowser.open, launcher=lambda _uri: system.launch_spotify()):
         self.client_id = client_id  # callable: the setting can change while running
         self.port = port
         self.client = httpx.AsyncClient(timeout=15, transport=transport)
