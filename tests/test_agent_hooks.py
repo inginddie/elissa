@@ -53,7 +53,7 @@ def test_install_keeps_the_rest_and_is_idempotent(homes):
     assert data["model"] == "opus" and data["hooks"]["PreToolUse"] == original["hooks"]["PreToolUse"]
     assert len(data["hooks"]["Stop"]) == 2 and data["hooks"]["Stop"][0]["hooks"] == [mine]
     ours = data["hooks"]["Stop"][1]["hooks"][0]
-    assert ours["command"] == "powershell.exe" and ours["async"] is True and ours["args"][-1] == "claude"
+    assert ours["command"] == agent_hooks._command()[0] and ours["async"] is True and ours["args"][-1] == "claude"
     assert agent_hooks.installed("claude")
     assert json.loads(path.with_name("settings.json.elissa-backup").read_text("utf-8")) == original
 
@@ -66,7 +66,8 @@ def test_codex_install_from_scratch(homes):
     agent_hooks.set_installed("codex", True)
     data = json.loads(agent_hooks.CODEX_HOOKS.read_text("utf-8"))
     assert set(data["hooks"]) == {"Stop", "PermissionRequest"}
-    assert data["hooks"]["Stop"][0]["hooks"][0]["commandWindows"].endswith(" codex")
+    handler = data["hooks"]["Stop"][0]["hooks"][0]
+    assert handler["command"].endswith(" codex") and ("commandWindows" in handler) == (sys.platform == "win32")
     agent_hooks.set_installed("codex", False)
     assert json.loads(agent_hooks.CODEX_HOOKS.read_text("utf-8")) == {}
 
