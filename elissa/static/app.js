@@ -583,6 +583,9 @@ function renderApprovalBody(m) {
       if (v) dl.append(el('dt', { textContent: k }), el('dd', { textContent: v }));
     }
     body.append(dl, el('pre', { textContent: m.body || '' }));
+  } else if (m.kind === 'command') {
+    body.append(el('p', { className: 'hint', textContent: m.cwd || '' }));
+    body.append(el('pre', { className: 'cmd', textContent: `> ${m.command || ''}` }));
   } else if (m.kind === 'action') {
     body.append(el('ul', {}, ...(m.lines || []).map((l) => el('li', { textContent: l }))));
   } else {

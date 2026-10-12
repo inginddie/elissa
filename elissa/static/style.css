@@ -187,3 +187,4 @@ kbd { border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; font-si
 .ap-actions { justify-content: flex-end; padding-top: 8px; }
 .ap-actions button { min-width: 108px; }
 #ap-ok { font-weight: 600; }
+#ap-body pre.cmd { color: #c8f7f5; background: #0b0820; border-color: #3a2f6e; }

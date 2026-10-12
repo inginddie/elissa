@@ -2,6 +2,20 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [0.5.0] - 2026-10-11
+
+### Añadido
+- Asistente de programación: ve la estructura de un proyecto, busca en el código, lee líneas numeradas y consulta git
+  (estado, diferencias, historial) sin pedir permiso.
+- Ejecuta comandos (pruebas, builds, lint, commits) con una tarjeta que muestra el comando exacto y la carpeta, y avisa
+  si el comando publica, instala o escribe archivos.
+- Con eso puede encargarse de "corre las pruebas, encuentra el error y corrígelo": edita con diferencias y vuelve a
+  probar, pidiendo aprobación en cada paso.
+
+### Seguridad
+- Nunca ejecuta comandos que borran archivos o descartan trabajo (rm, del, reset duro de git, push forzado, borrar
+  ramas, formatear…), aunque se los pidan.
+
 ## [0.4.0] - 2026-10-11
 
 ### Añadido

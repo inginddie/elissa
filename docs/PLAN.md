@@ -124,6 +124,12 @@ Estado (2026-10-11): hecho en código, falta la prueba de Diego con su voz.
 - Editar archivos con diff en la tarjeta; ejecutar comandos (tests, builds) con aprobación y salida visible.
 - Opcional: avisos de sesiones de Claude Code y Codex por hooks.
 
+Estado (2026-10-11): hecho (0.5.0). Herramientas `ver_proyecto`, `buscar_codigo` (ripgrep si está, si no Python),
+`leer_lineas`, `git` (solo lectura) y `ejecutar_comando` (PowerShell, con aprobación, tiempo máximo, mata el árbol de
+procesos, salida recortada; lista de comandos prohibidos que borran o descartan trabajo y avisos para los riesgosos).
+Probado con una tarea real: correr pruebas, corregir el error con diff aprobado y volver a probar. Los avisos de
+sesiones de Claude Code/Codex por hooks quedan en el backlog.
+
 ## F6. Integraciones
 
 - Cliente MCP (stdio y HTTP) con catálogo en Ajustes; herramientas de escritura pasan por la tarjeta de aprobación.
@@ -149,3 +155,4 @@ Estado (2026-10-11): hecho en código, falta la prueba de Diego con su voz.
   `actions/upload-artifact@v4`, `astral-sh/setup-uv@v6`) a versiones con Node 24 antes de que GitHub retire Node 20
   (aviso visto en la primera compilación, 2026-10-11).
 - Interfaz en inglés (F7) y revisar los modelos sugeridos por proveedor.
+- Avisos de sesiones de Claude Code / Codex (hooks), como en Coucou.

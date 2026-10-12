@@ -1,2 +1,2 @@
 """Elissa: asistente de voz de escritorio, agnóstico de proveedor de IA."""
-__version__ = "0.4.0"
+__version__ = "0.5.0"

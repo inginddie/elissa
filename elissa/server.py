@@ -30,6 +30,8 @@ from .memory import register as register_memory
 from .tools import ToolRegistry
 from .tools.actions import Actions
 from .tools.actions import register as register_actions
+from .tools.code import CodeTools
+from .tools.code import register as register_code
 from .tools.desktop import Desktop
 from .tools.desktop import register as register_desktop
 from .tools.file_edit import FileEditor
@@ -173,6 +175,7 @@ class Brain:
         register_files(reg, files)
         register_actions(reg, Actions(files))
         register_file_edit(reg, FileEditor(files))
+        register_code(reg, CodeTools(files))
         register_planner(reg, self.planner)
         if self.settings.get("computer_use", True):
             register_desktop(reg, self.desktop)
