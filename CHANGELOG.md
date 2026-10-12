@@ -2,7 +2,7 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
-## [1.7.0] - sin publicar
+## [1.7.0] - 2026-10-12
 
 ### Añadido
 - **macOS: uso del computador.** Listar y enfocar ventanas, leer la ventana que usas (« ¿qué es esto? »), hacer
