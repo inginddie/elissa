@@ -123,7 +123,8 @@ class Desktop:
         self.last_hwnd = 0
         self.elements: dict[int, object] = {}
         self.elements_window = ""
-        threading.Thread(target=self._track_foreground, daemon=True).start()
+        if sys.platform == "win32":
+            threading.Thread(target=self._track_foreground, daemon=True).start()
 
     def _track_foreground(self) -> None:
         while True:

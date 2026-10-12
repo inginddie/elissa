@@ -24,7 +24,7 @@ LEGACY_HOME = Path(os.getenv("LOCALAPPDATA", Path.home())) / APP_NAME
 
 
 def migrate_legacy_home() -> None:
-    if os.getenv("ELISSA_HOME") or HOME.exists():
+    if sys.platform != "win32" or os.getenv("ELISSA_HOME") or HOME.exists():  # v0.1 existed only on Windows
         return
     items = [LEGACY_HOME / name for name in ("settings.json", "memoria", "logs")]
     if not any(p.exists() for p in items):

@@ -9,6 +9,7 @@ once. It always prints "{}" and exits 0, so it can never block or steer a sessio
 import json
 import logging
 import os
+import re
 import secrets
 import shutil
 import time
@@ -80,7 +81,7 @@ def parse_event(body: dict, now: float | None = None) -> dict | None:
     else:
         return None
     cwd = str(body.get("cwd") or "")
-    project = Path(cwd.rstrip("\\/")).name[:60] if cwd else ""
+    project = re.split(r"[\\/]", cwd.rstrip("\\/"))[-1][:60] if cwd else ""  # a Windows or a POSIX path
     now = time.monotonic() if now is None else now
     key = (source, project, kind)
     if now - _last.get(key, -REPEAT_S) < REPEAT_S:
