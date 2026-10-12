@@ -13,7 +13,7 @@
 [![Build](https://img.shields.io/github/actions/workflow/status/inginddie/elissa/release.yml?label=build)](https://github.com/inginddie/elissa/actions)
 [![License: MIT](https://img.shields.io/badge/license-MIT-f26d5b)](LICENSE)
 
-[Install](#install) · [Features](#what-she-can-do) · [Privacy](#privacy-and-security) · [Roadmap](#roadmap) · [Development](#development)
+[Wiki](https://inginddie.github.io/elissa/) · [Install](#install) · [Features](#what-she-can-do) · [Privacy](#privacy-and-security) · [Roadmap](#roadmap) · [Development](#development)
 
 </div>
 
@@ -176,6 +176,7 @@ The full [privacy policy](PRIVACY.md) lists every service Elissa can contact and
 | Signed installer | next | |
 | macOS and Linux ([plan](docs/PLAN.md#f8-macos-y-linux)) | F8 | planned |
 
+The user guide, in English and Spanish, is the [wiki](https://inginddie.github.io/elissa/).
 The detailed plan is in [`docs/PLAN.md`](docs/PLAN.md) (Spanish) and the release notes in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Development
