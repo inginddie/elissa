@@ -43,16 +43,17 @@ RISKY_KEYS = {("alt", "f4"): "Cierra la ventana.", ("win", "r"): "Abre «Ejecuta
 INPUT_KEYBOARD, KEYEVENTF_KEYUP, KEYEVENTF_UNICODE = 1, 0x0002, 0x0004
 
 
+# Win32 WORD/DWORD written as fixed-size ctypes, so the module also imports where ctypes.wintypes isn't loaded.
 class KEYBDINPUT(ctypes.Structure):
-    _fields_ = [("wVk", wintypes.WORD), ("wScan", wintypes.WORD), ("dwFlags", wintypes.DWORD),
-                ("time", wintypes.DWORD), ("dwExtraInfo", ctypes.c_size_t)]
+    _fields_ = [("wVk", ctypes.c_uint16), ("wScan", ctypes.c_uint16), ("dwFlags", ctypes.c_uint32),
+                ("time", ctypes.c_uint32), ("dwExtraInfo", ctypes.c_size_t)]
 
 
 class INPUT(ctypes.Structure):
     class _U(ctypes.Union):
         _fields_ = [("ki", KEYBDINPUT), ("pad", ctypes.c_byte * 32)]
     _anonymous_ = ("u",)
-    _fields_ = [("type", wintypes.DWORD), ("u", _U)]
+    _fields_ = [("type", ctypes.c_uint32), ("u", _U)]
 
 
 def _send(inputs: list[INPUT]) -> None:
