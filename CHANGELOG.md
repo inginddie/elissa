@@ -2,7 +2,7 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
-## [1.6.0] - sin publicar
+## [1.6.0] - 2026-10-12
 
 ### Añadido (Linux)
 - Música: « ¿qué suena? », pausar, reanudar, siguiente y anterior con cualquier reproductor que hable MPRIS
