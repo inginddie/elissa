@@ -38,7 +38,6 @@ def selftest() -> int:
     import tempfile
 
     import docx
-    import edge_tts
 
     from elissa.config import get_secret, set_secret
     from elissa.tools.files import extract_text
@@ -52,10 +51,14 @@ def selftest() -> int:
         except Exception as e:  # report every failure, don't stop at the first
             checks[name] = f"FALLA: {e!r}"
 
-    async def synth():
-        audio = b"".join([c["data"] async for c in edge_tts.Communicate("Hola", "es-CO-SalomeNeural").stream()
-                          if c["type"] == "audio"])
-        return f"{len(audio)} bytes"
+    def synth():
+        """Edge's online voice (with its host fallback); the offline Windows voice is the fallback in the app too."""
+        from elissa import edge_voice, windows_tts
+        try:
+            return f"Edge, {len(asyncio.run(edge_voice.synthesize('Hola', 'es-CO-SalomeNeural')))} bytes"
+        except Exception as e:
+            wav = windows_tts.synthesize("Hola")
+            return f"Edge no disponible ({str(e)[:60]}); voz de Windows, {len(wav)} bytes"
 
     def roundtrip():
         set_secret("selftest", "x")
@@ -75,16 +78,23 @@ def selftest() -> int:
         import vosk  # noqa: F401  (wake phrase engine is bundled)
         return f"{len([d for d in sounddevice.query_devices() if d['max_input_channels'] > 0])} entradas de audio"
 
+    def integrations():
+        from mcp import ClientSession  # noqa: F401
+        from mcp.client.stdio import stdio_client  # noqa: F401
+        from mcp.client.streamable_http import streamable_http_client  # noqa: F401
+        return "cliente MCP"
+
     def windows():
         import uiautomation as auto
         return f"{len(auto.GetRootControl().GetChildren())} ventanas"
 
     check("busqueda_web", lambda: f"{web_search('Bogotá', 2).count(chr(10))} líneas")
-    check("voz", lambda: asyncio.run(synth()))
+    check("voz", synth)
     check("keyring", roundtrip)
     check("documentos", office)
     check("ventanas", windows)
     check("microfono", microphone)
+    check("integraciones", integrations)
     for name, result in checks.items():
         logging.info("selftest %s: %s", name, result)
     (LOG_DIR / "selftest.txt").write_text("\n".join(f"{k}: {v}" for k, v in checks.items()), "utf-8")

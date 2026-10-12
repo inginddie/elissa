@@ -61,6 +61,7 @@ Elissa is drawn in code, not stitched from images, so she blends smoothly from o
 | ⏰ **Timers, reminders, tasks** | "Remind me at 3 pm to call Ana", "5-minute timer", "add buy bread to my tasks". She speaks up and shows a Windows notification. |
 | ✉️ **Email** | Over IMAP/SMTP for Gmail, Outlook, Yahoo and iCloud: search, read, save attachments, and send if you allow it. |
 | 👩‍💻 **Code with you** | Understands a project, searches the code, checks git, edits with diffs and runs your tests or builds: "run the tests, find the bug and fix it". Every edit and command needs your click; commands that delete or discard work are never run. |
+| 🔌 **Integrations (MCP)** | Connect MCP servers, local or remote. GitHub, Jira & Confluence and Google Calendar are one click away in Settings, and any other server works too. Read-only tools run freely; anything that changes data asks first. |
 | 🎵 **Music** | Play, pause, skip and change the volume of whatever is playing. |
 | 🌐 **Search the web** | Search and read pages, with no extra API key. |
 | 🧠 **Remember** | Each conversation is summarized into plain Markdown notes she can recall later: "what did we talk about yesterday?" |
@@ -133,8 +134,8 @@ The installer is not code-signed yet, so Windows SmartScreen may warn you the fi
 | Actions with approval cards: open apps and sites, timers, tasks, send email, edit files, use the computer | F4 | ✅ |
 | Voice: "Hola Elissa" wake word, local speech recognition | F3 | ✅ |
 | Coding assistant: understand projects, edit with diffs, run commands | F5 | ✅ |
-| Integrations through MCP: Jira, Confluence, GitHub, calendars | F6 | 🔜 |
-| English UI, signed installer, 1.0 | F7 | |
+| Integrations through MCP: Jira, Confluence, GitHub, calendars | F6 | ✅ |
+| English UI, signed installer, 1.0 | F7 | 🔜 |
 
 The detailed plan is in [`docs/PLAN.md`](docs/PLAN.md) (Spanish) and the release notes in [`CHANGELOG.md`](CHANGELOG.md).
 

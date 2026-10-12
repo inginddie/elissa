@@ -18,7 +18,11 @@ hiddenimports = (
 # when uiautomation is first imported, so the build imports it before collecting.
 import uiautomation  # noqa: E402,F401
 
-for pkg in ("ddgs", "primp", "edge_tts", "uiautomation", "comtypes", "vosk", "sounddevice", "_sounddevice_data"):
+# Only MCP's client side: mcp.cli needs typer (and exits without it) and Elissa never runs an MCP server.
+hiddenimports += collect_submodules("mcp", filter=lambda name: not name.startswith(("mcp.cli", "mcp.server")))
+
+for pkg in ("ddgs", "primp", "edge_tts", "uiautomation", "comtypes", "vosk", "sounddevice", "_sounddevice_data",
+            "httpx2"):
     d, b, h = collect_all(pkg)
     datas += d
     binaries += b

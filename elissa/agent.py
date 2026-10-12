@@ -87,11 +87,14 @@ class Agent:
                 else "solo lectura: enviar está apagado en Ajustes → Correo")) if "buscar_correos" in names \
             else "no configurado (el usuario lo activa en Ajustes → Correo)"
         computer = "sí, con aprobación" if "leer_ventana" in names else "apagado en Ajustes"
+        integrations = sorted({desc.split("]")[0].lstrip("[") for desc in
+                               (t.description for t in self.tools.specs() if t.name.startswith("mcp_"))})
         return f"""
 # Lo que tienes activo ahora (manda sobre cualquier recuerdo)
 - Correo: {mail}
 - Usar otras ventanas: {computer}
 - Carpetas que puedes usar: {', '.join(s.get('allowed_folders') or []) or 'ninguna'}
+- Integraciones conectadas (herramientas mcp_…): {', '.join(integrations) or 'ninguna'}
 """
 
     async def run_turn(self, text: str, emit: Emit) -> str:

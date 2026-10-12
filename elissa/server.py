@@ -20,7 +20,7 @@ from fastapi import FastAPI, Request, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from . import __version__, windows_tts, winutil
+from . import __version__, edge_voice, windows_tts, winutil
 from .agent import Agent
 from .config import (DEFAULTS, HOME, SOUNDS_DIR, STATIC, api_key_name, get_secret, load_settings, save_settings,
                      set_secret)
@@ -45,6 +45,7 @@ from .tools.mail_send import register as register_mail_send
 from .tools.planner import Planner
 from .tools.planner import register as register_planner
 from .tools.web import register as register_web
+from . import mcp_client
 from .local_stt import MODELS as LOCAL_MODELS
 from .local_stt import LocalWhisper, split_wav
 from .wake import WakeListener
@@ -131,6 +132,7 @@ class Brain:
         self.desktop = Desktop(lambda: {os.getpid(), PARENT_PID})
         self.loop: asyncio.AbstractEventLoop | None = None
         self.wake = WakeListener(HOME / "models", self._on_wake, self._on_wake_status)
+        self.mcp = mcp_client.McpManager(self._mcp_changed)
         self.local_stt = LocalWhisper(HOME / "models",
                                       lambda status: self._from_thread({"type": "stt_local_status", "status": status}))
         self.rebuild_tools()
@@ -179,6 +181,8 @@ class Brain:
         register_planner(reg, self.planner)
         if self.settings.get("computer_use", True):
             register_desktop(reg, self.desktop)
+        if hasattr(self, "mcp"):
+            self.mcp.register(reg)
         register_web(reg)
         register_memory(reg, self.memory)
         if self.settings.get("mail_enabled"):
@@ -260,6 +264,14 @@ class Brain:
                 self.handed_over.add(str(p).lower())
                 accepted.append(str(p))
         return accepted
+
+    # ----- integrations (MCP) -----
+
+    def _mcp_changed(self) -> None:
+        """A server connected, failed or went away: refresh the tools and tell the window (on the event loop)."""
+        self.rebuild_tools()
+        if self.loop:
+            self.loop.create_task(self.hub.broadcast({"type": "mcp_status", "servers": self.mcp.status()}))
 
     # ----- wake phrase (runs in its own thread) -----
 
@@ -356,6 +368,7 @@ async def lifespan(app: FastAPI):
     brain = Brain(hub)
     state["brain"] = brain
     brain.loop = asyncio.get_running_loop()
+    brain.mcp.sync(brain.settings.get("mcp_servers") or [])
     brain.wake.set_enabled(bool(brain.settings.get("wake_word")))
     if brain.settings.get("stt") == "local":
         prepare_local_stt(brain)  # warm up, so the first sentence isn't slow
@@ -364,6 +377,7 @@ async def lifespan(app: FastAPI):
     if PARENT_PID:
         watch_parent(asyncio.get_running_loop())
     yield
+    await brain.mcp.close()
     for t in tasks:
         t.cancel()
 
@@ -403,14 +417,7 @@ EDGE_TIMEOUT_S = 12
 
 
 async def _edge_tts(text: str, voice: str, speed: float) -> bytes:
-    rate = f"{round((speed - 1) * 100):+d}%"
-    audio = bytearray()
-    async for chunk in edge_tts.Communicate(text, voice, rate=rate).stream():
-        if chunk["type"] == "audio":
-            audio += chunk["data"]
-    if not audio:
-        raise RuntimeError("Edge TTS returned no audio")
-    return bytes(audio)
+    return await edge_voice.synthesize(text, voice, speed)
 
 
 @app.get("/api/tts")
@@ -670,6 +677,69 @@ async def save_key(body: dict):
         return JSONResponse({"error": "Proveedor desconocido"}, 400)
     set_secret(api_key_name(pid), body.get("api_key", "").strip())
     return {"ok": True, "has_key": bool(get_secret(api_key_name(pid)))}
+
+
+# ----- integrations (MCP) -----
+
+def _valid_server(cfg: dict) -> str | None:
+    if cfg.get("transport") == "http":
+        url = str(cfg.get("url") or "")
+        local = url.startswith(("http://127.0.0.1", "http://localhost"))
+        if not (url.startswith("https://") or local):
+            return "La URL del servidor debe empezar por https://"
+    elif cfg.get("transport") == "stdio":
+        if not str(cfg.get("command") or "").strip():
+            return "Falta el comando que inicia el servidor"
+    else:
+        return "Tipo de conexión desconocido"
+    return None
+
+
+@app.get("/api/mcp")
+async def mcp_list():
+    brain: Brain = state["brain"]
+    live = {s["id"]: s for s in brain.mcp.status()}
+    servers = [{**cfg, "status": live.get(cfg["id"], {}).get("status", "apagado" if not cfg.get("enabled", True)
+                                                              else "desconectado"),
+                "tools": live.get(cfg["id"], {}).get("tools", 0)} for cfg in brain.settings.get("mcp_servers") or []]
+    return {"servers": servers, "presets": mcp_client.PRESETS}
+
+
+@app.post("/api/mcp/save")
+async def mcp_save(body: dict):
+    """Adds or updates an integration. Secrets (tokens, env values) go to the Credential Manager."""
+    brain: Brain = state["brain"]
+    cfg = {k: v for k, v in (body.get("server") or {}).items()
+           if k in ("id", "name", "transport", "url", "command", "args", "enabled", "trust_reads", "preset")}
+    cfg.setdefault("enabled", True)
+    cfg.setdefault("trust_reads", True)
+    if isinstance(cfg.get("args"), str):
+        cfg["args"] = cfg["args"].split()
+    error = _valid_server(cfg)
+    if error or not str(cfg.get("name") or "").strip():
+        return JSONResponse({"ok": False, "error": error or "Falta el nombre"}, 400)
+    servers = list(brain.settings.get("mcp_servers") or [])
+    if not cfg.get("id"):
+        base = mcp_client.slug(cfg["name"])
+        taken = {s["id"] for s in servers}
+        cfg["id"] = base if base not in taken else next(f"{base}{n}" for n in range(2, 99) if f"{base}{n}" not in taken)
+    mcp_client.save_secrets(cfg["id"], body.get("secrets") or {})
+    servers = [s for s in servers if s["id"] != cfg["id"]] + [cfg]
+    brain.settings["mcp_servers"] = servers
+    save_settings(brain.settings)
+    brain.mcp.sync(servers)
+    return {"ok": True, "id": cfg["id"]}
+
+
+@app.post("/api/mcp/remove")
+async def mcp_remove(body: dict):
+    brain: Brain = state["brain"]
+    sid = str(body.get("id", ""))
+    brain.settings["mcp_servers"] = [s for s in brain.settings.get("mcp_servers") or [] if s["id"] != sid]
+    save_settings(brain.settings)
+    set_secret(mcp_client.secret_name(sid), "")
+    brain.mcp.sync(brain.settings["mcp_servers"])
+    return {"ok": True}
 
 
 @app.post("/api/mail/save")

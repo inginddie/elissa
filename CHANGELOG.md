@@ -2,7 +2,19 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
-## [0.5.0] - 2026-10-11
+## [0.6.0] - 2026-10-12
+
+### Añadido
+- Integraciones por MCP: conecta servidores locales (programas) o remotos (URL) y Elissa usa sus herramientas.
+  Ajustes trae listos GitHub, Jira y Confluence (servidor oficial de Atlassian) y Google Calendar, además de
+  cualquier otro servidor. Lo que solo lee es libre; lo que cambia datos muestra la tarjeta de aprobación con el
+  servidor, la herramienta y los datos exactos. Los tokens quedan en el Administrador de credenciales.
+
+### Corregido
+- La voz de Edge dejó de responder (403) porque Microsoft movió el servicio: ahora Elissa cambia sola al servidor
+  nuevo, y si aun así falla usa la voz de Windows.
+
+## [0.5.0] - 2026-10-11 (incluida en 0.6.0; su compilación no se publicó)
 
 ### Añadido
 - Asistente de programación: ve la estructura de un proyecto, busca en el código, lee líneas numeradas y consulta git

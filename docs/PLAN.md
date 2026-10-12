@@ -135,6 +135,13 @@ sesiones de Claude Code/Codex por hooks quedan en el backlog.
 - Cliente MCP (stdio y HTTP) con catálogo en Ajustes; herramientas de escritura pasan por la tarjeta de aprobación.
 - Primeras: Atlassian (Jira/Confluence), GitHub, Google Calendar u Outlook.
 
+Estado (2026-10-12): hecho (0.6.0). `elissa/mcp_client.py`: un gestor con una tarea por servidor (stdio o
+Streamable HTTP, SDK `mcp` 2.x), herramientas `mcp_<servidor>_<herramienta>`, libres si el servidor las marca de solo
+lectura y se confía en sus lecturas, con tarjeta en caso contrario; secretos en el Administrador de credenciales;
+presets de GitHub (remoto oficial con PAT), Atlassian (oficial, OAuth vía mcp-remote) y Google Calendar (requiere
+credenciales OAuth propias). Probado con un servidor MCP real de prueba (`tests/mcp_demo_server.py`). Falta que Diego
+conecte sus cuentas reales (requieren su token u OAuth).
+
 ## F7. Pulido y publicación
 
 - Atajos configurables; español e inglés.

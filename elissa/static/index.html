@@ -174,6 +174,32 @@
       <button type="button" id="mail-save">Probar y guardar correo</button>
       <p class="hint" id="mail-msg"></p>
 
+      <h3>Integraciones (MCP)</h3>
+      <p class="hint small">Conecta a Elissa con otros servicios mediante servidores MCP. Lo que solo lee es libre;
+        todo lo que cambia algo te pide aprobación.</p>
+      <ul id="mcp-list" class="items"></ul>
+      <label>Agregar
+        <select id="mcp-preset"></select>
+      </label>
+      <div id="mcp-form" class="stack" hidden>
+        <p class="hint small" id="mcp-note"></p>
+        <label id="mcp-name-row">Nombre <input id="mcp-name" placeholder="Mi servidor"></label>
+        <label id="mcp-transport-row">Conexión
+          <select id="mcp-transport">
+            <option value="http">Remota (URL, Streamable HTTP)</option>
+            <option value="stdio">Programa local (comando)</option>
+          </select>
+        </label>
+        <label id="mcp-url-row">URL <input id="mcp-url" placeholder="https://…/mcp"></label>
+        <label id="mcp-command-row">Comando <input id="mcp-command" placeholder="npx -y paquete-mcp@1.0.0"></label>
+        <label id="mcp-secret-row"><span id="mcp-secret-label">Token</span>
+          <input id="mcp-secret" type="password" autocomplete="off">
+        </label>
+        <a id="mcp-help" href="#" target="_blank" rel="noopener" hidden>¿Cómo lo consigo?</a>
+        <button type="button" id="mcp-add" class="primary">Conectar</button>
+        <p class="hint" id="mcp-msg"></p>
+      </div>
+
       <h3>Uso del computador</h3>
       <label class="check"><input type="checkbox" name="computer_use"> Permitir que vea y use otras ventanas</label>
       <p class="hint small">Leer una ventana, hacer clic, escribir o presionar teclas siempre te pide aprobación. Nunca lee campos de contraseña.</p>

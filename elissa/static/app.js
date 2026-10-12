@@ -528,6 +528,9 @@ function handle(m) {
       face.play('surprised', 350);
       startListening();
       break;
+    case 'mcp_status':
+      if (!$('#panel-settings').hidden) loadMcp();
+      break;
     case 'stt_local_status':
       showLocalStatus(m.status);
       if (m.status === 'listo') refreshStt();
@@ -924,6 +927,7 @@ function openPanel(id) {
       .then((h) => ($('#version').textContent = `Elissa ${h.version}`))
       .catch(() => {});
     shell.info().then((info) => showUpdate(info?.update));
+    loadMcp();
   }
 }
 
@@ -1119,6 +1123,90 @@ $('#sounds-folder').onclick = () => api('/api/sounds/open-folder', {});
 $('#sounds-reload').onclick = async () => {
   await sfx.loadCustom((await api('/api/sounds')).data);
   sfx.play('greet');
+};
+
+/* ----- integrations (MCP) ----- */
+
+let mcpPresets = [];
+
+async function loadMcp() {
+  const { data } = await api('/api/mcp');
+  mcpPresets = data.presets || [];
+  const sel = $('#mcp-preset');
+  if (!sel.options.length) {
+    sel.add(new Option('Elige un servicio…', ''));
+    for (const p of mcpPresets) sel.add(new Option(p.name, p.preset));
+    sel.add(new Option('Otro servidor MCP…', 'custom'));
+  }
+  const ul = $('#mcp-list');
+  ul.innerHTML = '';
+  for (const s of data.servers || []) {
+    const on = el('input', { type: 'checkbox', checked: s.enabled !== false, title: 'Activado' });
+    on.onchange = () => saveMcp({ server: { ...stripStatus(s), enabled: on.checked } });
+    const rm = el('button', { type: 'button', textContent: '×', title: 'Quitar' });
+    rm.onclick = async () => {
+      await api('/api/mcp/remove', { id: s.id });
+      loadMcp();
+    };
+    const cls = s.status.startsWith('conectado') ? 'st ok' : s.status.startsWith('error') ? 'st err' : 'st';
+    ul.append(el('li', {}, on, el('span', { className: 'name', textContent: s.name }),
+      el('span', { className: cls, textContent: s.status, title: s.status }), rm));
+  }
+}
+
+function stripStatus(s) {
+  const { status, tools, ...cfg } = s;
+  return cfg;
+}
+
+async function saveMcp(body) {
+  const { ok, data } = await api('/api/mcp/save', body);
+  if (!ok) msg($('#mcp-msg'), data.error || 'No se pudo guardar', 'err');
+  loadMcp();
+  return ok;
+}
+
+$('#mcp-preset').onchange = () => {
+  const key = $('#mcp-preset').value;
+  const p = mcpPresets.find((x) => x.preset === key);
+  const custom = key === 'custom';
+  $('#mcp-form').hidden = !key;
+  $('#mcp-note').textContent = p?.note || (custom ? 'Usa solo servidores en los que confíes: pueden ejecutar programas en tu PC.' : '');
+  for (const row of ['#mcp-name-row', '#mcp-transport-row']) $(row).hidden = !custom;
+  const transport = custom ? $('#mcp-transport').value : p?.transport;
+  $('#mcp-url-row').hidden = !custom || transport !== 'http';
+  $('#mcp-command-row').hidden = !custom || transport !== 'stdio';
+  $('#mcp-secret-row').hidden = !(custom || p?.secret);
+  $('#mcp-secret-label').textContent = p?.secret?.label || 'Token (opcional, se envía como «Authorization: Bearer …»)';
+  $('#mcp-help').hidden = !p?.secret?.help;
+  if (p?.secret?.help) $('#mcp-help').href = p.secret.help;
+  msg($('#mcp-msg'), '');
+};
+$('#mcp-transport').onchange = () => $('#mcp-preset').onchange();
+
+$('#mcp-add').onclick = async () => {
+  const key = $('#mcp-preset').value;
+  const p = mcpPresets.find((x) => x.preset === key);
+  const secret = $('#mcp-secret').value.trim();
+  let server;
+  const secrets = {};
+  if (p) {
+    server = { name: p.name, transport: p.transport, url: p.url, command: p.command, args: p.args, preset: p.preset };
+    if (p.secret && secret) secrets[p.secret.key] = (p.secret.prefix || '') + secret;
+    if (p.secret && !secret) return msg($('#mcp-msg'), `Falta: ${p.secret.label}`, 'err');
+  } else {
+    const transport = $('#mcp-transport').value;
+    const [command, ...args] = $('#mcp-command').value.trim().split(/\s+/);
+    server = { name: $('#mcp-name').value.trim(), transport, url: $('#mcp-url').value.trim(), command, args };
+    if (secret) secrets.Authorization = secret.startsWith('Bearer ') ? secret : `Bearer ${secret}`;
+  }
+  msg($('#mcp-msg'), 'Conectando…');
+  if (await saveMcp({ server, secrets })) {
+    $('#mcp-secret').value = '';
+    $('#mcp-preset').value = '';
+    $('#mcp-form').hidden = true;
+    msg($('#mcp-msg'), '');
+  }
 };
 
 $('#folder-add').onclick = async () => {

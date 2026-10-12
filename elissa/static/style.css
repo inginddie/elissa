@@ -188,3 +188,14 @@ kbd { border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; font-si
 .ap-actions button { min-width: 108px; }
 #ap-ok { font-weight: 600; }
 #ap-body pre.cmd { color: #c8f7f5; background: #0b0820; border-color: #3a2f6e; }
+
+/* ----- integrations ----- */
+ul.items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+ul.items li { display: flex; align-items: center; gap: 8px; background: var(--bg-2); border: 1px solid var(--line);
+  border-radius: 8px; padding: 6px 8px; font-size: 12px; }
+ul.items li .name { font-weight: 600; }
+ul.items li .st { color: var(--muted); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+ul.items li .st.ok { color: #8ff0c7; }
+ul.items li .st.err { color: var(--coral); }
+ul.items li input[type="checkbox"] { width: auto; flex: none; }
+ul.items li button { background: none; border: 0; color: var(--muted); font-size: 16px; padding: 0 4px; }
