@@ -114,14 +114,16 @@ See the [code signing policy](docs/CODE_SIGNING.md) and the [privacy policy](PRI
 
 Download the `.deb` (Ubuntu, Debian and derivatives: `sudo apt install ./Elissa_x.y.z_amd64.deb`) or the `.AppImage`
 (any distribution; make it executable and run it; it needs `libportaudio2` for the microphone).
+For music volume while you talk, the system volume and offline voices, install `pulseaudio-utils` (it works with
+PipeWire too) and `espeak-ng`: `sudo apt install pulseaudio-utils espeak-ng`.
 
 ### What the macOS and Linux previews do
 
 Talking with the shortcut or by voice through a cloud speech service, chat, files, web search, memory, reminders,
-Spotify, MCP integrations and opening apps. On macOS also: "what's playing?" and playback control for Spotify and
-Music (turned down while you talk), system volume, offline voices, terminal commands in your projects and Claude
-Code / Codex alerts. Coming next: on-PC speech recognition and using other windows (macOS); music, volume and the
-rest on Linux.
+Spotify, MCP integrations, opening apps, "what's playing?" and playback control (macOS: Spotify and Music; Linux: any
+MPRIS player), turning music down while you talk, system volume, offline voices, terminal commands in your projects
+and Claude Code / Codex alerts. Coming next: on-PC speech recognition and using other windows. On Linux under
+Wayland, the eyes don't follow the cursor outside the window.
 
 ### Everyday use
 

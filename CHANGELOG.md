@@ -2,6 +2,21 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [1.6.0] - sin publicar
+
+### Añadido (Linux)
+- Música: « ¿qué suena? », pausar, reanudar, siguiente y anterior con cualquier reproductor que hable MPRIS
+  (Spotify, Firefox, Chrome, VLC, Rhythmbox…).
+- Mientras te escucha y responde, las demás apps bajan de volumen y vuelven al terminar (PulseAudio o PipeWire,
+  con `pactl`). Volumen del sistema por voz.
+- Voces sin internet con espeak-ng (si está instalado).
+- Abrir apps instaladas (también Flatpak y Snap).
+- Los ojos siguen el cursor en sesiones X11; « Hola Elissa » se pausa con la pantalla bloqueada (logind).
+- Comandos de terminal en los proyectos (bash) y avisos de Claude Code y Codex.
+
+### Corregido (Linux)
+- La ventana no podía usar el micrófono: WebKitGTK lo trae apagado. Ahora se activa y se concede solo a Elissa.
+
 ## [1.5.0] - 2026-10-12
 
 ### Añadido (macOS)
