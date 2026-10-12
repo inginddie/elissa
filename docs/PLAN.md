@@ -161,6 +161,8 @@ Objetivo: la misma Elissa en macOS (Apple Silicon e Intel) y Linux (Ubuntu 22.04
 instalador, actualizaciones automáticas y las mismas reglas de seguridad. Windows no puede perder nada en el camino.
 
 Estado (2026-10-12): planeado. Inventario hecho: 13 módulos de Python y 3 puntos del shell en Rust dependen de Windows.
+Decisiones de Diego (2026-10-12): **macOS primero**, **sin cuenta de Apple Developer**, pruebas en un Mac físico y en
+un Linux en máquina virtual.
 
 ### Estrategia
 
@@ -209,11 +211,27 @@ Estado (2026-10-12): planeado. Inventario hecho: 13 módulos de Python y 3 punto
 
 1. **F8.1 Base (sin cambio visible).** Capa de plataforma, `platformdirs`, CI en matriz con las pruebas pasando en los
    tres sistemas y Windows idéntico.
-2. **F8.2 Linux.** Va primero porque no exige pagar firma y porque MPRIS y PipeWire dan casi la misma experiencia que
-   Windows, ducking incluido. Antes que nada, verificar el micrófono en WebKitGTK y el comportamiento en Wayland.
-3. **F8.3 macOS.** Requiere la cuenta de Apple Developer para firmar y notarizar, permisos de micrófono y
-   Accesibilidad, y aceptar el ducking limitado.
+2. **F8.2 macOS** (elegido primero). Sin cuenta de Apple Developer (ver abajo), con permisos de micrófono y
+   Accesibilidad y el ducking limitado. Se prueba en el Mac de Diego con los instaladores que deja el CI.
+3. **F8.3 Linux.** MPRIS y PipeWire dan casi la misma experiencia que Windows, ducking incluido. Antes que nada,
+   verificar el micrófono en WebKitGTK y el comportamiento en Wayland. Se prueba en una máquina virtual: sirve para la
+   instalación, la ventana, el chat y las acciones. Para la voz hay que pasar el micrófono y el audio del equipo a la
+   VM (VirtualBox/VMware lo permiten), y lo fino del audio queda como riesgo hasta probarlo en un equipo real.
 4. **F8.4 Paridad.** Uso del computador en macOS y en Linux X11. En Wayland queda documentado como no disponible.
+
+### macOS sin cuenta de Apple Developer
+
+- **Firma ad hoc** (`codesign -s -`, `signingIdentity: "-"` en Tauri; PyInstaller ya firma ad hoc el motor). Es
+  obligatoria en Apple Silicon: un binario sin ninguna firma no corre.
+- **Primera instalación:** Gatekeeper dice que la app « no se puede verificar ». El README explica cómo abrirla:
+  Ajustes del Sistema → Privacidad y seguridad → « Abrir igualmente » (en macOS 15+ ya no basta con clic derecho →
+  Abrir), o `xattr -dr com.apple.quarantine /Applications/Elissa.app`.
+- **Actualizaciones automáticas:** funcionan (la firma del actualizador es la nuestra, minisign, no la de Apple), y
+  lo que descarga la propia app no queda en cuarentena.
+- **Costo para el usuario:** con firma ad hoc, macOS identifica la app por su contenido, así que **después de cada
+  actualización puede volver a pedir los permisos de micrófono y de Accesibilidad**. Hay que avisarlo en las notas
+  y en la app (detectar el permiso perdido y explicar cómo darlo).
+- Si más adelante se publica para más gente en Mac, la cuenta de Apple Developer quita ambos problemas.
 
 Listo cuando: en cada sistema se instala desde GitHub sin pasos manuales, se actualiza sola, pasa las pruebas y el
 self-test del motor en CI, y lo esencial funciona con la voz real en un equipo físico. Lo que no aplica en un
@@ -221,12 +239,8 @@ sistema aparece explicado en Ajustes.
 
 ### Decisiones pendientes de Diego
 
-- ¿Linux primero, como se propone, o macOS?
-- macOS: ¿pagar la cuenta de Apple Developer (99 USD/año)? Sin ella, Gatekeeper bloquea la app y el usuario debe
-  autorizarla a mano.
-- Equipos de prueba: ¿hay un Mac y un Linux físicos? Una VM sirve para lo básico, pero no para el micrófono ni el
-  audio.
 - Linux: ¿qué distribuciones soportar oficialmente? Se propone Ubuntu/Debian (`.deb`) y AppImage para el resto.
+- Mac de pruebas: ¿Apple Silicon o Intel, y qué versión de macOS? Define qué build se prueba primero.
 
 ## Riesgos
 
