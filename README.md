@@ -57,9 +57,8 @@ Only a real click on **Approve** does it. Your voice, the shortcut and the AI ca
 
 <table>
   <tr>
-    <td align="center" width="33%"><img src="docs/media/screens/en/approval-diff.png" alt="Approval card for editing a file, showing the diff" width="100%"><br><sub>Editing a file: the exact diff</sub></td>
-    <td align="center" width="33%"><img src="docs/media/screens/en/approval-command.png" alt="Approval card for running a command, showing the folder and the command" width="100%"><br><sub>Running a command: exactly as it will run</sub></td>
-    <td align="center" width="33%"><img src="docs/media/screens/en/settings-mcp.png" alt="The Integrations section of Settings with a GitHub server" width="100%"><br><sub>Integrations: reading is free, changing data asks first</sub></td>
+    <td align="center" width="50%"><img src="docs/media/screens/en/approval-diff.png" alt="Approval card for editing a file, showing the diff" width="100%"><br><sub>Editing a file: the exact diff</sub></td>
+    <td align="center" width="50%"><img src="docs/media/screens/en/approval-command.png" alt="Approval card for running a command, showing the folder and the command" width="100%"><br><sub>Running a command: exactly as it will run</sub></td>
   </tr>
 </table>
 
