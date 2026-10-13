@@ -16,6 +16,7 @@ No se publica hasta completar el plan. Sin afán: prima la calidad.
 | Diseño | Personaje y animaciones propios, dibujados en código, con referencias generadas con Nano Banana 2. |
 | Orden | F1 → F2 → F4 → F3 → F5 → F6 → F7 |
 | Otros sistemas (2026-10-12) | F8: macOS y Linux después de la 1.x en Windows, con una capa de plataforma. |
+| Métricas (2026-10-12) | F10: historia de descargas y tráfico desde GitHub; estadísticas anónimas opcionales (apagadas por defecto) con Aptabase UE. |
 
 ## Reglas de seguridad (no negociables)
 
@@ -284,6 +285,100 @@ Windows, macOS y Linux desde el principio).
 - Encontrado al hacer las capturas: las tarjetas de aprobación y otros textos que arma el motor salen en español con
   la interfaz en inglés (títulos, « Para », « Asunto », subtítulos). Las capturas en inglés muestran el texto ya
   traducido; arreglarlo en un parche.
+
+## F10. Métricas y telemetría (respetando la privacidad)
+
+Objetivo: saber cuánta gente usa Elissa, en qué sistema y versión, qué funciones usa y qué falla, **sin romper la
+promesa de privacidad**: nada de lo que el usuario dice, escribe, lee o tiene en pantalla sale nunca, y la telemetría
+dentro de la app es **opcional, apagada por defecto y visible**. Se replican piezas probadas en vez de inventarlas.
+
+Estado (2026-10-12): planeado. Línea base: 10 descargas del `.exe` (casi todas actualizaciones de Diego), 0 `.dmg`,
+0 Linux, 39 consultas de `latest.json`, 1 visitante único. Hoy Elissa promete « sin telemetría » (README, PRIVACY.md,
+política de firma enviada a SignPath).
+
+### F10.1 Medir sin tocar la app (costo 0, se puede hacer ya)
+
+- **Historia del tráfico del repo** con [`jgehrcke/github-repo-stats@v1.4.2`](https://github.com/jgehrcke/github-repo-stats)
+  (Apache-2.0, ~390 estrellas, activo): workflow diario que guarda visitas, clones, referentes, rutas, estrellas y forks
+  en una rama de datos `stats` y genera un informe HTML que se publica en la wiki (`/stats/`). GitHub borra el
+  tráfico a los 14 días; esto lo conserva. Necesita un PAT con scope `repo` como secreto `GHRS_GITHUB_API_TOKEN`.
+- **Historia de descargas por versión y archivo**: no hay una Action mantenida para esto (lo usual es un cron propio
+  de ~20 líneas). Workflow diario `release-stats.yml`: `gh api .../releases --paginate` → CSV
+  `fecha, versión, archivo, download_count` en la misma rama `stats`. El contador es acumulado: se guardan valores
+  completos y se calculan deltas al analizar.
+- **Cómo leer las cifras** (`scripts/stats.py` resume el CSV):
+  - Instalaciones nuevas ≈ descargas de instaladores hechas a mano (`.exe`, `.dmg`, `.deb`, `.AppImage`).
+  - Actualizaciones ≈ descargas de los paquetes del actualizador (`.app.tar.gz`, AppImage, `.exe` vía updater).
+  - Copias activas (aprox.) ≈ crecimiento diario de `latest.json`: cada copia instalada lo consulta al abrir y al
+    buscar actualizaciones. Confirmar empíricamente comparando antes y después de una release.
+  - Separar lo propio (Diego) y el CI (los clones son casi todos del CI).
+- Desde el 30-jun-2026 GitHub también muestra descargas por archivo en la página de Releases (con acceso de escritura).
+
+### F10.2 Telemetría opcional dentro de la app
+
+**Herramienta: [Aptabase](https://aptabase.com) en su nube de la UE**, hecha para apps de escritorio y con plugin
+oficial para Tauri 2:
+- Servidor de código abierto (AGPL-3.0), SDKs MIT; sin identificador de dispositivo ni de usuario, sin cookies; la IP
+  solo se usa al vuelo para el país y no se guarda; la sesión es aleatoria, vive en memoria y caduca a las 4 h.
+- Gratis hasta 20.000 eventos/mes (con ~5–10 eventos por usuario al día, unos 70–130 usuarios diarios); después
+  10 USD/mes por 200.000. Sin cobros por exceso: si se pasa, se pausa la recogida.
+- Panel: versiones, sistema y versión, idioma, país, eventos con propiedades, separación entre pruebas y release.
+- Descartados: PostHog (excesivo y con perfiles de persona por defecto), Umami/Plausible (pensados para webs),
+  TelemetryDeck (centrado en Apple). Sentry, solo para errores, queda para F10.3.
+
+**Consentimiento (copiando lo que hace confiables a Syncthing, VS Code y Homebrew):**
+- **Apagada por defecto.** Se pregunta una sola vez, al terminar la configuración inicial: « ¿Enviar estadísticas
+  anónimas para mejorar Elissa? » con **« Ver exactamente qué se envía »** (muestra el JSON real) y « No, gracias ».
+- Interruptor en Ajustes → General y variable `ELISSA_NO_TELEMETRY=1` que la apaga siempre.
+- **Esquema versionado**: si cambia lo que se envía, se vuelve a pedir permiso (`telemetry_schema` aceptado vs. actual).
+- **Registro visible**: Ajustes muestra los últimos eventos enviados, tal cual.
+- Si falla el envío, no pasa nada: nunca bloquea ni hace esperar a la app.
+
+**Qué se envía (esquema v1, todo con valores de una lista cerrada, nunca texto libre):**
+| Evento | Cuándo | Propiedades |
+|---|---|---|
+| `app_started` | al abrir | versión, sistema y versión, idioma de la interfaz y de la voz (los agrega el plugin: SO, versión, locale) |
+| `setup` | una vez al día | proveedor de IA (`openai`, `anthropic`…), reconocimiento (`groq`, `openai`, `local`…), tipo de voz (`edge`/`offline`), palabra de activación sí/no, modo continuo sí/no |
+| `feature_used` | una vez al día por función | `voz`, `chat`, `spotify`, `mcp`, `uso_computador`, `comandos`, `avisos_agentes`, `recordatorios`, `ducking`… |
+| `turns` | una vez al día | turnos por voz y por texto, en rangos (`1-5`, `6-20`, `21+`) |
+| `engine_error` | al fallar algo | código de error de una lista (`stt_failed`, `llm_auth`, `tts_failed`, `mic_denied`…) |
+| `update_installed` | tras actualizar | versión anterior y nueva |
+
+**Nunca se envía:** lo que dices o escribes, audio, respuestas, transcripciones, archivos, rutas, títulos de
+ventanas, nombres de apps, páginas, correos, nombres de proyectos, modelos personalizados, claves, la IP (Aptabase no
+la guarda) ni ningún identificador del usuario o del equipo.
+
+**Implementación:**
+- Solo desde el shell de Rust con `tauri-plugin-aptabase` (crates.io 1.0.0, compatible con Tauri 2; las 1.1.0/1.2.0
+  de GitHub corrigen un panic: usar la etiqueta 1.2.0 hasta que llegue a crates.io). La key `A-EU-…` entra en el CI
+  como secreto `APTABASE_KEY` (sin key, como en builds locales, no se envía nada).
+- Un único punto de consentimiento: el plugin no tiene interruptor, así que todo pasa por un `track()` propio que
+  revisa el permiso antes de cada evento. El motor Python no habla con la red para esto: sus eventos van a la ventana
+  por el WebSocket y de ahí al shell (`invoke('track')`). Los resúmenes diarios los arma el motor.
+- Pruebas: el esquema vive en un archivo (`elissa/telemetry_schema.json`) y una prueba rechaza cualquier propiedad que
+  no esté en la lista; otra comprueba que con el permiso apagado no sale nada.
+
+**Documentos (también los pide SignPath):** PRIVACY.md, aviso del instalador, README, wiki (privacidad y FAQ) y
+política de firma pasan de « sin telemetría » a « estadísticas anónimas opcionales (Aptabase, UE), apagadas por
+defecto ». Se nombra a Aptabase como servicio de terceros con su política. También se declara la consulta de
+actualizaciones a GitHub. Avisar a SignPath del cambio si ya revisaron la política.
+
+**Publicar lo agregado (opcional, como Homebrew y Syncthing):** una página mensual en la wiki con usuarios activos,
+sistemas, versiones y funciones más usadas.
+
+### F10.3 Reportes de errores (después, opcional)
+
+Sentry con `tauri-plugin-sentry` (shell) y `sentry-sdk` (motor), con un **interruptor separado**, apagado por
+defecto, sin datos personales y con las rutas de usuario borradas de las trazas.
+
+### Decisiones pendientes de Diego
+
+- ¿Aptabase en su nube de la UE (recomendado: gratis y sin mantenimiento) o autoalojado (gratis, pero hay que
+  mantener servidor, Postgres y ClickHouse, y su repo de despliegue está desactualizado)?
+- ¿Preguntar al terminar la configuración inicial (recomendado) o solo dejar el interruptor en Ajustes?
+- ¿Publicar las cifras agregadas en la wiki?
+- Para empezar: crear la cuenta de Aptabase (app en región UE) y guardar `APTABASE_KEY`; crear el PAT para
+  `GHRS_GITHUB_API_TOKEN`.
 
 ## Riesgos
 
