@@ -1,0 +1,54 @@
+# Usage history that GitHub doesn't keep (F10.1). Every day:
+# - downloads: a snapshot of every release file's download counter, appended to downloads.csv in the `stats` branch
+#   (summarize it with `python scripts/stats.py summary downloads.csv`);
+# - traffic: views, clones, referrers, popular pages, stars and forks with jgehrcke/github-repo-stats, kept in the
+#   `github-repo-stats` branch (GitHub forgets traffic after 14 days). It needs a token with `repo` scope as the secret
+#   GHRS_GITHUB_API_TOKEN, and is skipped while that secret doesn't exist.
+name: stats
+
+on:
+  schedule:
+    - cron: "17 6 * * *"  # 06:17 UTC, every day
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency: stats
+
+jobs:
+  downloads:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Snapshot of the download counters
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "elissa-stats"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git fetch -q origin stats; then
+            git worktree add -q data FETCH_HEAD
+          else  # first run: an empty branch of its own
+            git worktree add -q --detach data
+            git -C data checkout -q --orphan stats
+            git -C data rm -rq --cached . && git -C data clean -fdxq
+          fi
+          python3 scripts/stats.py collect data/downloads.csv
+          python3 scripts/stats.py summary data/downloads.csv | tee data/SUMMARY.txt
+          git -C data add downloads.csv SUMMARY.txt
+          git -C data commit -q -m "Download counters $(date -u +%F)" || exit 0
+          git -C data push -q origin HEAD:stats
+
+  traffic:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: jgehrcke/github-repo-stats@v1.4.2
+        env:
+          GHRS_TOKEN: ${{ secrets.GHRS_GITHUB_API_TOKEN }}
+        if: env.GHRS_TOKEN != ''
+        with:
+          repository: ${{ github.repository }}
+          ghtoken: ${{ secrets.GHRS_GITHUB_API_TOKEN }}
+          databranch: github-repo-stats

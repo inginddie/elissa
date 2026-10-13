@@ -292,7 +292,10 @@ Objetivo: saber cuánta gente usa Elissa, en qué sistema y versión, qué funci
 promesa de privacidad**: nada de lo que el usuario dice, escribe, lee o tiene en pantalla sale nunca, y la telemetría
 dentro de la app es **opcional, apagada por defecto y visible**. Se replican piezas probadas en vez de inventarlas.
 
-Estado (2026-10-12): planeado. Línea base: 10 descargas del `.exe` (casi todas actualizaciones de Diego), 0 `.dmg`,
+F10.1 hecha (2026-10-12): `.github/workflows/stats.yml` (diario) guarda los contadores de descargas en la rama
+`stats` (`downloads.csv` + `SUMMARY.txt`, con `scripts/stats.py`) y el tráfico con github-repo-stats en la rama
+`github-repo-stats` en cuanto exista el secreto `GHRS_GITHUB_API_TOKEN`. F10.2 y F10.3: planeadas.
+Línea base: 10 descargas del `.exe` (casi todas actualizaciones de Diego), 0 `.dmg`,
 0 Linux, 39 consultas de `latest.json`, 1 visitante único. Hoy Elissa promete « sin telemetría » (README, PRIVACY.md,
 política de firma enviada a SignPath).
 
