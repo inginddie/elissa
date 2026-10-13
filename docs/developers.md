@@ -65,7 +65,14 @@ The wiki lives in `docs/`: English pages are `page.md` and Spanish pages `page.e
 uv run --group docs mkdocs serve
 ```
 
-Every push to `main` publishes it to GitHub Pages. You can also use the :material-file-edit-outline: button at the top
+The screenshots of Elissa's window (`docs/media/screens/`) come from the real app, in both languages, with a
+throwaway data folder. After changing the UI, regenerate them with Microsoft Edge installed:
+
+```bash
+uv run --with playwright==1.63.0 python scripts/wiki_screenshots.py
+```
+
+Every push to `main` publishes the wiki to GitHub Pages. You can also use the :material-file-edit-outline: button at the top
 of each page.
 
 ## Releases

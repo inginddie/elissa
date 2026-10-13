@@ -1,5 +1,17 @@
 # Seguridad
 
+<figure class="shot" markdown>
+![Una tarjeta de aprobación para ejecutar un comando, con los botones Rechazar y Aprobar](media/screens/es/approval-command.png)
+</figure>
+
+```mermaid
+flowchart TB
+  A["La IA quiere cambiar algo"] --> B["✋ Tarjeta con exactamente lo que va a pasar"]
+  B --> C{"¿Tu clic?"}
+  C -- Aprobar --> D["Se hace"]
+  C -- "Rechazar · Esc · nada" --> E["No se hace"]
+```
+
 Elissa puede leer tus archivos y tu correo, usar otras ventanas y ejecutar comandos. Está hecha para que nada cambie
 sin ti, y para que nada de lo que lee pueda tomar control de ella. Esta página describe esas garantías y cómo reportar
 un problema.

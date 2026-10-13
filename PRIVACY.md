@@ -11,8 +11,8 @@ service you chose. Each one can be turned off.
 | What leaves your PC | Where it goes | When | How to avoid it |
 |---|---|---|---|
 | What you say or type, the conversation, and what Elissa reads for you (files, pages, emails, windows) | The AI provider you picked (OpenAI, Anthropic, Google, Groq, OpenRouter, or your own server) | Each time you talk to her | Pick Ollama or LM Studio: the model runs on your PC |
-| Your voice recordings | The speech-to-text service you picked (Groq, OpenAI or your own server) | Each time you talk to her | *Settings → Voice → On your PC* (whisper.cpp, Windows) |
-| The text of her answers | Microsoft Edge's speech service | When she speaks with a natural voice | Pick an offline voice in *Settings → Voice* (Windows and macOS) |
+| Your voice recordings | The speech-to-text service you picked (Groq, OpenAI or your own server) | Each time you talk to her | *Settings → Voice → On your PC* (whisper.cpp) |
+| The text of her answers | Microsoft Edge's speech service | When she speaks with a natural voice | Pick an offline voice in *Settings → Voice* |
 | Web searches and pages you ask about | DuckDuckGo and those websites | When you ask her to search or read the web | Don't ask for web searches |
 | Email | Your own mail server (IMAP/SMTP) | Only if you set up email | Leave email off (the default) |
 | Your searches and playback commands, with your Spotify account | Spotify | Only if you connect Spotify | Don't connect it (the default) |

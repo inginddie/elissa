@@ -1,74 +1,89 @@
 # Primeros pasos
 
+Cuatro pasos, unos cinco minutos.
+
+```mermaid
+flowchart LR
+  A["1 · Configura tu IA"] --> B["2 · Que te escuche"] --> C["3 · Habla"] --> D["4 · Aprueba"]
+```
+
 ## 1. Configura tu IA
+
+<figure class="shot" markdown>
+![La ventana Configura tu IA: proveedor, API key y el botón Conectar y ver modelos](media/screens/es/setup.png)
+</figure>
 
 La primera vez, Elissa abre **Configura tu IA**:
 
-1. Elige un **proveedor**. Ollama y LM Studio corren en tu computador y no necesitan clave.
-2. Pega tu **API key**. *¿Dónde la consigo?* te lleva a la página del proveedor.
-3. Elige **Conectar y ver modelos**. Elissa prueba la clave y lista los modelos que tu cuenta puede usar.
-4. Elige un **modelo** (hay uno sugerido) y luego **Guardar y probar**.
+1. Elige un **proveedor**.
+2. Pega tu **API key** (*¿Dónde la consigo?* te lleva allá).
+3. **Conectar y ver modelos**, elige uno, y **Guardar y probar**.
 
-| Proveedor | Clave | Notas |
-|---|:-:|---|
-| OpenAI | :material-check: | Modelos GPT |
-| Anthropic | :material-check: | Modelos Claude |
-| Google Gemini | :material-check: | |
-| OpenRouter | :material-check: | Cientos de modelos con una sola clave |
-| Groq | :material-check: | Muy rápido; también es el servicio de voz recomendado |
-| Ollama | — | Gratis y 100 % local. Primero [instala Ollama](https://ollama.com) |
-| LM Studio | — | Gratis y 100 % local. Primero [instala LM Studio](https://lmstudio.ai) |
-| Otro compatible con OpenAI | opcional | Indícale a Elissa su URL |
+!!! tip "¿Sin clave? No hay problema"
+    Elige **Ollama** o **LM Studio**: gratis, y todo se queda en tu computador. Primero instala
+    [Ollama](https://ollama.com) o [LM Studio](https://lmstudio.ai).
 
-Tu clave se guarda en el llavero de tu sistema (Administrador de credenciales de Windows, Llavero de macOS o Secret
-Service de Linux), nunca en un archivo. Puedes cambiar de proveedor o modelo después en
-*Ajustes → Inteligencia artificial*.
+Tu clave va al llavero de tu sistema, nunca a un archivo.
+
+??? info "Todos los proveedores"
+
+    | Proveedor | Clave | Notas |
+    |---|:-:|---|
+    | OpenAI | :material-check: | Modelos GPT |
+    | Anthropic | :material-check: | Modelos Claude |
+    | Google Gemini | :material-check: | |
+    | OpenRouter | :material-check: | Cientos de modelos con una sola clave |
+    | Groq | :material-check: | Muy rápido; también el servicio de voz recomendado |
+    | Ollama | — | Gratis y local |
+    | LM Studio | — | Gratis y local |
+    | Otro compatible con OpenAI | opcional | Indícale su URL |
 
 ## 2. Que te escuche
 
-Abre *Ajustes* (el engranaje) → **Voz** → **Reconocimiento de voz** y elige cómo te entiende:
+<figure class="shot" markdown>
+![La sección Voz de Ajustes, pidiendo una API key de Groq para la voz](media/screens/es/settings-voice.png)
+</figure>
 
-- **Groq**: muy rápido y económico, gratis para empezar. Pega una [clave de Groq](https://console.groq.com/keys).
-- **OpenAI**: pega una [clave de OpenAI](https://platform.openai.com/api-keys).
-- **En tu PC** (Windows): privado y sin internet. Descarga whisper.cpp y un modelo de 60 MB una sola vez.
-- **Servidor propio**: cualquier URL de transcripción compatible con Whisper.
+Abre *Ajustes* (:material-cog-outline:) → **Voz** → **Reconocimiento de voz**:
 
-Con **Automático**, Elissa usa lo que haya disponible: el servicio de voz de tu proveedor de chat, cualquier clave de
-Groq u OpenAI que hayas guardado, tu servidor, o el reconocimiento en tu PC si está instalado.
+| Opción | |
+|---|---|
+| **Groq** | Rápido y económico, gratis para empezar. [Consigue una clave](https://console.groq.com/keys) |
+| **OpenAI** | [Consigue una clave](https://platform.openai.com/api-keys) |
+| **En tu PC** | Privado y sin internet |
+| **Servidor propio** | Cualquier URL compatible con Whisper |
+
+Pega la clave en **API key para la voz** y elige **Guardar clave de voz**.
 
 ## 3. Habla
 
-| Acción | Cómo |
+<figure class="shot" markdown>
+![Elissa escuchando, con las orejas paradas y el botón de parar encendido](media/screens/es/listening.png)
+</figure>
+
+| Para… | Haz |
 |---|---|
-| Hablar | Di «Hola Elissa», presiona ++ctrl+alt+space++ desde cualquier lugar, haz clic en su cara o presiona ++space++ en su ventana |
-| Interrumpirla | El mismo atajo mientras piensa o habla, o simplemente habla si *Interrumpirla hablando* está activo |
-| Callarla | ++esc++ en su ventana |
-| Terminar la conversación | «Listo, gracias», «chao», «eso es todo» |
-| Escribir en vez de hablar | El botón de chat |
-| Moverla | Arrástrala de la cara |
-| Esconderla | El botón ⌄, el ícono de la bandeja, o di «escóndete»; el atajo la trae de vuelta |
-| Darle un archivo | Suéltalo sobre su ventana y pregúntale por él |
+| Hablar | ++ctrl+alt+space++, clic en su cara, o di «Hola Elissa» |
+| Callarla | ++esc++ |
+| Terminar | «Listo, gracias» |
+| Escribir | :material-message-outline: |
+| Esconderla | :material-chevron-down: o «escóndete» |
+| Preguntar por un archivo | Suéltalo sobre ella |
 
-Con **Conversación continua** activa (viene así), vuelve a escuchar después de cada respuesta, así que puedes seguir
-hablando sin el atajo.
+Sigue escuchando después de cada respuesta, así que puedes seguir hablando.
 
-Para despertarla con la voz, activa la frase en *Ajustes → Voz*. La primera vez descarga un modelo de 40 MB; después
-funciona sin internet y se pausa mientras la pantalla está bloqueada.
+!!! tip "Despiértala con la voz"
+    Activa *Ajustes → Voz → Despertarla diciendo…*. Funciona sin internet y se pausa con la pantalla bloqueada.
 
 ## 4. Aprueba lo que hace
 
-Cuando Elissa quiere cambiar algo (escribir un archivo, enviar un correo, correr un comando, hacer clic en una
-ventana) muestra una **tarjeta de aprobación** con exactamente lo que va a pasar: el diff, el correo completo, el
-comando tal como se va a ejecutar. Solo un clic real en la tarjeta lo aprueba. Ni tu voz, ni el atajo, ni la IA
-pueden. ++esc++ lo rechaza.
+<figure class="shot" markdown>
+![Una tarjeta de aprobación con el diff de un archivo que Elissa quiere editar, y los botones Rechazar y Aprobar](media/screens/es/approval-diff.png)
+</figure>
 
-Leer cosas (archivos en tus carpetas permitidas, la web, tu correo si lo activaste) no necesita tarjeta.
+Antes de cambiar algo, Elissa muestra una tarjeta con **exactamente** lo que va a pasar. Solo tu clic en
+**Aprobar** lo hace; ++esc++ o **Rechazar** lo cancela.
 
-## 5. Hazla tuya
+Ni tu voz, ni el atajo, ni la IA pueden aprobar.
 
-- *Ajustes → General*: su nombre, tu nombre y el idioma de la interfaz (español o inglés).
-- *Ajustes → Voz*: su voz y velocidad, y si inicia con el sistema.
-- *Ajustes → Carpetas que puede usar*: por defecto, tu carpeta personal.
-- *Ajustes → Sonidos*: volumen, o [tus propios sonidos](settings.md#sonidos).
-
-Sigue con [todo lo que le puedes pedir](voice-commands.md).
+Sigue con: [todo lo que le puedes pedir](voice-commands.md) · [Ajustes](settings.md)

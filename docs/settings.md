@@ -1,127 +1,123 @@
 # Settings
 
-Open *Settings* with the gear in Elissa's window or from the tray menu (*Ajustes*). It's a single panel with one
-section per topic. Changes are saved as you make them.
+Open them with :material-cog-outline: in Elissa's window or from the tray icon. Changes save on their own. Sections
+that don't apply to your system don't show up.
 
-Sections that don't apply to your system are hidden. The tray menu is in Spanish on every system.
+## General and AI
 
-## General
+<figure class="shot" markdown>
+![The top of Settings: language, the assistant's name, your name, and the AI in use](media/screens/en/settings-general.png)
+</figure>
 
-| Option | What it does | Default |
-|---|---|---|
-| **Language** | The interface language: *Automatic (from the system)*, *Español* or *English*. Changing it also switches her speech language and voice. | Automatic |
-| **Assistant's name** | What she calls herself (up to 20 characters). | Elissa |
-| **Your name** | So she calls you by your name (up to 30 characters). | — |
-
-## Artificial intelligence
-
-Shows the provider and model in use. **Change provider or model** opens the same guided setup as the
-[first run](first-steps.md#1-set-up-your-ai): pick a provider, paste the key, list your models and test.
-
-When a model is retired, Elissa switches to its replacement on her own.
+- **Language**: Spanish or English, or automatic.
+- **Assistant's name** and **your name**.
+- **Artificial intelligence**: shows the provider and model in use. **Change provider or model** opens the
+  [setup](first-steps.md#1-set-up-your-ai) again.
 
 ## Voice
 
-| Option | What it does | Default |
-|---|---|---|
-| **Voice** | Natural Edge voices for your language, plus offline system voices (Windows and macOS), marked *offline*. If the natural voice service fails, a system voice answers instead. | Salomé (es-CO) / Ava (en-US) |
-| **Speed** | From 0.8× to 1.6×. | 1.10× |
-| **Speech recognition** | How she understands you: *Automatic*, *Groq*, *OpenAI*, *On your PC* (Windows) or *Your own server*. See [Let her hear you](first-steps.md#2-let-her-hear-you). | Automatic |
-| **API key for speech** | Shown when the chosen service needs a key. It's saved apart from your chat provider's key. | — |
-| **Local model** | For *On your PC*: *Fast · 60 MB* or *More accurate · 190 MB*. Downloaded once. | Fast |
-| **Transcription URL** | For *Your own server*: an OpenAI-compatible `/audio/transcriptions` URL. | — |
-| **Wake her by saying…** | "Hola Elissa" / "Oye Elissa" with a Spanish voice; "Hey / Hi / Okay Elissa" with an English voice. Detected offline on your computer; downloads a 40 MB model the first time; pauses while the screen is locked. | Off |
-| **Interrupt her by talking** | Talk over her answer to stop her. Best with headphones, so she doesn't hear herself. | Off |
-| **While we talk, turn other apps down** | Lowers music and videos while you talk, to 10 %, 20 % or 35 %, or not at all. On macOS it lowers Spotify and Music. Not on Linux. | 20 % |
-| **Continuous conversation** | After each answer she listens again. | On |
-| **Always on top** | Keeps her above other windows. | On |
-| **Start with the system** | Opens Elissa when you sign in. | — |
-| **Shortcut to talk** | Click the field and press a combination. It must include ++ctrl++, ++alt++ or the Windows/Command key. | ++ctrl+alt+space++ |
+<figure class="shot" markdown>
+![The Voice section: voice, speed, speech recognition and the wake phrase](media/screens/en/settings-voice.png)
+</figure>
+
+- **Voice** and **Speed** (0.8× to 1.6×).
+- **Speech recognition**: how she understands you ([details](first-steps.md#2-let-her-hear-you)).
+- **Wake her by saying…**: "Hey Elissa", offline.
+- **Interrupt her by talking**: best with headphones.
+- **Shortcut to talk**: click it and press your combination.
+
+??? info "All voice options"
+
+    | Option | Default | Notes |
+    |---|---|---|
+    | Voice | Salomé (es) / Ava (en) | Natural Edge voices, plus offline system voices |
+    | Speed | 1.10× | 0.8× to 1.6× |
+    | Speech recognition | Automatic | Groq, OpenAI, On your PC, Your own server |
+    | Local model | Fast · 60 MB | Or More accurate · 190 MB. Only for On your PC |
+    | Wake her by saying… | Off | "Hola / Oye Elissa" with a Spanish voice; "Hey / Hi / Okay Elissa" with an English one. Downloads 40 MB once |
+    | Interrupt her by talking | Off | |
+    | Turn other apps down while we talk | 20 % | 10 %, 20 %, 35 % or not at all. On macOS, Spotify and Music |
+    | Continuous conversation | On | She listens again after each answer |
+    | Always on top | On | |
+    | Start with the system | — | |
+    | Shortcut to talk | ++ctrl+alt+space++ | Must include ++ctrl++, ++alt++ or the Windows/Command key |
 
 ## Sounds
 
-| Option | What it does | Default |
-|---|---|---|
-| **Elissa's sounds** | Turns her sounds on or off. | On |
-| **Volume** | Volume of her sounds (not of her voice). | 60 % |
-
-To use your own sounds, choose **Open sounds folder** and drop a `.wav`, `.mp3`, `.ogg` or `.m4a` file named after the
-sound you want to replace, then choose **Reload**. The names are: `greet`, `listen`, `stop`, `send`, `done`, `error`,
-`approval`, `poke`, `annoyed`, `dizzy`, `love`, `happy`, `sleep`, `wake`, `open`, `close`, `drag` and `tick`. For
-example, `listen.wav` or `done.mp3`.
+- **Elissa's sounds** on or off, and their **volume**.
+- **Your own sounds**: choose **Open sounds folder**, drop a `.wav`, `.mp3`, `.ogg` or `.m4a` named like the sound
+  you want to replace (`listen`, `done`, `greet`, `error`, `approval`…) and choose **Reload**.
 
 ## Email
 
-| Option | What it does | Default |
-|---|---|---|
-| **Let her read my email** | Search and read email and save attachments, over IMAP. She never deletes email or marks it as read. | Off |
-| **Let her send email** | Send over SMTP. Every email is shown to you on an approval card first. | Off |
-| **Address** | Your email address. | — |
-| **App password** | An app password, not your normal password. | — |
-| **IMAP server** | Detected for Gmail, Outlook/Hotmail/Live, Yahoo and iCloud; otherwise `imap.<your domain>`. | Automatic |
+<figure class="shot" markdown>
+![The Email section: read, send, address, app password and IMAP server](media/screens/en/settings-email.png)
+</figure>
 
-Choose **Test and save email** to check the connection. For Gmail, turn on 2-step verification and create the
-password at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords). Attachments are saved to
-`Downloads/Elissa adjuntos`.
+1. Turn on **Let her read my email** (and **Let her send email** if you want).
+2. Type your **address** and an **app password**, not your normal password.
+3. **Test and save email**.
+
+The server is detected for Gmail, Outlook, Yahoo and iCloud. For Gmail, create the password at
+[myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords).
+
+She never deletes email or marks it as read, and every email she sends is shown to you first.
 
 ## Integrations (MCP)
 
-Connect Elissa to other services through [MCP](https://modelcontextprotocol.io) servers. Each server shows whether
-it's connected and how many tools it has; you can turn it off or remove it.
+<figure class="shot" markdown>
+![The Integrations section with a GitHub server and the Add menu](media/screens/en/settings-mcp.png)
+</figure>
 
-**Add** offers:
+Pick one in **Add**:
 
-| Integration | What you need |
+| | You need |
 |---|---|
-| **GitHub** | A [GitHub personal access token](https://github.com/settings/personal-access-tokens). |
-| **Jira and Confluence** | [Node.js](https://nodejs.org). The first time, your browser opens to sign in to Atlassian. |
-| **Google Calendar** | Node.js and the path to your own Google Cloud OAuth credentials file (JSON). |
-| **Other MCP server…** | A name, and either a remote URL (`https://`, or `http://127.0.0.1` / `localhost`) with an optional token, or a local command. |
+| **GitHub** | A [personal access token](https://github.com/settings/personal-access-tokens) |
+| **Jira and Confluence** | [Node.js](https://nodejs.org); you sign in in your browser |
+| **Google Calendar** | Node.js and your Google Cloud OAuth file |
+| **Other MCP server…** | Its URL or command |
 
-Tools that only read run freely; anything that can change data asks for your approval first.
+Reading runs freely; changing data asks first.
 
 !!! warning
-    Only add servers you trust: a local MCP server is a program that runs on your computer.
+    Only add servers you trust: a local one is a program running on your computer.
 
 ## Spotify
 
-Elissa can play what you ask for on Spotify (Premium), on any of your devices. You use your own free Spotify app key:
+<figure class="shot" markdown>
+![The Spotify section with the three setup steps and the Client ID field](media/screens/en/settings-spotify.png)
+</figure>
 
-1. Go to [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard) and create an app.
-2. In **Redirect URIs**, add `http://127.0.0.1/spotify/callback` and tick **Web API**.
-3. Copy the app's **Client ID**, paste it in Elissa and choose **Connect Spotify**. Spotify opens so you can authorize.
+1. Create a free app at [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard).
+2. Add the Redirect URI `http://127.0.0.1/spotify/callback` and tick **Web API**.
+3. Paste its **Client ID** and **Connect Spotify**.
 
-The login lasts about six months; after that, connect again. Pause, next and "what's playing?" work without
-connecting anything (on Windows and macOS).
+Playing what you ask for needs Spotify Premium. Pause, next and "what's playing?" work without connecting.
 
 ## Claude Code and Codex alerts
 
-*Windows and macOS.* Elissa tells you when a [Claude Code](https://claude.com/claude-code) or Codex session finishes,
-fails, or needs your permission, with the project's name.
+<figure class="shot" markdown>
+![The alerts section with Install buttons for Claude Code and Codex, the Using the computer option and the allowed folders](media/screens/en/settings-alerts.png)
+</figure>
 
-- **Install** adds a hook to the tool's settings (`~/.claude/settings.json` or `~/.codex/hooks.json`). It keeps what
-  you already had and saves a copy next to it as `*.elissa-backup`. **Remove** takes it out.
-- In Codex, approve the new hook once with `/hooks`.
-- **Say alerts out loud**: without it you get a notification and a caption.
+Choose **Install** and Elissa tells you when a session finishes or needs your permission.
 
-The hook only sends the kind of alert and the project folder's name, never your prompts or the answers, and it
-always lets the session continue.
+- It keeps your settings and saves a backup (`*.elissa-backup`).
+- In Codex, approve it once with `/hooks`.
+- It only sends the kind of alert and the project's name.
 
 ## Using the computer
 
-*Windows.* **Let her see and use other windows** (on by default) lets her read the window you're working in, click,
-type and press keys there. Every one of those actions asks for your approval. Password fields are never read.
+*Windows and macOS.* **Let her see and use other windows**: read the window you're in, click, type and press keys, always
+with your approval. Password fields are never read. On macOS, allow Elissa in *Accessibility* when she asks.
 
 ## Folders she can use
 
-The folders where she can find, read and write files. By default, your home folder. **Add folder** opens a folder
-picker (on Linux it needs `zenity`).
-
-Files you drop on her window can be read even if they're outside these folders.
+Where she can find, read and write files. Your home folder by default; **Add folder** for more. Files you drop on her
+work from anywhere.
 
 ## Memory
 
-**New conversation** starts over. At the end of each conversation (or after 20 minutes without talking), Elissa
-summarizes it and saves what matters as Markdown notes she can recall later.
-
-The bottom of the panel shows your version, and **Update now** when a new one is ready.
+**New conversation** starts over. Each conversation is summarized into notes she can recall later. The bottom of the
+panel shows your version and **Update now** when there's a new one.

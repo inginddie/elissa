@@ -276,7 +276,14 @@ Windows, macOS y Linux desde el principio).
   10 páginas en inglés (`page.md`) y español (`page.es.md`) con mkdocs-static-i18n, y `.github/workflows/docs.yml`
   (build `--strict` en PRs, deploy a Pages en `main`). Privacidad, Seguridad y Firma de código en inglés incluyen
   `PRIVACY.md`, `SECURITY.md` y `docs/CODE_SIGNING.md` (snippets), así no se duplican; ahora cubren los tres sistemas.
-- Falta: activar Pages, revisar la wiki publicada, y apuntar SignPath y las notas de cada release a la wiki.
+- Publicada el 2026-10-12 en https://inginddie.github.io/elissa/ (PR #4).
+- Segunda pasada (pedida por Diego: « mucho texto se vuelve un problema »): capturas reales de la app en los dos idiomas
+  (`scripts/wiki_screenshots.py`, Playwright con Edge y una carpeta de datos desechable), diagramas Mermaid, tarjetas en
+  vez de tablas largas, detalles en bloques plegables y zoom al hacer clic (mkdocs-glightbox).
+- Falta: apuntar SignPath y las notas de cada release a la wiki.
+- Encontrado al hacer las capturas: las tarjetas de aprobación y otros textos que arma el motor salen en español con
+  la interfaz en inglés (títulos, « Para », « Asunto », subtítulos). Las capturas en inglés muestran el texto ya
+  traducido; arreglarlo en un parche.
 
 ## Riesgos
 
