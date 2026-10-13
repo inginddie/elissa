@@ -4,211 +4,162 @@
 
 # Elissa
 
-**A voice assistant with a face, living on your Windows desktop: it works with any AI model, in the cloud or on your own PC.**
+**A voice assistant with a face, living on your desktop.**<br>
+She works with any AI model, in the cloud or on your own computer, and nothing changes without your click.
 
-[![Release](https://img.shields.io/github/v/release/inginddie/elissa?include_prereleases&label=release&color=7fe6ea)](https://github.com/inginddie/elissa/releases)
-![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows&logoColor=white)
-![Tauri 2](https://img.shields.io/badge/Tauri-2-FFC131?logo=tauri&logoColor=black)
-![Python 3.13](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
+[![Release](https://img.shields.io/github/v/release/inginddie/elissa?label=release&color=7fe6ea)](https://github.com/inginddie/elissa/releases/latest)
+![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows&logoColor=white)
+![macOS](https://img.shields.io/badge/macOS-Apple%20Silicon-000000?logo=apple&logoColor=white)
+![Linux](https://img.shields.io/badge/Linux-.deb%20%7C%20AppImage-FCC624?logo=linux&logoColor=black)
 [![Build](https://img.shields.io/github/actions/workflow/status/inginddie/elissa/release.yml?label=build)](https://github.com/inginddie/elissa/actions)
 [![License: MIT](https://img.shields.io/badge/license-MIT-f26d5b)](LICENSE)
 
-[Wiki](https://inginddie.github.io/elissa/) · [Install](#install) · [Features](#what-she-can-do) · [Privacy](#privacy-and-security) · [Roadmap](#roadmap) · [Development](#development)
+### [⬇ Download](https://github.com/inginddie/elissa/releases/latest) · [📖 User guide](https://inginddie.github.io/elissa/) · [🇪🇸 Guía en español](https://inginddie.github.io/elissa/es/)
 
 </div>
 
 ---
 
-Say **"Hey Elissa"** (or "Hola Elissa" in Spanish), or press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Space</kbd> from any app, and talk. Elissa listens, thinks and answers out loud.
-She can read your documents, search the web, handle your email, set reminders, use your apps and remember what you
-talked about. Anything that changes something waits for your click.
-You choose the brain: OpenAI, Claude, Gemini, OpenRouter, Groq, or a free local model with Ollama.
-When you are not talking to her, she rests as a small character in the corner of your screen.
+Say **"Hey Elissa"** (or "Hola Elissa"), or press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Space</kbd> from any app, and
+talk. She listens, thinks and answers out loud. When you're not talking to her, she rests as a small character in the
+corner of your screen.
 
-> **Status:** 1.0. The interface is available in Spanish and English (*Settings → General → Language*).
-
-## Meet Elissa
-
-<p align="center"><img src="docs/media/expressions.png" alt="Fourteen expressions: idle, listening, thinking, working, speaking, happy, needs you, oops, sleeping, poked, dizzy, love, surprised and waking up" width="100%"></p>
-
-Elissa is drawn in code, not stitched from images, so she blends smoothly from one expression to the next.
-
-- She follows your cursor across the whole desktop and blinks.
-- She perks up her ears when she listens and moves her mouth with her voice.
-- She shows a gear while she works and a question mark when she needs you.
-- Poke her (right click) and she gets annoyed; three pokes and she gets dizzy. Rest the pointer on her and she sends hearts.
-- After five quiet minutes she falls asleep, and she wakes up when you come back.
-
-<p align="center">
-  <img src="docs/media/app-listening.png" alt="Elissa's window while listening: the character with her ears up, sound waves and the talk controls" width="300">
-</p>
-
-**She stays out of your way.**
-- She is a small floating bubble that grows into a card while you talk and shrinks back when she is done.
-- Drag her anywhere; she expands from that corner.
-- She lives in the system tray, can start with Windows and updates herself.
-- She uses under 1% CPU at rest. The microphone is only on while she listens.
+<table>
+  <tr>
+    <td align="center" width="33%"><img src="docs/media/screens/en/listening.png" alt="Elissa listening, with her ears up" width="100%"><br><sub><b>1.</b> You talk</sub></td>
+    <td align="center" width="33%"><img src="docs/media/screens/en/reply.png" alt="Elissa answering out loud, with the question and her answer written below" width="100%"><br><sub><b>2.</b> She answers out loud</sub></td>
+    <td align="center" width="33%"><img src="docs/media/screens/en/approval-email.png" alt="An approval card showing the full email Elissa wants to send, with Deny and Approve buttons" width="100%"><br><sub><b>3.</b> Anything that changes something waits for your click</sub></td>
+  </tr>
+</table>
 
 ## What she can do
 
 | | |
 |---|---|
-| 🗣️ **Talk** | Wake her with "Hey Elissa" or "Hola Elissa" (detected on your PC, offline). Voice in, voice out with natural Edge voices or offline Windows voices. Interrupt her by talking, or keep the conversation going hands-free. |
-| 🔒 **Private speech, if you want** | Speech recognition can run 100% on your PC with whisper.cpp (downloaded on demand), or in the cloud with Groq/OpenAI. |
-| ✋ **Act, with your OK** | Every action that changes something shows an approval card with exactly what will happen: the diff of a file, the full email, the button she'll click. Only your click approves it. |
-| 📄 **Files** | Find and read PDF, Word, Excel, CSV, text and code in the folders you allow; create, edit (with a diff), move and rename. Nothing is ever deleted. Drop a file on her to ask about it. |
-| 🖥️ **Use your computer** | Open apps, websites, files and folders. Read the window you're working in ("what is this?"), then click, type and press keys there. Password fields are never read. |
-| ⏰ **Timers, reminders, tasks** | "Remind me at 3 pm to call Ana", "5-minute timer", "add buy bread to my tasks". She speaks up and shows a Windows notification. |
-| ✉️ **Email** | Over IMAP/SMTP for Gmail, Outlook, Yahoo and iCloud: search, read, save attachments, and send if you allow it. |
-| 👩‍💻 **Code with you** | Understands a project, searches the code, checks git, edits with diffs and runs your tests or builds: "run the tests, find the bug and fix it". Every edit and command needs your click; commands that delete or discard work are never run. |
-| 🔔 **Claude Code & Codex alerts** | One click in Settings installs a hook so Elissa tells you when a session finishes or needs your permission, with the project's name. She never receives your prompts or the answers. |
-| 🔌 **Integrations (MCP)** | Connect MCP servers, local or remote. GitHub, Jira & Confluence and Google Calendar are one click away in Settings, and any other server works too. Read-only tools run freely; anything that changes data asks first. |
-| 🎵 **Music & Spotify** | "Play Daft Punk", "play my focus playlist": connect Spotify (Premium) with your own free app key and she plays what you ask for, on any of your devices. Pause, skip, "what's playing?" and volume work with any player. |
-| 🌐 **Search the web** | Search and read pages, with no extra API key. |
-| 🧠 **Remember** | Each conversation is summarized into plain Markdown notes she can recall later: "what did we talk about yesterday?" |
-| 🔌 **Any model** | Switch providers in a guided setup that tests your key and lists the models your account can use. |
+| 🗣️ **Talk** | Hands-free, in Spanish or English. Interrupt her any time. The wake phrase is detected offline. |
+| 🧠 **Any AI** | OpenAI, Claude, Gemini, OpenRouter, Groq, or free and local with Ollama or LM Studio. |
+| 📄 **Your files** | Read PDF, Word, Excel, CSV and code; create, edit (with a diff), move and rename. She never deletes. |
+| 🖥️ **Your computer** | Open apps, sites and folders. Read the window you're in, click, type and press keys there. |
+| ⏰ **Timers, reminders, tasks** | "Remind me at 3 pm to call Ana", "5-minute timer", "add buy bread to my tasks". |
+| ✉️ **Email** | Gmail, Outlook, Yahoo, iCloud or any IMAP account: search, read, save attachments, send with your OK. |
+| 👩‍💻 **Code with you** | "Run the tests, find the bug and fix it": she reads the project, checks git, edits and runs commands. |
+| 🔔 **Claude Code & Codex alerts** | She tells you when a session finishes or needs your permission. |
+| 🔌 **Integrations (MCP)** | GitHub, Jira & Confluence, Google Calendar, or any MCP server. |
+| 🎵 **Music** | "Play Daft Punk" with Spotify; pause, skip, "what's playing?" and volume. |
+| 🧠 **Memory** | Every conversation becomes Markdown notes she can recall: "what did we talk about yesterday?" |
 
-### Supported AI providers
+[Everything you can ask her →](https://inginddie.github.io/elissa/voice-commands/)
 
-| Provider | Key needed | Notes |
-|---|---|---|
-| OpenAI | ✔ | GPT models |
-| Anthropic | ✔ | Claude models, through the official SDK |
-| Google Gemini | ✔ | |
-| OpenRouter | ✔ | Hundreds of models behind one key |
-| Groq | ✔ | Very fast; also the recommended speech-to-text option |
-| Ollama | — | Free and 100% local |
-| LM Studio | — | Free and 100% local |
-| Any OpenAI-compatible server | optional | Point Elissa at its URL |
+## Nothing changes without your click
+
+Before she writes a file, sends an email or runs a command, Elissa shows a card with **exactly** what will happen.
+Only a real click on **Approve** does it. Your voice, the shortcut and the AI can't approve.
+
+<table>
+  <tr>
+    <td align="center" width="50%"><img src="docs/media/screens/en/approval-diff.png" alt="Approval card for editing a file, showing the diff" width="100%"><br><sub>Editing a file: the exact diff</sub></td>
+    <td align="center" width="50%"><img src="docs/media/screens/en/approval-command.png" alt="Approval card for running a command, showing the folder and the command" width="100%"><br><sub>Running a command: exactly as it will run</sub></td>
+  </tr>
+</table>
+
+Some things are refused even if you ask: deleting files or email, opening programs or scripts, reading password
+fields, and commands that delete or discard work. What she reads on web pages, emails or files is treated as
+information, never as instructions. See [SECURITY.md](SECURITY.md).
 
 ## Install
 
-Elissa runs on **Windows**, and as a preview on **macOS** (Apple Silicon) and **Linux** (see what works there below).
+| | Download | First time |
+|---|---|---|
+| **Windows** 10 / 11 | [`Elissa_x.y.z_x64-setup.exe`](https://github.com/inginddie/elissa/releases/latest) | No admin rights needed. The installer isn't code-signed yet: on the SmartScreen warning choose *More info → Run anyway*. |
+| **macOS** 11+ (Apple Silicon) · preview | [`Elissa_x.y.z_aarch64.dmg`](https://github.com/inginddie/elissa/releases/latest) | Not notarized: open it from *System Settings → Privacy & Security → Open Anyway*. |
+| **Linux** · preview | [`.deb` or `.AppImage`](https://github.com/inginddie/elissa/releases/latest) | `sudo apt install ./Elissa_x.y.z_amd64.deb`. For volume and offline voices: `sudo apt install pulseaudio-utils espeak-ng`. |
 
-### Windows
+Then pick your AI (or Ollama, free and local) and how she hears you. The
+[first steps](https://inginddie.github.io/elissa/first-steps/) take about five minutes. She updates herself, and every
+update is signed.
 
-1. Download `Elissa_x.y.z_x64-setup.exe` from the [latest release](https://github.com/inginddie/elissa/releases).
-2. Run it. No administrator rights are needed.
-3. Pick an AI provider and paste your API key, or choose Ollama to run everything locally.
-4. To talk to her, open *Settings → Voice* and pick how she understands you: a [Groq](https://console.groq.com/keys) or
-   OpenAI key, *On your PC* (private, offline, downloaded once), or your own Whisper server. Turn on "Hey Elissa" / "Hola Elissa" there
-   too.
+<details>
+<summary><b>What works on each system</b></summary>
 
-The installer is not code-signed yet, so Windows SmartScreen may warn you the first time. Choose *More info → Run anyway*.
-If Microsoft Defender flags it, that's a false positive common with unsigned apps built with PyInstaller: update
-Defender (`Update-MpSignature` in PowerShell) and try again, or [report it](https://www.microsoft.com/wdsi/filesubmission).
-Every release is built and self-tested by GitHub Actions from this repository's code, and its updates are signed.
-See the [code signing policy](docs/CODE_SIGNING.md) and the [privacy policy](PRIVACY.md).
+| | Windows | macOS | Linux |
+|---|:-:|:-:|:-:|
+| Talk, chat, files, web, memory, reminders, email | ✔ | ✔ | ✔ |
+| Speech recognition in the cloud or on your computer | ✔ | ✔ | ✔ |
+| "Hey Elissa" wake phrase | ✔ | ✔ | ✔ |
+| Natural and offline voices | ✔ | ✔ | ✔ ¹ |
+| Spotify, MCP integrations, open apps | ✔ | ✔ | ✔ |
+| "What's playing?", pause, skip | any player | Spotify and Music | any MPRIS player |
+| Turn music down while you talk, system volume | ✔ | ✔ | ✔ ¹ |
+| Terminal commands in your projects | PowerShell | zsh | bash |
+| Claude Code and Codex alerts | ✔ | ✔ | ✔ |
+| Use other windows (read, click, type) | ✔ | ✔ ² | — |
 
-**Requirements:** Windows 10 (1809+) or Windows 11, 64-bit, with WebView2 (built into Windows 11), a microphone and speakers.
+¹ With `pulseaudio-utils` and `espeak-ng`. ² macOS asks for the Accessibility permission the first time.
 
-### macOS (preview, Apple Silicon)
+</details>
 
-1. Download `Elissa_x.y.z_aarch64.dmg` from the [latest release](https://github.com/inginddie/elissa/releases), open it and
-   drag Elissa to *Applications*.
-2. The app isn't notarized by Apple, so the first time macOS won't open it. Go to *System Settings → Privacy &
-   Security*, scroll down and choose **Open Anyway**. (Or run `xattr -dr com.apple.quarantine /Applications/Elissa.app`.)
-3. Allow the microphone when she asks. After an update macOS may ask again.
+## Meet Elissa
 
-### Linux (preview)
+<p align="center"><img src="docs/media/expressions.png" alt="Fourteen expressions: idle, listening, thinking, working, speaking, happy, needs you, oops, sleeping, poked, dizzy, love, surprised and waking up" width="100%"></p>
 
-Download the `.deb` (Ubuntu, Debian and derivatives: `sudo apt install ./Elissa_x.y.z_amd64.deb`) or the `.AppImage`
-(any distribution; make it executable and run it; it needs `libportaudio2` for the microphone).
-For music volume while you talk, the system volume and offline voices, install `pulseaudio-utils` (it works with
-PipeWire too) and `espeak-ng`: `sudo apt install pulseaudio-utils espeak-ng`.
+She's drawn in code, so she blends smoothly from one expression to the next. She follows your cursor, perks up her
+ears when she listens and shows a gear while she works. Poke her (right click) and she gets annoyed; rest the pointer
+on her and she sends hearts. After five quiet minutes she falls asleep. At rest she uses under 1% CPU, and the
+microphone is only on while she listens.
 
-### What the macOS and Linux previews do
+## Privacy
 
-Talking with the shortcut or by voice through a cloud speech service, chat, files, web search, memory, reminders,
-Spotify, MCP integrations, opening apps, "what's playing?" and playback control (macOS: Spotify and Music; Linux: any
-MPRIS player), turning music down while you talk, system volume, offline voices, on-PC speech recognition, terminal
-commands in your projects and Claude Code / Codex alerts. Using other windows (read, click, type) works on macOS;
-on Linux it's not available yet. On Linux under Wayland, the eyes don't follow the cursor outside the window.
+- **No account, no server of her own, no telemetry.**
+- **Only what you choose leaves your computer:** what you say goes to the AI you picked, your voice to the speech
+  service you picked. With Ollama and on-device speech recognition, nothing leaves at all.
+- **Your keys stay in your system's keychain** (Windows Credential Manager, macOS Keychain, Linux Secret Service).
+- **Your data is readable files:** settings, memory and logs in Markdown and JSON, in your user folder.
+- **Her engine only answers her own window**: a web page in your browser can't drive her.
 
-### Everyday use
-
-| Action | How |
-|---|---|
-| Talk | Say "Hey Elissa" / "Hola Elissa", press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Space</kbd> anywhere (configurable), or click Elissa |
-| Interrupt | The same shortcut while she thinks or speaks |
-| Stop talking | <kbd>Esc</kbd> in her window |
-| Type instead | Chat button |
-| Move | Drag her by the face |
-| Hide | The ⌄ button or the tray icon; the shortcut brings her back |
-| Make her sound different | *Settings → Sounds*: volume, or drop your own `listen.wav`, `done.mp3`… in the sounds folder |
-
-## Privacy and security
-
-The full [privacy policy](PRIVACY.md) lists every service Elissa can contact and how to turn each one off.
-
-- **Your keys stay in Windows.** API keys and the email password are stored in the Windows Credential Manager, never in files.
-- **Your data is yours.** Settings, memory and logs live in `%APPDATA%\Elissa` as readable Markdown and JSON.
-  Uninstalling does not delete them.
-- **Only what you choose leaves your PC.**
-  - What you say goes to the AI provider you picked.
-  - Your voice audio goes to the speech service you picked.
-  - Nothing else leaves your PC, and there is no telemetry.
-  - "Hey Elissa" / "Hola Elissa" is detected on your PC; nothing is sent anywhere until you wake her.
-  - With Ollama and on-PC speech recognition, nothing leaves your PC at all.
-- **Her engine is locked to her window.**
-  - The local engine accepts only Elissa's own window, through a per-session token and an origin check.
-  - A web page open in your browser cannot drive her.
-- **Coding-agent alerts are opt-in and minimal.** The hooks Elissa installs send only the kind of alert and the
-  project folder's name to her engine, with their own token; they always let the session continue.
-- **Microphone:** the microphone only opens while she listens, and she releases it a few seconds later.
-- **Nothing changes without your click.**
-  - Sending, writing, moving, clicking and typing always show an approval card first.
-  - Only a real click in her window approves it: not your voice, not the shortcut, not the AI.
-  - Content she reads from web pages, emails, files or windows is treated as information, never as instructions.
+The [privacy policy](PRIVACY.md) lists every service she can contact and how to turn each one off.
 
 ## Roadmap
 
-| Phase | | Status |
-|---|---|---|
-| Native window, tray, signed auto-updates | F1 | ✅ |
-| Character, animations, sounds | F2 | ✅ |
-| Actions with approval cards: open apps and sites, timers, tasks, send email, edit files, use the computer | F4 | ✅ |
-| Voice: "Hey Elissa" / "Hola Elissa" wake word, local speech recognition | F3 | ✅ |
-| Coding assistant: understand projects, edit with diffs, run commands | F5 | ✅ |
-| Integrations through MCP: Jira, Confluence, GitHub, calendars | F6 | ✅ |
-| English UI, configurable shortcut, security policy, 1.0 | F7 | ✅ |
-| English wake phrase, Claude Code/Codex session alerts, current models | 1.1 | ✅ |
-| Signed installer | next | |
-| macOS and Linux ([plan](docs/PLAN.md#f8-macos-y-linux)) | F8 | planned |
+| | Status |
+|---|---|
+| Voice, character, approval cards, files, email, computer use, coding, MCP, Spotify (F1–F7) | ✅ |
+| macOS and Linux (F8, 1.4–1.7) | ✅ preview |
+| User guide in English and Spanish ([wiki](https://inginddie.github.io/elissa/)) (F9) | ✅ |
+| Signed Windows installer ([SignPath Foundation](docs/CODE_SIGNING.md)) | in progress |
+| Download statistics, and optional in-app telemetry, off by default (F10) | planned |
 
-The user guide, in English and Spanish, is the [wiki](https://inginddie.github.io/elissa/).
-The detailed plan is in [`docs/PLAN.md`](docs/PLAN.md) (Spanish) and the release notes in [`CHANGELOG.md`](CHANGELOG.md).
+Release notes: [CHANGELOG.md](CHANGELOG.md) (Spanish). Detailed plan: [docs/PLAN.md](docs/PLAN.md) (Spanish).
 
 ## Development
 
 You need [uv](https://docs.astral.sh/uv/), Node 22 and [Rust](https://rustup.rs/).
 
-```powershell
+```bash
 uv sync
-cd desktop; npm install; npx tauri dev    # the full app; the shell starts the Python engine with uv
-uv run python -m elissa --browser         # the engine alone, with the UI in your browser
-uv run pytest -q                          # tests (no network, no API keys)
-powershell -File packaging\build.ps1      # engine (PyInstaller) + installer (Tauri/NSIS) into dist\
+cd desktop && npm install && npx tauri dev   # the full app; the shell starts the Python engine with uv
+uv run python -m elissa --browser            # the engine alone, with the UI in your browser
+uv run pytest -q                             # tests (no network, no API keys)
+uv run --group docs mkdocs serve             # the wiki, from docs/
 ```
 
-### Architecture
-
-<p align="center"><img src="docs/media/architecture.jpg" alt="Architecture: Elissa.exe (Tauri 2, Rust) with the transparent window, tray, global shortcut, autostart, signed updates, global cursor feed and microphone permission, hosting the WebView2 UI (character canvas and Web Audio sounds); it talks over HTTP and WebSocket on 127.0.0.1 with a per-session token to elissa-engine.exe (Python), which holds the agent loop, the providers (OpenAI-compatible and Anthropic SDK), the tools (files, web, IMAP email, memory) and speech (Edge TTS out; Groq, OpenAI or Whisper in)" width="100%"></p>
+<p align="center"><img src="docs/media/architecture.jpg" alt="Architecture: the Tauri 2 shell (Rust) with the transparent window, tray, global shortcut, autostart and signed updates hosts the UI and talks over HTTP and WebSocket on 127.0.0.1, with a per-session token, to the Python engine, which holds the agent loop, the AI providers, the tools and speech" width="100%"></p>
 
 | Path | What lives there |
 |---|---|
-| `desktop/` | The native shell (Rust): window modes, tray, updater, engine lifecycle |
-| `elissa/server.py` | Local API, WebSocket turns, speech, setup wizard |
+| `desktop/` | Native shell (Tauri 2, Rust): window modes, tray, updater, engine lifecycle |
+| `elissa/server.py` | Local API and WebSocket, speech, setup wizard, approvals |
 | `elissa/agent.py` | Provider-neutral agent loop |
-| `elissa/llm/` | Provider adapters; adding an OpenAI-compatible provider is one entry in `PROVIDERS` |
-| `elissa/tools/` | Files, web and email tools with their JSON schemas |
-| `elissa/memory.py` | Long-term memory as Markdown |
-| `elissa/static/` | UI: `character.js` (Elissa), `sounds.js`, window modes, settings |
-| `design/` | Character references (generated with Nano Banana 2) and previews |
+| `elissa/llm/` | Provider adapters; an OpenAI-compatible provider is one entry in `PROVIDERS` |
+| `elissa/tools/` | Tools; anything that changes something has a `preview` and goes through approval |
+| `elissa/system/` | What differs between Windows, macOS and Linux |
+| `elissa/static/` | UI: `character.js` (Elissa), `sounds.js`, `i18n.js`, `app.js` |
+| `docs/` | The [wiki](https://inginddie.github.io/elissa/) (MkDocs Material) and the plan |
+
+More in the [developer guide](https://inginddie.github.io/elissa/developers/).
 
 ## Contributing
 
-Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md). To report a security problem privately,
+Issues and pull requests are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md). To report a security problem privately,
 see [SECURITY.md](SECURITY.md).
 
 ## License
