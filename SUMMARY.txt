@@ -1,4 +1,4 @@
-Descargas acumuladas al 2026-10-30 (18 días con datos):
+Descargas acumuladas al 2026-10-31 (19 días con datos):
   linux-appimage-install-or-update   2
   linux-install-deb                  0
   macos-install                      4
