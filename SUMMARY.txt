@@ -1,17 +1,17 @@
-Descargas acumuladas al 2026-11-14 (33 días con datos):
+Descargas acumuladas al 2026-11-15 (34 días con datos):
   linux-appimage-install-or-update   3
   linux-install-deb                  0
-  macos-install                      6
+  macos-install                      9
   macos-update                       0
-  update-check                       72
-  windows-install-or-update          29
+  update-check                       89
+  windows-install-or-update          38
 Crecimiento (últimos 7 / 30 días):
   linux-appimage-install-or-update        0 / 2
   linux-install-deb                       0 / 0
-  macos-install                           2 / 4
+  macos-install                           5 / 7
   macos-update                            0 / 0
-  update-check                           13 / 25
-  windows-install-or-update               7 / 14
+  update-check                           25 / 41
+  windows-install-or-update              16 / 22
 Por versión (instaladores y actualizaciones):
   v0.2.0     1
   v0.3.0     1
@@ -25,4 +25,4 @@ Por versión (instaladores y actualizaciones):
   v1.5.0     0
   v1.6.0     0
   v1.6.1     2
-  v1.7.0     27
+  v1.7.0     39
