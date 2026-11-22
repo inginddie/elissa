@@ -10,6 +10,11 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 - **Linux: el AppImage trae información de actualización** para AppImageUpdate (y el catálogo AppImageHub), con su
   archivo `.zsync` en cada versión. La actualización automática de Elissa sigue igual.
 
+### Corregido
+- **Con la interfaz en inglés, las tarjetas de aprobación y lo que Elissa está haciendo ya salen en inglés**
+  (títulos, « Para », « Asunto », avisos y « Revisando tu correo… »). Los nombres de ventanas, asuntos y textos de
+  tus integraciones se muestran tal cual.
+
 ## [1.7.0] - 2026-10-12
 
 ### Añadido

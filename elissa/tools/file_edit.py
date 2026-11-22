@@ -9,7 +9,7 @@ import hashlib
 import shutil
 from pathlib import Path
 
-from . import ToolRegistry
+from . import ToolRegistry, msg
 from .files import FileTools
 
 MAX_WRITE = 300_000      # characters
@@ -67,9 +67,9 @@ class FileEditor:
             raise IsADirectoryError(f"{p} es una carpeta.")
         self._remember(p)
         if p.exists():
-            return {"title": "Reemplazar el contenido de un archivo", "kind": "diff", "path": str(p),
-                    "diff": _diff(p, _read(p), content), "warning": "Se reemplaza el archivo completo."}
-        return {"title": "Crear un archivo", "kind": "diff", "path": str(p),
+            return {"title": msg("Reemplazar el contenido de un archivo"), "kind": "diff", "path": str(p),
+                    "diff": _diff(p, _read(p), content), "warning": msg("Se reemplaza el archivo completo.")}
+        return {"title": msg("Crear un archivo"), "kind": "diff", "path": str(p),
                 "diff": "\n".join("+" + line for line in content.splitlines()[:MAX_DIFF_LINES])}
 
     def write(self, path: str, content: str) -> str:
@@ -96,7 +96,7 @@ class FileEditor:
         p = self._target(path)
         new = self._apply(p, find, replace, replace_all)
         self._remember(p)
-        return {"title": "Editar un archivo", "kind": "diff", "path": str(p), "diff": _diff(p, _read(p), new)}
+        return {"title": msg("Editar un archivo"), "kind": "diff", "path": str(p), "diff": _diff(p, _read(p), new)}
 
     def edit(self, path: str, find: str, replace: str, replace_all: bool = False) -> str:
         p = self._target(path)
@@ -121,8 +121,8 @@ class FileEditor:
     def move_preview(self, source: str, destination: str) -> dict:
         src, dst = self._move_paths(source, destination)
         what = "Renombrar" if src.parent == dst.parent else "Mover"
-        return {"title": f"{what} {'carpeta' if src.is_dir() else 'archivo'}", "kind": "action",
-                "lines": [f"De: {src}", f"A: {dst}"]}
+        return {"title": msg(f"{what} {'carpeta' if src.is_dir() else 'archivo'}"), "kind": "action",
+                "lines": [msg("De: {path}", path=str(src)), msg("A: {path}", path=str(dst))]}
 
     def move(self, source: str, destination: str) -> str:
         src, dst = self._move_paths(source, destination)
@@ -134,7 +134,7 @@ class FileEditor:
         p = self.files.resolve(path)
         if p.exists():
             raise FileExistsError(f"{p} ya existe.")
-        return {"title": "Crear una carpeta", "kind": "action", "lines": [str(p)]}
+        return {"title": msg("Crear una carpeta"), "kind": "action", "lines": [str(p)]}
 
     def mkdir(self, path: str) -> str:
         p = self.files.resolve(path)
