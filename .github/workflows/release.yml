@@ -138,8 +138,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd desktop/src-tauri/target/release/bundle/appimage
+          ls -la
           appimage=$(ls Elissa_*_amd64.AppImage)
-          info=$(APPIMAGE_EXTRACT_AND_RUN=1 "./$appimage" --appimage-updateinformation)
+          # Read the .upd_info ELF section instead of running the AppImage (that would start Elissa without a display).
+          info=$(readelf --string-dump=.upd_info "$appimage" | sed -n 's/^ *\[ *[0-9a-f]*\] *//p' | head -n 1)
           echo "update information: $info"
           case "$info" in gh-releases-zsync\|inginddie\|elissa\|latest\|*) ;; *) echo "::error::no update information"; exit 1;; esac
           test -s "$appimage.zsync" || { echo "::error::$appimage.zsync was not generated"; exit 1; }
