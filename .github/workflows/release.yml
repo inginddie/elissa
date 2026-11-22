@@ -70,7 +70,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential file libxdo-dev libssl-dev \
-            libayatana-appindicator3-dev librsvg2-dev patchelf libfuse2 libportaudio2
+            libayatana-appindicator3-dev librsvg2-dev patchelf libfuse2 libportaudio2 zsync
 
       - uses: astral-sh/setup-uv@v10.3.0
         with:
@@ -123,8 +123,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          # AppImage only: linuxdeploy's AppImage plugin embeds this (appimagetool -u) and writes a .zsync next to it,
-          # so AppImageUpdate and AppImageHub can update Elissa too. Elissa's own updater (latest.json) is unchanged.
+          # AppImage only: linuxdeploy's AppImage plugin embeds this (appimagetool -u), so AppImageUpdate and
+          # AppImageHub can update Elissa too; the .zsync is made in the next step. Elissa's own updater is unchanged.
           LDAI_UPDATE_INFORMATION: ${{ runner.os == 'Linux' && 'gh-releases-zsync|inginddie|elissa|latest|Elissa_*_amd64.AppImage.zsync' || '' }}
         with:
           projectPath: desktop
@@ -144,7 +144,9 @@ jobs:
           info=$(readelf --string-dump=.upd_info "$appimage" | sed -n 's/^ *\[ *[0-9a-f]*\] *//p' | head -n 1)
           echo "update information: $info"
           case "$info" in gh-releases-zsync\|inginddie\|elissa\|latest\|*) ;; *) echo "::error::no update information"; exit 1;; esac
-          test -s "$appimage.zsync" || { echo "::error::$appimage.zsync was not generated"; exit 1; }
+          # Relative URL: the .zsync and the AppImage are assets of the same release.
+          zsyncmake -u "$appimage" -o "$appimage.zsync" "$appimage"
+          test -s "$appimage.zsync"
           if [ -n "${{ needs.release.outputs.id }}" ]; then
             curl -fsS -X POST -H "Authorization: Bearer $GH_TOKEN" -H "Content-Type: application/octet-stream" \
               --data-binary "@$appimage.zsync" \
