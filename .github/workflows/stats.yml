@@ -19,6 +19,7 @@ concurrency: stats
 jobs:
   downloads:
     runs-on: ubuntu-22.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
 
@@ -43,10 +44,21 @@ jobs:
 
   traffic:
     runs-on: ubuntu-22.04
+    timeout-minutes: 20  # without it a stuck run holds the runner for 6 hours (runs 3 to 33 were cancelled that way)
+    env:
+      GHRS_TOKEN: ${{ secrets.GHRS_GITHUB_API_TOKEN }}
     steps:
+      - name: Check the token
+        if: env.GHRS_TOKEN != ''
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $GHRS_TOKEN" \
+                 "https://api.github.com/repos/${{ github.repository }}/traffic/views")
+          if [ "$code" != 200 ]; then
+            echo "::error::GHRS_GITHUB_API_TOKEN was rejected (HTTP $code): it is expired, revoked or lacks read access to this repository's traffic. Create a new token and update the secret."
+            exit 1
+          fi
+
       - uses: jgehrcke/github-repo-stats@v1.4.2
-        env:
-          GHRS_TOKEN: ${{ secrets.GHRS_GITHUB_API_TOKEN }}
         if: env.GHRS_TOKEN != ''
         with:
           repository: ${{ github.repository }}
