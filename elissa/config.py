@@ -49,6 +49,7 @@ DEFAULTS = {
     "user_name": "",
     "ui_language": "auto",     # auto (from Windows) | es | en
     "language_autosynced": False,  # speech language already matched to Windows' once (never forced again)
+    "theme": "auto",           # auto (light, dark when the system is dark) | light | dark
     # LLM
     "provider": "",            # empty until the first-run wizard is completed
     "model": "",
@@ -96,6 +97,8 @@ def load_settings() -> dict:
     if SETTINGS_FILE.exists():
         stored = json.loads(SETTINGS_FILE.read_text("utf-8"))
         settings.update({k: v for k, v in stored.items() if k in DEFAULTS})
+    if settings["theme"] not in ("auto", "light", "dark"):
+        settings["theme"] = "auto"
     if settings["stt"] not in ("auto", "openai", "groq", "local", "endpoint"):  # v0.1 used Edge's recognizer
         settings["stt"] = "endpoint" if settings["stt_url"] else "auto"
     settings["model"] = RETIRED_MODELS.get(settings["model"], settings["model"])

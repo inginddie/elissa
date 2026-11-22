@@ -842,6 +842,15 @@ function applyLanguage(setting) {
   if (state) $('#status').textContent = t(STATUS[state] || '');
 }
 
+/* ---------- theme ---------- */
+
+// Light unless the system is dark (auto) or the user picks one; style.css reads <html data-theme>.
+function applyTheme(setting) {
+  const root = document.documentElement;
+  if (setting === 'light' || setting === 'dark') root.dataset.theme = setting;
+  else delete root.dataset.theme;
+}
+
 /* ---------- settings & setup wizard ---------- */
 
 let setupShownOnce = false;
@@ -864,6 +873,7 @@ function applySettings(s) {
   cfg = s;
   document.title = `${s.name} · ${t('Elissa · asistente de voz').split(' · ')[1]}`;
   applyLanguage(s.ui_language);
+  applyTheme(s.theme);
   $('#btn-continuous').classList.toggle('on', !!s.continuous);
   $('#btn-pin').classList.toggle('on', !!s.pinned);
   for (const el of $('#settings').elements) {

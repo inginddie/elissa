@@ -255,7 +255,7 @@ sistema aparece explicado en Ajustes.
 
 ### Decisiones tomadas (2026-10-12)
 
-- Mac de pruebas con **Apple Silicon**: el primer build de macOS es arm64 (runner `macos-14`); el de Intel (x64) va
+- Mac de pruebas con **Apple Silicon**: el primer build de macOS es arm64 (runner `macos-15`; `macos-14` se retiró el 2026-11-02); el de Intel (x64) va
   después, en el mismo CI.
 - Linux: **`.deb`** (Ubuntu/Debian) y **AppImage** para el resto de distribuciones.
 
