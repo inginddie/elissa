@@ -50,7 +50,7 @@ jobs:
             bundles: nsis
             artifact: Elissa-Windows
             files: desktop/src-tauri/target/release/bundle/nsis/*.exe
-          - os: macos-14  # Apple Silicon
+          - os: macos-15  # Apple Silicon (macos-14 was retired on 2026-11-02)
             bundles: app,dmg
             artifact: Elissa-macOS-arm64
             files: desktop/src-tauri/target/release/bundle/dmg/*.dmg
