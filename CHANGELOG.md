@@ -2,6 +2,14 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [Sin publicar]
+
+### Añadido
+- **Tema claro y oscuro** (Ajustes → General → Tema). Por defecto, Elissa es clara y pasa a oscura cuando el sistema
+  está en modo oscuro; también puedes fijar uno de los dos.
+- **Linux: el AppImage trae información de actualización** para AppImageUpdate (y el catálogo AppImageHub), con su
+  archivo `.zsync` en cada versión. La actualización automática de Elissa sigue igual.
+
 ## [1.7.0] - 2026-10-12
 
 ### Añadido

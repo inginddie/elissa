@@ -173,6 +173,19 @@ def test_retired_models_are_replaced_on_load():
         config.SETTINGS_FILE.unlink()
 
 
+def test_theme_defaults_to_auto_and_ignores_unknown_values():
+    from elissa import config
+    assert config.load_settings()["theme"] == "auto"  # light, dark only when the system is dark
+    config.SETTINGS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        config.SETTINGS_FILE.write_text('{"theme": "dark"}', "utf-8")
+        assert config.load_settings()["theme"] == "dark"
+        config.SETTINGS_FILE.write_text('{"theme": "neon"}', "utf-8")
+        assert config.load_settings()["theme"] == "auto"
+    finally:
+        config.SETTINGS_FILE.unlink()
+
+
 def test_reasoning_off_only_where_needed():
     from elissa.llm.openai_provider import reasoning_params
     off = {"reasoning_effort": "none"}

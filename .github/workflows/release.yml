@@ -60,6 +60,7 @@ jobs:
             files: |
               desktop/src-tauri/target/release/bundle/deb/*.deb
               desktop/src-tauri/target/release/bundle/appimage/*.AppImage
+              desktop/src-tauri/target/release/bundle/appimage/*.AppImage.zsync
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -122,11 +123,31 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          # AppImage only: linuxdeploy's AppImage plugin embeds this (appimagetool -u) and writes a .zsync next to it,
+          # so AppImageUpdate and AppImageHub can update Elissa too. Elissa's own updater (latest.json) is unchanged.
+          LDAI_UPDATE_INFORMATION: ${{ runner.os == 'Linux' && 'gh-releases-zsync|inginddie|elissa|latest|Elissa_*_amd64.AppImage.zsync' || '' }}
         with:
           projectPath: desktop
           tauriScript: npx tauri
           args: --bundles ${{ matrix.bundles }}
           releaseId: ${{ needs.release.outputs.id }}
+
+      - name: AppImage update information (and the .zsync on tags)
+        if: runner.os == 'Linux'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd desktop/src-tauri/target/release/bundle/appimage
+          appimage=$(ls Elissa_*_amd64.AppImage)
+          info=$(APPIMAGE_EXTRACT_AND_RUN=1 "./$appimage" --appimage-updateinformation)
+          echo "update information: $info"
+          case "$info" in gh-releases-zsync\|inginddie\|elissa\|latest\|*) ;; *) echo "::error::no update information"; exit 1;; esac
+          test -s "$appimage.zsync" || { echo "::error::$appimage.zsync was not generated"; exit 1; }
+          if [ -n "${{ needs.release.outputs.id }}" ]; then
+            curl -fsS -X POST -H "Authorization: Bearer $GH_TOKEN" -H "Content-Type: application/octet-stream" \
+              --data-binary "@$appimage.zsync" \
+              "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.release.outputs.id }}/assets?name=$appimage.zsync" >/dev/null
+          fi
 
       - uses: actions/upload-artifact@v7
         with:
