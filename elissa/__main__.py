@@ -112,7 +112,7 @@ def selftest() -> int:
 
     def atspi():
         import jeepney  # noqa: F401
-        from .tools import desktop_linux  # noqa: F401
+        from elissa.tools import desktop_linux  # noqa: F401
         return "AT-SPI (jeepney) y X11"
 
     def windows():
