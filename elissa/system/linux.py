@@ -1,4 +1,5 @@
 """Linux: XDG .desktop apps, MPRIS players over D-Bus, PulseAudio/PipeWire volume (pactl), espeak-ng, logind.
+Using other windows goes through AT-SPI on X11 (tools/desktop_linux.py).
 
 Each capability is on only when what it needs is there (pactl, espeak-ng, a D-Bus session, curl…), so a minimal
 system just gets fewer tools instead of failing ones.
@@ -26,10 +27,19 @@ def _has_session_bus() -> bool:
     return bool(os.environ.get("DBUS_SESSION_BUS_ADDRESS")) or Path(f"/run/user/{uid}/bus").exists()
 
 
+def _x11_session() -> bool:
+    """An X11 desktop: on Wayland apps can't be sent keys or clicks from outside (by design)."""
+    if os.environ.get("XDG_SESSION_TYPE", "").lower() == "wayland":
+        return False
+    return bool(os.environ.get("DISPLAY"))
+
+
 def _caps() -> set[str]:
     caps = {"apps", "command", "local_stt"}
     if _has_session_bus():
         caps.add("media_session")
+        if _x11_session():
+            caps.add("computer_use")  # AT-SPI on the session's accessibility bus (tools/desktop_linux.py)
     if shutil.which("pactl"):
         caps.add("mixer")
     if ESPEAK:

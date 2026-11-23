@@ -109,9 +109,10 @@ Elige **Instalar** y Elissa te avisa cuando una sesión termina o necesita tu pe
 
 ## Uso del computador
 
-*Windows y macOS.* **Permitir que vea y use otras ventanas**: leer la ventana en la que estás, hacer clic, escribir y
-presionar teclas, siempre con tu aprobación. Nunca lee campos de contraseña. En macOS,
-permite Elissa en *Accesibilidad* cuando lo pida.
+*Windows, macOS y Linux con X11.* **Permitir que vea y use otras ventanas**: leer la ventana en la que estás, hacer
+clic, escribir y presionar teclas, siempre con tu aprobación. Nunca lee campos de contraseña. En macOS,
+permite Elissa en *Accesibilidad* cuando lo pida. En Linux usa la accesibilidad del escritorio (AT-SPI): si estaba
+apagada, Elissa la enciende y las apps que ya estaban abiertas pueden necesitar reiniciarse para que las vea.
 
 ## Carpetas que puede usar
 

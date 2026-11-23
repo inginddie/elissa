@@ -176,7 +176,10 @@ X11 (x11rb), micrófono en WebKitGTK (`enable-media-stream` + permiso solo al mo
 F8.3 publicada en 1.6.0 (1.6.1: autodiagnóstico tolerante a la red). F8.4 en la rama `f8-local-mac` (1.7.0):
 reconocimiento local en macOS y Linux con pywhispercpp dentro del motor (mismos modelos y SHA-256), y uso del
 computador en macOS con la API de Accesibilidad (`tools/desktop_mac.py`, pyobjc). Uso del computador en Linux X11
-(AT-SPI) queda pendiente; en Wayland no es posible.
+(2026-11-23, `tools/desktop_linux.py`): AT-SPI por D-Bus con jeepney, teclas y clics con el controlador de eventos de
+AT-SPI (XTest) y ventana al frente con `_NET_ACTIVE_WINDOW` (libX11 por ctypes); sin dependencias nuevas. Probado de
+punta a punta contra un formulario GTK en Xvfb + openbox (`tests/test_desktop_linux.py`, con `ELISSA_ATSPI_FORM=1`);
+falta la prueba en un escritorio real. En Wayland no es posible.
 Decisiones de Diego (2026-10-12): **macOS primero**, **sin cuenta de Apple Developer**, pruebas en un Mac físico y en
 un Linux en máquina virtual.
 

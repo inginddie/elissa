@@ -184,6 +184,9 @@ class Brain:
         if system.IS_MAC:
             from .tools.desktop_mac import DesktopMac
             return DesktopMac(own_pids)
+        if system.IS_LINUX:
+            from .tools.desktop_linux import DesktopLinux
+            return DesktopLinux(own_pids)
         return Desktop(lambda: {os.getpid(), PARENT_PID})
 
     def rebuild_tools(self) -> None:

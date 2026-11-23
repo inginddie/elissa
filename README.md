@@ -92,9 +92,10 @@ update is signed.
 | Turn music down while you talk, system volume | ✔ | ✔ | ✔ ¹ |
 | Terminal commands in your projects | PowerShell | zsh | bash |
 | Claude Code and Codex alerts | ✔ | ✔ | ✔ |
-| Use other windows (read, click, type) | ✔ | ✔ ² | — |
+| Use other windows (read, click, type) | ✔ | ✔ ² | ✔ ³ |
 
 ¹ With `pulseaudio-utils` and `espeak-ng`. ² macOS asks for the Accessibility permission the first time.
+³ On X11; Wayland doesn't let one app see or control another.
 
 </details>
 
