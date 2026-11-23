@@ -282,9 +282,9 @@ Windows, macOS y Linux desde el principio).
   (`scripts/wiki_screenshots.py`, Playwright con Edge y una carpeta de datos desechable), diagramas Mermaid, tarjetas en
   vez de tablas largas, detalles en bloques plegables y zoom al hacer clic (mkdocs-glightbox).
 - Falta: apuntar SignPath y las notas de cada release a la wiki.
-- Encontrado al hacer las capturas: las tarjetas de aprobación y otros textos que arma el motor salen en español con
-  la interfaz en inglés (títulos, « Para », « Asunto », subtítulos). Las capturas en inglés muestran el texto ya
-  traducido; arreglarlo en un parche.
+- ~~Encontrado al hacer las capturas: las tarjetas de aprobación y otros textos que arma el motor salen en español con
+  la interfaz en inglés~~ corregido (2026-11-22): el motor marca esos textos con `msg()` (`elissa/tools/__init__.py`)
+  y la ventana los traduce con `i18n.js`; `tests/test_i18n_cards.py` falla si alguno no tiene traducción.
 
 ## F10. Métricas y telemetría (respetando la privacidad)
 

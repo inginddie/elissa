@@ -20,6 +20,15 @@ DENIED = ("El usuario NO aprobó esta acción y no se ejecutó. No la repitas ni
 
 # preview(**args) -> {"title": str, "kind": "text"|"diff"|"email"|"action", ...details for the card}
 Preview = Callable[..., dict]
+
+
+def msg(text: str, **values) -> dict:
+    """A card text the window translates (static/i18n.js), written in Spanish with {name} placeholders.
+
+    Plain strings on a card are shown as they are, so window names, subjects or an integration's own descriptions are
+    never translated by accident. A value is translated only when it is a msg() itself.
+    """
+    return {"t": text, "v": values} if values else {"t": text}
 Approver = Callable[[str, dict], Awaitable[bool]]
 
 
@@ -27,7 +36,7 @@ Approver = Callable[[str, dict], Awaitable[bool]]
 class Tool:
     spec: ToolSpec
     fn: Callable
-    label: str  # what the UI shows while it runs, e.g. "Revisando tu correo…"
+    label: str | dict  # what the UI shows while it runs, e.g. "Revisando tu correo…" (or a msg())
     preview: Preview | None = None
 
 
@@ -43,7 +52,7 @@ class ToolRegistry:
         self.approver: Approver | None = None
         self._approval_lock = asyncio.Lock()  # one approval card at a time
 
-    def add(self, name: str, description: str, label: str, fn: Callable,
+    def add(self, name: str, description: str, label: str | dict, fn: Callable,
             properties: dict | None = None, required: list[str] | None = None,
             preview: Preview | None = None) -> None:
         schema = {"type": "object", "properties": properties or {}, "required": required or []}
@@ -55,9 +64,9 @@ class ToolRegistry:
     def specs(self) -> list[ToolSpec]:
         return [t.spec for t in self._tools.values()]
 
-    def label(self, name: str) -> str:
+    def label(self, name: str) -> str | dict:
         tool = self._tools.get(name)
-        return tool.label if tool else f"Usando {name}…"
+        return tool.label if tool else msg("Usando {name}…", name=name)
 
     def needs_approval(self, name: str) -> bool:
         tool = self._tools.get(name)

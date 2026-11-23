@@ -10,6 +10,8 @@ import time
 import unicodedata
 from typing import Callable
 
+from . import msg
+
 READ_BUDGET_S = 4.0
 MAX_NODES = 2500
 MAX_TEXT = 15000
@@ -175,9 +177,10 @@ class DesktopMac:
 
     def read_preview(self, title: str = "") -> dict:
         _pid, name, _w, wtitle = self._window(title)
-        return {"title": "Leer el contenido de una ventana", "kind": "action",
-                "lines": [f"Ventana: {wtitle or name}", "Lo que lea se enviará a tu proveedor de IA para responderte.",
-                          "Los campos de contraseña nunca se leen."]}
+        return {"title": msg("Leer el contenido de una ventana"), "kind": "action",
+                "lines": [msg("Ventana: {window}", window=wtitle or name),
+                          msg("Lo que lea se enviará a tu proveedor de IA para responderte."),
+                          msg("Los campos de contraseña nunca se leen.")]}
 
     def read(self, title: str = "") -> str:
         _pid, name, window, wtitle = self._window(title)
@@ -229,10 +232,16 @@ class DesktopMac:
         kind = INTERACTIVE.get(_ax(element, "AXRole") or "", "elemento")
         return f"{kind} «{_label(element) or 'sin nombre'}»"
 
+    def _describe_msg(self, element) -> dict:
+        name = _label(element)
+        kind = msg(INTERACTIVE.get(_ax(element, "AXRole") or "", "elemento"))
+        return msg("{kind} «{name}»", kind=kind, name=name) if name else msg("{kind} sin nombre", kind=kind)
+
     def click_preview(self, number: int) -> dict:
         element = self._element(number)
-        return {"title": "Hacer clic", "kind": "action",
-                "lines": [f"En: {self._describe(element)}", f"Ventana: {self.elements_window}"]}
+        return {"title": msg("Hacer clic"), "kind": "action",
+                "lines": [msg("En: {target}", target=self._describe_msg(element)),
+                          msg("Ventana: {window}", window=self.elements_window)]}
 
     def click(self, number: int) -> str:
         from ApplicationServices import AXUIElementPerformAction, kAXErrorSuccess
@@ -253,10 +262,10 @@ class DesktopMac:
             time.sleep(0.03)
 
     def type_preview(self, text: str, number: int | None = None) -> dict:
-        target = self._describe(self._element(number)) if number else "donde esté el cursor"
         window = self.elements_window if number else (self._window()[3] or self._window()[1])
-        return {"title": "Escribir texto", "kind": "text", "subtitle": f"En {target} · ventana «{window}»",
-                "text": text}
+        subtitle = (msg("En {target} · ventana «{window}»", target=self._describe_msg(self._element(number)),
+                        window=window) if number else msg("Donde esté el cursor · ventana «{window}»", window=window))
+        return {"title": msg("Escribir texto"), "kind": "text", "subtitle": subtitle, "text": text}
 
     def type_text(self, text: str, number: int | None = None) -> str:
         from ApplicationServices import AXUIElementSetAttributeValue
@@ -273,10 +282,10 @@ class DesktopMac:
     def keys_preview(self, keys: str) -> dict:
         parts = parse_keys(keys)
         canonical = tuple(_canonical(p) for p in parts)
-        warning = next((msg for combo, msg in RISKY_KEYS.items() if canonical == combo), "")
+        warning = next((why for combo, why in RISKY_KEYS.items() if canonical == combo), "")
         _pid, name, _w, wtitle = self._window()
-        return {"title": "Presionar teclas", "kind": "action", "warning": warning,
-                "lines": [" + ".join(p.capitalize() for p in parts), f"Ventana: {wtitle or name}"]}
+        return {"title": msg("Presionar teclas"), "kind": "action", "warning": msg(warning) if warning else "",
+                "lines": [" + ".join(p.capitalize() for p in parts), msg("Ventana: {window}", window=wtitle or name)]}
 
     def press_keys(self, keys: str) -> str:
         parts = parse_keys(keys)

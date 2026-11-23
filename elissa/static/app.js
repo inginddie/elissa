@@ -552,7 +552,7 @@ function handle(m) {
       break;
     case 'tool':
       if (m.turn === currentTurn && state === 'thinking') {
-        $('#status').textContent = m.name;
+        $('#status').textContent = typeof m.name === 'string' ? t(m.name) : tx(m.name);  // tool labels are ours
         face.setState('working');
       }
       break;
@@ -640,6 +640,19 @@ function el(tag, props = {}, ...children) {
   return e;
 }
 
+/** A card text from the engine: plain strings are shown as they are; msg() objects ({t, v}) are translated, and so
+ *  are their values when they are msg() too. A list (several warnings) is joined. */
+function tx(x) {
+  if (x === undefined || x === null) return '';
+  if (Array.isArray(x)) return x.map(tx).filter(Boolean).join(' ');
+  if (typeof x === 'object') {
+    const vars = {};
+    for (const [k, v] of Object.entries(x.v || {})) vars[k] = typeof v === 'object' && v !== null ? tx(v) : String(v);
+    return t(String(x.t || ''), vars);
+  }
+  return String(x);
+}
+
 function renderApprovalBody(m) {
   const body = $('#ap-body');
   body.innerHTML = '';
@@ -654,14 +667,14 @@ function renderApprovalBody(m) {
   } else if (m.kind === 'email') {
     const dl = el('dl');
     for (const [k, v] of [['Para', m.to], ['CC', m.cc], ['Asunto', m.subject], ['Adjuntos', m.attachments]]) {
-      if (v) dl.append(el('dt', { textContent: k }), el('dd', { textContent: v }));
+      if (v) dl.append(el('dt', { textContent: t(k) }), el('dd', { textContent: tx(v) }));
     }
     body.append(dl, el('pre', { textContent: m.body || '' }));
   } else if (m.kind === 'command') {
     body.append(el('p', { className: 'hint', textContent: m.cwd || '' }));
     body.append(el('pre', { className: 'cmd', textContent: `> ${m.command || ''}` }));
   } else if (m.kind === 'action') {
-    body.append(el('ul', {}, ...(m.lines || []).map((l) => el('li', { textContent: l }))));
+    body.append(el('ul', {}, ...(m.lines || []).map((l) => el('li', { textContent: tx(l) }))));
   } else {
     body.append(el('pre', { textContent: m.text || '' }));
   }
@@ -669,11 +682,11 @@ function renderApprovalBody(m) {
 
 function showApproval(m) {
   approval = m;
-  $('#ap-title').textContent = m.title || t('Aprobar acción');
-  $('#ap-sub').textContent = m.subtitle || '';
-  $('#ap-sub').hidden = !m.subtitle;
-  $('#ap-warn').textContent = m.warning || '';
-  $('#ap-warn').hidden = !m.warning;
+  $('#ap-title').textContent = tx(m.title) || t('Aprobar acción');
+  $('#ap-sub').textContent = tx(m.subtitle);
+  $('#ap-sub').hidden = !$('#ap-sub').textContent;
+  $('#ap-warn').textContent = tx(m.warning);
+  $('#ap-warn').hidden = !$('#ap-warn').textContent;
   renderApprovalBody(m);
   stopSpeech();
   document.querySelectorAll('.panel').forEach((p) => (p.hidden = p.id !== 'panel-approval'));

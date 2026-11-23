@@ -13,7 +13,7 @@ import time
 import unicodedata
 from typing import Callable
 
-from . import ToolRegistry
+from . import ToolRegistry, msg
 
 if sys.platform == "win32":  # registered only on Windows (system capability "computer_use")
     from ctypes import wintypes
@@ -188,9 +188,10 @@ class Desktop:
 
     def read_preview(self, title: str = "") -> dict:
         w = self._window(title)
-        return {"title": "Leer el contenido de una ventana", "kind": "action",
-                "lines": [f"Ventana: {w.Name}", "Lo que lea se enviará a tu proveedor de IA para responderte.",
-                          "Los campos de contraseña nunca se leen."]}
+        return {"title": msg("Leer el contenido de una ventana"), "kind": "action",
+                "lines": [msg("Ventana: {window}", window=w.Name),
+                          msg("Lo que lea se enviará a tu proveedor de IA para responderte."),
+                          msg("Los campos de contraseña nunca se leen.")]}
 
     def read(self, title: str = "") -> str:
         import uiautomation as auto
@@ -252,10 +253,16 @@ class Desktop:
         kind = INTERACTIVE.get(control.ControlTypeName, "elemento")
         return f"{kind} «{control.Name or control.AutomationId or 'sin nombre'}»"
 
+    def _describe_msg(self, control) -> dict:
+        name = control.Name or control.AutomationId
+        kind = msg(INTERACTIVE.get(control.ControlTypeName, "elemento"))
+        return msg("{kind} «{name}»", kind=kind, name=name) if name else msg("{kind} sin nombre", kind=kind)
+
     def click_preview(self, number: int) -> dict:
         control = self._element(number)
-        return {"title": "Hacer clic", "kind": "action",
-                "lines": [f"En: {self._describe(control)}", f"Ventana: {self.elements_window}"]}
+        return {"title": msg("Hacer clic"), "kind": "action",
+                "lines": [msg("En: {target}", target=self._describe_msg(control)),
+                          msg("Ventana: {window}", window=self.elements_window)]}
 
     def click(self, number: int) -> str:
         control = self._element(number)
@@ -269,10 +276,10 @@ class Desktop:
         return f"Hice clic en {self._describe(control)}."
 
     def type_preview(self, text: str, number: int | None = None) -> dict:
-        target = self._describe(self._element(number)) if number else "donde esté el cursor"
         window = self.elements_window if number else self._window().Name
-        return {"title": "Escribir texto", "kind": "text", "subtitle": f"En {target} · ventana «{window}»",
-                "text": text}
+        subtitle = (msg("En {target} · ventana «{window}»", target=self._describe_msg(self._element(number)),
+                        window=window) if number else msg("Donde esté el cursor · ventana «{window}»", window=window))
+        return {"title": msg("Escribir texto"), "kind": "text", "subtitle": subtitle, "text": text}
 
     def type_text(self, text: str, number: int | None = None) -> str:
         if number:
@@ -289,9 +296,9 @@ class Desktop:
 
     def keys_preview(self, keys: str) -> dict:
         parts = parse_keys(keys)
-        warning = next((msg for combo, msg in RISKY_KEYS.items() if tuple(parts) == combo), "")
-        return {"title": "Presionar teclas", "kind": "action", "warning": warning,
-                "lines": [" + ".join(p.capitalize() for p in parts), f"Ventana: {self._window().Name}"]}
+        warning = next((why for combo, why in RISKY_KEYS.items() if tuple(parts) == combo), "")
+        return {"title": msg("Presionar teclas"), "kind": "action", "warning": msg(warning) if warning else "",
+                "lines": [" + ".join(p.capitalize() for p in parts), msg("Ventana: {window}", window=self._window().Name)]}
 
     def press_keys(self, keys: str) -> str:
         parts = parse_keys(keys)

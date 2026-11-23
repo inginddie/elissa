@@ -10,7 +10,7 @@ from email.utils import formatdate, make_msgid
 from pathlib import Path
 from typing import Callable
 
-from . import ToolRegistry
+from . import ToolRegistry, msg
 from .files import FileTools
 
 ADDRESS = re.compile(r"^[^@\s,;<>]+@[^@\s,;<>]+\.[^@\s,;<>]+$")
@@ -61,8 +61,9 @@ class MailSender:
         if not to_list:
             raise ValueError("Falta el destinatario.")
         files = self._attachments(attachments)
-        return {"title": "Enviar un correo", "kind": "email", "subtitle": f"Desde {self.settings().get('mail_user')}",
-                "to": ", ".join(to_list), "cc": ", ".join(cc_list), "subject": subject.strip() or "(sin asunto)",
+        return {"title": msg("Enviar un correo"), "kind": "email",
+                "subtitle": msg("Desde {sender}", sender=self.settings().get("mail_user") or ""),
+                "to": ", ".join(to_list), "cc": ", ".join(cc_list), "subject": subject.strip() or msg("(sin asunto)"),
                 "body": body, "attachments": ", ".join(p.name for p in files)}
 
     def send(self, to, subject: str, body: str, cc=None, attachments: list | None = None) -> str:

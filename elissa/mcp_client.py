@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from .config import get_secret, set_secret
-from .tools import ToolRegistry
+from .tools import ToolRegistry, msg
 
 log = logging.getLogger(__name__)
 
@@ -199,7 +199,7 @@ class McpManager:
                 name = tool_name(server.id, tool.name, taken)
                 taken.add(name)
                 reg.add(name, f"[{server.name}] {tool.description or tool.name}"[:1000],
-                        f"Consultando {server.name}…", self._caller(server, tool.name),
+                        msg("Consultando {server}…", server=server.name), self._caller(server, tool.name),
                         schema.get("properties") or {}, schema.get("required") or [],
                         preview=None if (read_only and trust_reads) else self._preview(server, tool))
 
@@ -224,7 +224,7 @@ class McpManager:
             pretty = json.dumps(args, ensure_ascii=False, indent=2)
             return {"title": f"{server.name}: {getattr(tool, 'title', None) or tool.name}", "kind": "text",
                     "subtitle": (tool.description or "")[:200], "text": pretty,
-                    "warning": "Esta acción puede cambiar datos en ese servicio."}
+                    "warning": msg("Esta acción puede cambiar datos en ese servicio.")}
         return preview
 
     def status(self) -> list[dict]:

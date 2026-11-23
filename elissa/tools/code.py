@@ -11,7 +11,7 @@ import subprocess
 from pathlib import Path
 
 from .. import system
-from . import ToolRegistry
+from . import ToolRegistry, msg
 from .files import SKIP_DIRS, FileTools
 
 MAX_OUTPUT = 12000
@@ -77,8 +77,12 @@ def forbidden_reason(command: str) -> str | None:
 
 
 def risk_warning(command: str) -> str:
+    return " ".join(risk_reasons(command))
+
+
+def risk_reasons(command: str) -> list[str]:
     lowered = command.lower()
-    return " ".join(why for pattern, why in RISKY if re.search(pattern, lowered))
+    return [why for pattern, why in RISKY if re.search(pattern, lowered)]
 
 
 def _clip(text: str) -> str:
@@ -211,8 +215,9 @@ class CodeTools:
         if why:
             raise PermissionError(f"No ejecuto ese comando porque {why}. Si de verdad hace falta, el usuario puede "
                                   "correrlo él mismo.")
-        return {"title": "Ejecutar un comando", "kind": "command", "cwd": str(cwd), "command": command.strip(),
-                "warning": risk_warning(command), "subtitle": f"Tiempo máximo: {int(timeout)} s"}
+        return {"title": msg("Ejecutar un comando"), "kind": "command", "cwd": str(cwd), "command": command.strip(),
+                "warning": [msg(why) for why in risk_reasons(command)],
+                "subtitle": msg("Tiempo máximo: {seconds} s", seconds=int(timeout))}
 
     def run(self, command: str, path: str, timeout: int = 120) -> str:
         cwd = self._dir(path)
