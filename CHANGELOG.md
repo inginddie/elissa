@@ -2,7 +2,7 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
-## [Sin publicar]
+## [1.8.0] - 2026-11-23
 
 ### Añadido
 - **Tema claro y oscuro** (Ajustes → General → Tema). Por defecto, Elissa es clara y pasa a oscura cuando el sistema
