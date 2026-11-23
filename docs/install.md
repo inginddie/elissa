@@ -88,10 +88,11 @@ macOS and Linux are previews. What isn't available on your system doesn't show u
 | Turn music down while you talk, system volume | :material-check: | :material-check: | :material-check: ¹ |
 | Terminal commands in your projects | PowerShell | zsh | bash |
 | Claude Code and Codex alerts | :material-check: | :material-check: | :material-check: |
-| Use other windows (read, click, type) | :material-check: | :material-check: ² | — |
+| Use other windows (read, click, type) | :material-check: | :material-check: ² | :material-check: ³ |
 
 ¹ With `pulseaudio-utils` (also for PipeWire) and `espeak-ng` installed.
 ² macOS asks for the Accessibility permission the first time.
+³ On X11; Wayland doesn't let one app see or control another.
 
 ## Updates
 

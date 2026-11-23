@@ -89,10 +89,11 @@ macOS y Linux son vistas previas. Lo que no está disponible en tu sistema no ap
 | Bajar la música mientras hablas, volumen del sistema | :material-check: | :material-check: | :material-check: ¹ |
 | Comandos de terminal en tus proyectos | PowerShell | zsh | bash |
 | Avisos de Claude Code y Codex | :material-check: | :material-check: | :material-check: |
-| Usar otras ventanas (leer, clic, escribir) | :material-check: | :material-check: ² | — |
+| Usar otras ventanas (leer, clic, escribir) | :material-check: | :material-check: ² | :material-check: ³ |
 
 ¹ Con `pulseaudio-utils` (sirve también con PipeWire) y `espeak-ng` instalados.
 ² macOS pide el permiso de Accesibilidad la primera vez.
+³ En X11; Wayland no deja que una app vea ni controle a otra.
 
 ## Actualizaciones
 

@@ -109,8 +109,10 @@ Choose **Install** and Elissa tells you when a session finishes or needs your pe
 
 ## Using the computer
 
-*Windows and macOS.* **Let her see and use other windows**: read the window you're in, click, type and press keys, always
-with your approval. Password fields are never read. On macOS, allow Elissa in *Accessibility* when she asks.
+*Windows, macOS and Linux on X11.* **Let her see and use other windows**: read the window you're in, click, type and
+press keys, always with your approval. Password fields are never read. On macOS, allow Elissa in *Accessibility* when
+she asks. On Linux she uses the desktop's accessibility (AT-SPI): if it was off, Elissa turns it on, and apps that
+were already open may need a restart before she can see them.
 
 ## Folders she can use
 

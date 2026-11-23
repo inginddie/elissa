@@ -2,6 +2,15 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [Sin publicar]
+
+### Añadido
+- **Linux (X11): uso del computador.** Listar y enfocar ventanas, leer la ventana que usas (« ¿qué es esto? »), hacer
+  clic, escribir y presionar teclas, cada acción con su tarjeta de aprobación, como en Windows y macOS. Usa la
+  accesibilidad del escritorio (AT-SPI), que funciona con apps GTK, Qt, Firefox, Chromium y LibreOffice; si estaba
+  apagada, Elissa la enciende y las apps ya abiertas pueden necesitar reiniciarse. Nunca lee campos de contraseña.
+  En Wayland no está disponible: el sistema no deja que una app vea ni controle a otra.
+
 ## [1.8.0] - 2026-11-23
 
 ### Añadido

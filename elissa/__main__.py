@@ -110,6 +110,11 @@ def selftest() -> int:
         import Quartz  # noqa: F401
         return "API de Accesibilidad y eventos de Quartz"
 
+    def atspi():
+        import jeepney  # noqa: F401
+        from elissa.tools import desktop_linux  # noqa: F401
+        return "AT-SPI (jeepney) y X11"
+
     def windows():
         import uiautomation as auto
         return f"{len(auto.GetRootControl().GetChildren())} ventanas"
@@ -130,7 +135,9 @@ def selftest() -> int:
     else:
         check("keyring", roundtrip)
     check("documentos", office)
-    if system.has("computer_use"):
+    if system.IS_LINUX:
+        check("ventanas", atspi)  # always: it checks the bundle carries it, even where X11 is missing (CI)
+    elif system.has("computer_use"):
         check("ventanas", accessibility if system.IS_MAC else windows)
     check("microfono", microphone)
     check("integraciones", integrations)
